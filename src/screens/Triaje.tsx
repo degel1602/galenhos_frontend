@@ -1,9 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Modal } from '../components/Modal'
-import { Badge } from '../components/Badge'
+﻿import { useEffect, useState } from 'react'
+import { Modal } from '../components/ui/Modal'
+import { Badge } from '../components/ui/Badge'
+import { getToken } from '../api/client'
+import { ReporteTriajeModal } from '../reports/triaje/ReporteTriaje'
+
+function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  const headers: Record<string, string> = { accept: 'application/json', ...extra }
+  const token = getToken()
+  if (token) headers.authorization = `Bearer ${token}`
+  return headers
+}
 
 type TipoDocumento = 'DNI' | 'CE' | 'PAS' | 'SIS' | 'SD'
-type Seguro = 'SIS' | 'EsSalud' | 'Seguro privado' | 'Particular'
 type Estado = 'sin-triaje' | 'triado'
 type Prioridad = 'rojo' | 'naranja' | 'amarillo' | 'verde' | 'azul'
 
@@ -24,10 +32,20 @@ interface PacienteTriaje {
   tipoDocumento: TipoDocumento
   documento: string | null
   nombre: string
-  seguro: Seguro | null
+  seguro: string | null
   arrivalTs: number
   estado: Estado
   evaluacion: TriajeEvaluacion | null
+}
+
+interface RegistroTriaje {
+  idTriaje: number
+  NroDocumento?: string | null
+  Paciente?: string | null
+  fecha_registro?: string
+  Servicio?: string | null
+  TipoGravedad?: string | null
+  IdEstado?: number
 }
 
 const prioridadInfo: Record<Prioridad, { label: string; variant: 'danger' | 'warning' | 'info' | 'success' | 'neutral' }> = {
@@ -38,35 +56,15 @@ const prioridadInfo: Record<Prioridad, { label: string; variant: 'danger' | 'war
   azul: { label: 'Azul · No urgente', variant: 'info' },
 }
 
-const tipoDocumentoOptions: { value: TipoDocumento; label: string }[] = [
-  { value: 'DNI', label: 'DNI' },
-  { value: 'CE', label: 'Carné de Extranjería' },
-  { value: 'PAS', label: 'Pasaporte' },
-  { value: 'SIS', label: 'Carné SIS' },
-  { value: 'SD', label: 'Sin documento (menor / NN)' },
+const frecuenciaTiempoOptions = ['Minutos', 'Horas', 'Días', 'Semanas', 'Meses', 'Años']
+
+const tipoPrioridadOptions: { id: string; label: string; color: string }[] = [
+  { id: '1', label: 'I. Emerg. o Gravedad', color: '#3b82f6' },
+  { id: '2', label: 'II. Urgencia Mayor', color: '#22c55e' },
+  { id: '3', label: 'III. Urgencia Menor', color: '#eab308' },
+  { id: '4', label: 'IV. Patología Aguda Común', color: '#f97316' },
+  { id: '5', label: 'Llegó Cadáver', color: '#ef4444' },
 ]
-
-const seguroOptions: Seguro[] = ['SIS', 'EsSalud', 'Seguro privado', 'Particular']
-
-interface RegistroEncontrado {
-  nombres: string
-  apellidos: string
-  edad: number
-  sexo: 'Masculino' | 'Femenino'
-  seguro: Seguro
-  telefono: string
-  direccion: string
-  hc: string
-}
-
-/** Base de pacientes ya registrados, simulada para la búsqueda por documento (reemplazar por RENIEC / HIS / padrón SIS). */
-const mockPatientsDB: Record<string, RegistroEncontrado> = {
-  'DNI-45102233': { nombres: 'Jorge Luis', apellidos: 'Quispe Ramos', edad: 39, sexo: 'Masculino', seguro: 'SIS', telefono: '987 210 344', direccion: 'Av. Los Álamos 445, San Juan de Lurigancho', hc: 'HC-198822' },
-  'DNI-40877612': { nombres: 'María Elena', apellidos: 'Torres Bautista', edad: 60, sexo: 'Femenino', seguro: 'SIS', telefono: '944 561 002', direccion: 'Jr. Las Camelias 210, Comas', hc: 'HC-197310' },
-  'DNI-71204598': { nombres: 'Ana Sofía', apellidos: 'Delgado Vera', edad: 25, sexo: 'Femenino', seguro: 'EsSalud', telefono: '912 774 220', direccion: 'Calle Las Begonias 88, Surco', hc: 'HC-205511' },
-  'CE-001234567': { nombres: 'Yeison', apellidos: 'Martínez Pérez', edad: 33, sexo: 'Masculino', seguro: 'Particular', telefono: '922 340 118', direccion: 'Av. Brasil 900, Breña', hc: 'HC-203390' },
-  'DNI-42678930': { nombres: 'Rosa', apellidos: 'Chumpitaz León', edad: 68, sexo: 'Femenino', seguro: 'SIS', telefono: '954 112 007', direccion: 'Calle Real 120, Ate', hc: 'HC-190044' },
-}
 
 function seedPacientes(): PacienteTriaje[] {
   const now = Date.now()
@@ -93,37 +91,51 @@ function seedPacientes(): PacienteTriaje[] {
 
 export function Triaje() {
   const [pacientes, setPacientes] = useState<PacienteTriaje[]>(seedPacientes)
-  const [tab, setTab] = useState<Estado>('sin-triaje')
-  const [busqueda, setBusqueda] = useState('')
-  const [tick, setTick] = useState(0)
   const [referenciasSisPendientes] = useState(1)
 
   const [showRegistrar, setShowRegistrar] = useState(false)
   const [pacienteEnTriaje, setPacienteEnTriaje] = useState<PacienteTriaje | null>(null)
 
+  const [fini, setFini] = useState(new Date().toISOString().slice(0, 10))
+  const [ffin, setFfin] = useState(new Date().toISOString().slice(0, 10))
+  const [servicioFiltro, setServicioFiltro] = useState('')
+  const [serviciosTriaje, setServiciosTriaje] = useState<UbicacionItem[]>([])
+  const [triajesRegistrados, setTriajesRegistrados] = useState<RegistroTriaje[]>([])
+  const [buscandoTriajes, setBuscandoTriajes] = useState(false)
+  const [errorTriajes, setErrorTriajes] = useState('')
+  const [reporteSeleccionado, setReporteSeleccionado] = useState<number | null>(null)
+
   useEffect(() => {
-    const interval = setInterval(() => setTick(t => t + 1), 30_000)
-    return () => clearInterval(interval)
+    let cancelled = false
+    cargarCatalogo<{ id: number; nombre: string | null }>('/api/v1/servicios/2', i => ({ id: i.id, nombre: (i.nombre ?? '').trim() })).then(list => {
+      if (!cancelled) setServiciosTriaje(list)
+    })
+    return () => { cancelled = true }
   }, [])
+
+  async function buscarTriajesRegistrados() {
+    setErrorTriajes('')
+    setBuscandoTriajes(true)
+    try {
+      const params = new URLSearchParams({ fini, ffin, derivadoAServicio: servicioFiltro || '-100', idEstado: '-100' })
+      const res = await fetch(`/api/v1/triaje?${params.toString()}`, { headers: authHeaders() })
+      const env = await res.json().catch(() => null)
+      if (!res.ok || !env?.success) {
+        setErrorTriajes(env?.error?.message ?? 'No se pudo obtener los triajes registrados.')
+        setTriajesRegistrados([])
+        return
+      }
+      setTriajesRegistrados((env.data ?? []) as RegistroTriaje[])
+    } catch {
+      setErrorTriajes('No se pudo obtener los triajes registrados.')
+      setTriajesRegistrados([])
+    } finally {
+      setBuscandoTriajes(false)
+    }
+  }
 
   const enEspera = pacientes.filter(p => p.estado === 'sin-triaje')
   const triadosHoy = pacientes.filter(p => p.estado === 'triado')
-
-  const filtrados = useMemo(() => {
-    const base = tab === 'sin-triaje' ? enEspera : triadosHoy
-    const q = busqueda.trim().toLowerCase()
-    if (!q) return base
-    return base.filter(p => p.nombre.toLowerCase().includes(q) || (p.documento ?? '').includes(q))
-  }, [tab, busqueda, pacientes]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  function minutosEsperando(arrivalTs: number): number {
-    void tick
-    return Math.max(0, Math.floor((Date.now() - arrivalTs) / 60_000))
-  }
-
-  function horaLlegada(arrivalTs: number): string {
-    return new Date(arrivalTs).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
-  }
 
   function handleRegistrarPaciente(nuevo: Omit<PacienteTriaje, 'id' | 'codigo' | 'arrivalTs' | 'estado' | 'evaluacion'>) {
     const siguiente = pacientes.length + 1
@@ -139,13 +151,11 @@ export function Triaje() {
       ...prev,
     ])
     setShowRegistrar(false)
-    setTab('sin-triaje')
   }
 
   function handleGuardarEvaluacion(id: string, evaluacion: TriajeEvaluacion) {
     setPacientes(prev => prev.map(p => (p.id === id ? { ...p, estado: 'triado', evaluacion } : p)))
     setPacienteEnTriaje(null)
-    setTab('triado')
   }
 
   return (
@@ -165,7 +175,7 @@ export function Triaje() {
           style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '11px 20px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 11, fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-          Registrar paciente
+          Registrar Triaje
         </button>
       </div>
 
@@ -177,80 +187,81 @@ export function Triaje() {
       </div>
 
       <div style={{ background: '#fff', border: '1px solid #e6eaf2', borderRadius: 16, padding: '18px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 6, background: '#f3f5fb', padding: 5, borderRadius: 12 }}>
-            <TabButton active={tab === 'sin-triaje'} onClick={() => setTab('sin-triaje')} label="En espera de triaje" count={enEspera.length} />
-            <TabButton active={tab === 'triado'} onClick={() => setTab('triado')} label="Triados hoy" count={triadosHoy.length} />
-          </div>
-
-          <div style={{ position: 'relative' }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a0bd" strokeWidth="2" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}>
-              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              value={busqueda}
-              onChange={e => setBusqueda(e.target.value)}
-              placeholder="Buscar por nombre o documento..."
-              style={{ width: 260, padding: '9px 14px 9px 34px', border: '1px solid #e0e6f1', borderRadius: 11, fontSize: 13, background: '#f8fafc', color: '#07153a' }}
-            />
-          </div>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.14em', color: '#7a86a1', textTransform: 'uppercase' }}>Consulta</div>
+          <h2 style={{ margin: '4px 0 2px', fontSize: 18, fontWeight: 700, color: '#07153a' }}>Triajes registrados</h2>
+          <p style={{ margin: 0, fontSize: 12.5, color: '#7a86a1' }}>Filtre por rango de fechas y servicio de derivación.</p>
         </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 12, alignItems: 'end', marginBottom: 16 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 6 }}>Fecha inicio</label>
+            <input type="date" value={fini} onChange={e => setFini(e.target.value)} style={{ width: '100%', padding: '9px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14, background: '#f8fafc', color: '#07153a' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 6 }}>Fecha fin</label>
+            <input type="date" value={ffin} onChange={e => setFfin(e.target.value)} style={{ width: '100%', padding: '9px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14, background: '#f8fafc', color: '#07153a' }} />
+          </div>
+          <SelectField
+            label="Servicio derivado"
+            value={servicioFiltro}
+            onChange={v => setServicioFiltro(v)}
+            options={[{ value: '', label: 'Todos' }, ...serviciosTriaje.map(s => ({ value: String(s.id), label: s.nombre }))]}
+          />
+          <button
+            onClick={buscarTriajesRegistrados}
+            disabled={buscandoTriajes}
+            className="gp-primary-btn"
+            style={{ display: 'flex', alignItems: 'center', gap: 7, height: 42, padding: '0 20px', background: '#263c7a', color: '#fff', border: 'none', borderRadius: 11, fontSize: 14, fontWeight: 600, cursor: buscandoTriajes ? 'wait' : 'pointer', whiteSpace: 'nowrap' }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">{buscandoTriajes ? <path d="M21 12a9 9 0 1 1-6.219-8.56" /> : <circle cx="11" cy="11" r="7" />}{!buscandoTriajes && <path d="M21 21l-4.3-4.3" />}</svg>
+            {buscandoTriajes ? 'Buscando...' : 'Buscar'}
+          </button>
+        </div>
+
+        {errorTriajes && (
+          <div style={{ marginBottom: 12, background: '#fee2e2', border: '1px solid #fca5a5', color: '#b91c1c', fontSize: 13, fontWeight: 500, padding: '10px 13px', borderRadius: 11 }}>
+            {errorTriajes}
+          </div>
+        )}
 
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ textAlign: 'left', color: '#7a86a1', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '.03em' }}>
+                <th style={{ padding: '0 10px 10px' }}>N.º Triaje</th>
                 <th style={{ padding: '0 10px 10px' }}>Documento</th>
                 <th style={{ padding: '0 10px 10px' }}>Paciente</th>
-                <th style={{ padding: '0 10px 10px' }}>Hora de llegada</th>
-                <th style={{ padding: '0 10px 10px' }}>Tiempo esperando</th>
-                <th style={{ padding: '0 10px 10px' }}>Prioridad / Estado</th>
-                <th style={{ padding: '0 10px 10px', textAlign: 'right' }}>Acción</th>
+                <th style={{ padding: '0 10px 10px' }}>Fecha registro</th>
+                <th style={{ padding: '0 10px 10px' }}>Servicio</th>
+                <th style={{ padding: '0 10px 10px' }}>Tipo gravedad</th>
+                <th style={{ padding: '0 10px 10px' }}>Estado</th>
+                <th style={{ padding: '0 10px 10px', textAlign: 'right' }}>Reporte</th>
               </tr>
             </thead>
             <tbody>
-              {filtrados.length === 0 && (
-                <tr><td colSpan={6} style={{ padding: '20px 10px', color: '#94a0bd', textAlign: 'center' }}>No hay pacientes en esta bandeja.</td></tr>
+              {triajesRegistrados.length === 0 && (
+                <tr><td colSpan={8} style={{ padding: '20px 10px', color: '#94a0bd', textAlign: 'center' }}>Realice una búsqueda para ver los triajes registrados.</td></tr>
               )}
-              {filtrados.map(p => (
-                <tr key={p.id} className="gp-row" style={{ borderTop: '1px solid #eef1f6' }}>
+              {triajesRegistrados.map(t => (
+                <tr key={t.idTriaje} className="gp-row" style={{ borderTop: '1px solid #eef1f6' }}>
+                  <td style={{ padding: '12px 10px', verticalAlign: 'top', fontWeight: 600, color: '#263c7a' }}>{t.idTriaje}</td>
+                  <td style={{ padding: '12px 10px', verticalAlign: 'top', color: '#54617f' }}>{t.NroDocumento ?? '—'}</td>
+                  <td style={{ padding: '12px 10px', verticalAlign: 'top', fontWeight: 600, color: '#07153a' }}>{t.Paciente ?? '—'}</td>
+                  <td style={{ padding: '12px 10px', verticalAlign: 'top', color: '#54617f' }}>{t.fecha_registro ? new Date(t.fecha_registro).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '—'}</td>
+                  <td style={{ padding: '12px 10px', verticalAlign: 'top', color: '#54617f' }}>{t.Servicio ?? 'NO ASIGNADO'}</td>
+                  <td style={{ padding: '12px 10px', verticalAlign: 'top', color: '#54617f' }}>{t.TipoGravedad ?? '—'}</td>
                   <td style={{ padding: '12px 10px', verticalAlign: 'top' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#94a0bd', letterSpacing: '.04em' }}>{p.tipoDocumento}</div>
-                    <div style={{ fontWeight: 600, color: '#07153a' }}>{p.documento ?? '—'}</div>
-                  </td>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontWeight: 600, color: '#07153a' }}>{p.nombre}</span>
-                      {p.seguro === 'SIS' && <Badge variant="info">SIS</Badge>}
-                    </div>
-                    <div style={{ fontSize: 12, color: '#7a86a1', marginTop: 2 }}>{p.codigo}{p.hcCodigo ? ` · ${p.hcCodigo}` : ''}</div>
-                  </td>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top', color: '#54617f' }}>{horaLlegada(p.arrivalTs)}</td>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top', color: '#54617f' }}>{minutosEsperando(p.arrivalTs)} min</td>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top' }}>
-                    {p.estado === 'sin-triaje' || !p.evaluacion
-                      ? <Badge variant="warning">Sin triaje</Badge>
-                      : <Badge variant={prioridadInfo[p.evaluacion.prioridad].variant}>{prioridadInfo[p.evaluacion.prioridad].label}</Badge>}
+                    <Badge variant={t.IdEstado === 1 ? 'success' : 'neutral'}>{t.IdEstado === 1 ? 'Activo' : 'Otro'}</Badge>
                   </td>
                   <td style={{ padding: '12px 10px', verticalAlign: 'top', textAlign: 'right' }}>
-                    {p.estado === 'sin-triaje' ? (
-                      <button
-                        onClick={() => setPacienteEnTriaje(p)}
-                        className="gp-primary-btn"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 16px', background: '#263c7a', color: '#fff', border: 'none', borderRadius: 10, fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
-                      >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
-                        Iniciar triaje
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setPacienteEnTriaje(p)}
-                        className="gp-ghost-btn"
-                        style={{ padding: '8px 16px', border: '1px solid #e0e6f1', borderRadius: 10, background: '#fff', fontSize: 12.5, fontWeight: 600, color: '#54617f', cursor: 'pointer' }}
-                      >
-                        Ver evaluación
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setReporteSeleccionado(t.idTriaje)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#263c7a', color: '#fff', border: 'none', borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8M16 17H8M10 9H8" /></svg>
+                      Reporte
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -270,6 +281,13 @@ export function Triaje() {
           onSubmit={evaluacion => handleGuardarEvaluacion(pacienteEnTriaje.id, evaluacion)}
         />
       )}
+
+      {reporteSeleccionado && (
+        <ReporteTriajeModal
+          idTriaje={reporteSeleccionado}
+          onClose={() => setReporteSeleccionado(null)}
+        />
+      )}
     </div>
   )
 }
@@ -286,131 +304,549 @@ function StatCard({ label, value, unit, barColor }: { label: string; value: numb
   )
 }
 
-function TabButton({ active, onClick, label, count }: { active: boolean; onClick: () => void; label: string; count: number }) {
-  return (
-    <button
-      onClick={onClick}
-      className="gp-switch-btn"
-      style={{
-        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', border: 'none', borderRadius: 9,
-        background: active ? '#0f2a5c' : 'transparent', color: active ? '#fff' : '#54617f',
-        fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
-      }}
-    >
-      {label}
-      <span style={{
-        fontSize: 11, fontWeight: 700, padding: '1px 7px', borderRadius: 999,
-        background: active ? 'rgba(255,255,255,.18)' : '#e2e8f0', color: active ? '#fff' : '#54617f',
-      }}>{count}</span>
-    </button>
-  )
+interface UbicacionItem {
+  id: number
+  nombre: string
+}
+
+async function cargarCatalogo<T>(url: string, map: (item: T) => UbicacionItem): Promise<UbicacionItem[]> {
+  try {
+    const res = await fetch(url, { headers: authHeaders() })
+    if (!res.ok) return []
+    const env = await res.json()
+    const data = (env?.data ?? []) as T[]
+    return data.map(map)
+  } catch {
+    return []
+  }
+}
+
+async function consultarSis(nroDocumento: string, tipo: { nombre: string }): Promise<{
+  afiliado: boolean
+  descripcion?: string
+  estado?: string
+  apePaterno?: string
+  apeMaterno?: string
+  nombres?: string
+  fechaNacimiento?: string
+  genero?: string
+  direccion?: string
+} | null> {
+  const nombre = tipo.nombre.toUpperCase()
+  if (nombre !== 'DNI' && !nombre.includes('EXTRANJER')) return null
+  const strTipoDocumento = nombre.includes('EXTRANJER') ? 3 : 1
+  const res = await fetch(`/api/v1/sis/afiliado/${encodeURIComponent(nroDocumento)}?strTipoDocumento=${strTipoDocumento}&intOpcion=1`, { headers: authHeaders() })
+  const env = await res.json().catch(() => null)
+  const data = env?.data as {
+    estado?: string
+    descTipoSeguro?: string
+    apePaterno?: string
+    apeMaterno?: string
+    nombres?: string
+    fecNacimiento?: string
+    genero?: string
+    direccion?: string
+  } | undefined
+  if (!data?.estado) return null
+  const afiliado = data.estado.toUpperCase() === 'ACTIVO'
+  return {
+    afiliado,
+    descripcion: data.descTipoSeguro ?? '',
+    estado: data.estado,
+    apePaterno: data.apePaterno,
+    apeMaterno: data.apeMaterno,
+    nombres: data.nombres,
+    fechaNacimiento: data.fecNacimiento,
+    genero: data.genero,
+    direccion: data.direccion,
+  }
 }
 
 function RegistrarPacienteModal({ onClose, onSubmit }: {
   onClose: () => void
   onSubmit: (nuevo: Omit<PacienteTriaje, 'id' | 'codigo' | 'arrivalTs' | 'estado' | 'evaluacion'>) => void
 }) {
-  const [tipoDocumento, setTipoDocumento] = useState<TipoDocumento>('DNI')
+  const [tipoDocumento, setTipoDocumento] = useState('')
   const [numeroDocumento, setNumeroDocumento] = useState('')
   const [buscado, setBuscado] = useState(false)
-  const [encontrado, setEncontrado] = useState<RegistroEncontrado | null>(null)
+  const [buscando, setBuscando] = useState(false)
+  const [esNuevo, setEsNuevo] = useState(false)
   const [hcNueva, setHcNueva] = useState('')
   const [error, setError] = useState('')
+  const [esNN, setEsNN] = useState(false)
+  const [reporteId, setReporteId] = useState<number | null>(null)
 
-  const [nombres, setNombres] = useState('')
-  const [apellidos, setApellidos] = useState('')
+  const [apellidoPaterno, setApellidoPaterno] = useState('')
+  const [apellidoMaterno, setApellidoMaterno] = useState('')
+  const [primerNombre, setPrimerNombre] = useState('')
+  const [segundoNombre, setSegundoNombre] = useState('')
   const [fechaNacimiento, setFechaNacimiento] = useState('')
-  const [sexo, setSexo] = useState<'' | 'Masculino' | 'Femenino'>('')
+  const [sexo, setSexo] = useState('')
+  const [estadoCivil, setEstadoCivil] = useState('')
   const [telefono, setTelefono] = useState('')
-  const [seguro, setSeguro] = useState<'' | Seguro>('')
+  const [seguro, setSeguro] = useState('')
   const [direccion, setDireccion] = useState('')
+  const [selDepartamento, setSelDepartamento] = useState<number | string>('')
+  const [selProvincia, setSelProvincia] = useState<number | string>('')
+  const [selDistrito, setSelDistrito] = useState<number | string>('')
+  const [selCentroPoblado, setSelCentroPoblado] = useState<number | string>('')
 
-  function handleTipoDocumentoChange(v: TipoDocumento) {
-    setTipoDocumento(v)
-    setBuscado(false)
-    setEncontrado(null)
-    setError('')
-    setNumeroDocumento(v === 'SD' ? `S/D-${Math.floor(1000 + Math.random() * 9000)}` : '')
+  const [tiposDocumentos, setTiposDocumentos] = useState<UbicacionItem[]>([])
+  const [sexos, setSexos] = useState<UbicacionItem[]>([])
+  const [estadosCivil, setEstadosCivil] = useState<UbicacionItem[]>([])
+  const [departamentos, setDepartamentos] = useState<UbicacionItem[]>([])
+  const [provincias, setProvincias] = useState<UbicacionItem[]>([])
+  const [distritos, setDistritos] = useState<UbicacionItem[]>([])
+  const [centrosPoblados, setCentrosPoblados] = useState<UbicacionItem[]>([])
+  const [fuentesFinanciamiento, setFuentesFinanciamiento] = useState<UbicacionItem[]>([])
+  const [estadosLlego, setEstadosLlego] = useState<UbicacionItem[]>([])
+  const [paso, setPaso] = useState<'paciente' | 'triaje'>('paciente')
+  const [mostrarPaciente, setMostrarPaciente] = useState(true)
+  const [accidenteTransito, setAccidenteTransito] = useState(false)
+  const [comoLlego, setComoLlego] = useState('')
+  const [fc, setFc] = useState('')
+  const [temp, setTemp] = useState('')
+  const [pa, setPa] = useState('')
+  const [spo2, setSpo2] = useState('')
+  const [fr, setFr] = useState('')
+  const [fio2, setFio2] = useState('')
+  const [peso, setPeso] = useState('')
+  const [talla, setTalla] = useState('')
+  const [imc, setImc] = useState('')
+  const [sintomasPrincipales, setSintomasPrincipales] = useState('')
+  const [tiempoSintomas, setTiempoSintomas] = useState('')
+  const [frecuenciaTiempo, setFrecuenciaTiempo] = useState('')
+  const [escalaDolor, setEscalaDolor] = useState('')
+  const [escalaGlasgow, setEscalaGlasgow] = useState('')
+  const [tipoPrioridad, setTipoPrioridad] = useState('')
+  const [servicioDerivado, setServicioDerivado] = useState('')
+  const [servicios, setServicios] = useState<UbicacionItem[]>([])
+  const [sisInfo, setSisInfo] = useState<{ afiliado: boolean; descripcion?: string; estado?: string; apePaterno?: string; apeMaterno?: string; nombres?: string; fechaNacimiento?: string; genero?: string; direccion?: string } | null>(null)
+  const [enviando, setEnviando] = useState(false)
+  const [resultadoMsg, setResultadoMsg] = useState<{ ok: boolean; texto: string } | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([
+      cargarCatalogo<{ id: number; descripcion: string | null }>('/api/v1/tipos-documentos', i => ({ id: i.id, nombre: (i.descripcion ?? '').trim() })),
+      cargarCatalogo<{ id: number; descripcion: string | null }>('/api/v1/tipos-sexo', i => ({ id: i.id, nombre: (i.descripcion ?? '').trim() })),
+      cargarCatalogo<{ id: number; descripcion: string | null }>('/api/v1/estados-civil', i => ({ id: i.id, nombre: (i.descripcion ?? '').trim() })),
+      cargarCatalogo<{ id: number; nombre: string | null }>('/api/v1/departamentos', i => ({ id: i.id, nombre: (i.nombre ?? '').trim() })),
+      cargarCatalogo<{ idFuenteFinanciamiento: number; descripcion: string | null }>('/api/v1/fuentes-financiamiento', i => ({ id: i.idFuenteFinanciamiento, nombre: (i.descripcion ?? '').trim() })),
+      cargarCatalogo<{ id: number; descripcion: string | null }>('/api/v1/estados-llego-paciente', i => ({ id: i.id, nombre: (i.descripcion ?? '').trim() })),
+      cargarCatalogo<{ id: number; nombre: string | null }>('/api/v1/servicios/2', i => ({ id: i.id, nombre: (i.nombre ?? '').trim() })),
+    ]).then(([td, s, ec, dep, ff, el, sv]) => {
+      if (cancelled) return
+      setTiposDocumentos(td.filter(t => t.nombre === 'DNI').concat(td.filter(t => t.nombre !== 'DNI')))
+      setSexos(s)
+      setEstadosCivil(ec)
+      setDepartamentos(dep)
+      setFuentesFinanciamiento(ff)
+      setEstadosLlego(el)
+      setServicios(sv.sort((a, b) => a.nombre.localeCompare(b.nombre)))
+      const dni = td.find(t => t.nombre === 'DNI')
+      setTipoDocumento(dni ? String(dni.id) : (td[0] ? String(td[0].id) : ''))
+    })
+    return () => { cancelled = true }
+  }, [])
+
+  async function cargarProvincias(idDepartamento: number) {
+    setProvincias([])
+    setSelProvincia('')
+    setDistritos([])
+    setSelDistrito('')
+    setCentrosPoblados([])
+    setSelCentroPoblado('')
+    setProvincias(await cargarCatalogo<{ id: number; nombre: string | null }>(`/api/v1/provincias/${idDepartamento}`, i => ({ id: i.id, nombre: (i.nombre ?? '').trim() })))
   }
 
-  function handleBuscar() {
+  async function cargarDistritos(idProvincia: number) {
+    setDistritos([])
+    setSelDistrito('')
+    setCentrosPoblados([])
+    setSelCentroPoblado('')
+    setDistritos(await cargarCatalogo<{ id: number; nombre: string | null }>(`/api/v1/distritos/${idProvincia}`, i => ({ id: i.id, nombre: (i.nombre ?? '').trim() })))
+  }
+
+  async function cargarCentrosPoblados(idDistrito: number) {
+    setCentrosPoblados([])
+    setSelCentroPoblado('')
+    setCentrosPoblados(await cargarCatalogo<{ id: number; nombre: string | null }>(`/api/v1/centros-poblados/${idDistrito}`, i => ({ id: i.id, nombre: (i.nombre ?? '').trim() })))
+  }
+
+  function handleTipoDocumentoChange(v: string) {
+    setTipoDocumento(v)
+    setBuscado(false)
+    setEsNuevo(false)
+    setError('')
+    setNumeroDocumento('')
+  }
+
+  function handleToggleNN(activo: boolean) {
+    setEsNN(activo)
+    setBuscado(false)
+    setEsNuevo(false)
+    setError('')
+    setSisInfo(null)
+    if (activo) {
+      const sd = tiposDocumentos.find(t => t.nombre.toUpperCase() === 'SD')
+      setTipoDocumento(sd ? String(sd.id) : '')
+      setNumeroDocumento('')
+      setApellidoPaterno('NN')
+      setApellidoMaterno('NN')
+      setPrimerNombre('NN')
+      setSegundoNombre('')
+      setHcNueva(`HC-${210000 + Math.floor(Math.random() * 9000)}`)
+      setEsNuevo(true)
+      setBuscado(true)
+      setSeguro(idFuenteFinanciamiento('PARTICULAR'))
+    } else {
+      setTipoDocumento('')
+      setNumeroDocumento('')
+      setApellidoPaterno('')
+      setApellidoMaterno('')
+      setPrimerNombre('')
+      setSegundoNombre('')
+    }
+  }
+
+  function calcularImc(pesoV: string, tallaV: string): string {
+    const p = parseFloat(pesoV)
+    const t = parseFloat(tallaV)
+    if (!p || !t || p <= 0 || t <= 0) return ''
+    const imc = p / Math.pow(t / 100, 2)
+    return imc.toFixed(1)
+  }
+
+  function idFuenteFinanciamiento(busca: string): string {
+    const f = fuentesFinanciamiento.find(x => x.nombre.toUpperCase().includes(busca.toUpperCase()))
+    return f ? String(f.id) : ''
+  }
+
+  function seguroPorDefecto(afiliadoSis: boolean | null): string {
+    if (accidenteTransito) return idFuenteFinanciamiento('SOAT')
+    if (afiliadoSis) return idFuenteFinanciamiento('SIS')
+    return idFuenteFinanciamiento('PARTICULAR')
+  }
+
+  function toggleAccidente() {
+    const nuevo = !accidenteTransito
+    setAccidenteTransito(nuevo)
+    setSeguro(nuevo ? idFuenteFinanciamiento('SOAT') : idFuenteFinanciamiento('PARTICULAR'))
+  }
+
+  function limpiarFormulario() {
+    setApellidoPaterno('')
+    setApellidoMaterno('')
+    setPrimerNombre('')
+    setSegundoNombre('')
+    setFechaNacimiento('')
+    setSexo('')
+    setEstadoCivil('')
+    setTelefono('')
+    setSeguro('')
+    setDireccion('')
+    setSelDepartamento('')
+    setSelProvincia('')
+    setSelDistrito('')
+    setSelCentroPoblado('')
+    setProvincias([])
+    setDistritos([])
+    setCentrosPoblados([])
+  }
+
+  async function consultarReniec(dni: string): Promise<boolean> {
+    const res = await fetch(`/api/v1/reniec/${encodeURIComponent(dni)}?operacion=completo`, { headers: authHeaders() })
+    if (!res.ok) throw new Error('No se pudo consultar a la RENIEC.')
+    const env = await res.json()
+    const d = (env?.data?.datos ?? {}) as {
+      apellidoPaterno?: string
+      apellidoMaterno?: string
+      nombres?: string
+      primerNombre?: string
+      segundoNombre?: string
+      tercerNombre?: string
+      fechaNacimiento?: string
+      sexo?: string
+    }
+    setApellidoPaterno((d.apellidoPaterno ?? '').trim().toUpperCase())
+    setApellidoMaterno((d.apellidoMaterno ?? '').trim().toUpperCase())
+    setPrimerNombre((d.primerNombre ?? d.nombres ?? '').trim().toUpperCase())
+    setSegundoNombre((d.tercerNombre ? `${d.segundoNombre ?? ''} ${d.tercerNombre}` : (d.segundoNombre ?? '')).trim().toUpperCase())
+    setFechaNacimiento(d.fechaNacimiento ?? '')
+    const sexoNombre = (d.sexo ?? '').trim().toLowerCase()
+    setSexo(sexoNombre.startsWith('m') ? sexos.find(s => s.nombre.toLowerCase() === 'masculino') ? (sexos.find(s => s.nombre.toLowerCase() === 'masculino')!.id).toString() : '' : sexoNombre.startsWith('f') ? sexos.find(s => s.nombre.toLowerCase() === 'femenino')?.id?.toString() ?? '' : '')
+    return Boolean((d.apellidoPaterno ?? '').trim() || (d.primerNombre ?? d.nombres ?? '').trim())
+  }
+
+  async function cargarPoblarUbicacion(homeDistrictId: number | undefined, homeCenterId: number | undefined) {
+    if (!homeDistrictId) {
+      setSelDepartamento('')
+      setSelProvincia('')
+      setSelDistrito('')
+      setSelCentroPoblado('')
+      setProvincias([])
+      setDistritos([])
+      setCentrosPoblados([])
+      return
+    }
+    const deptoId = Math.floor(homeDistrictId / 10000)
+    const provId = Math.floor(homeDistrictId / 100)
+    setSelDepartamento(deptoId)
+    const provs = await cargarCatalogo<{ id: number; nombre: string | null }>(`/api/v1/provincias/${deptoId}`, i => ({ id: i.id, nombre: (i.nombre ?? '').trim() }))
+    setProvincias(provs)
+    setSelProvincia(provId)
+    if (provId) {
+      const dists = await cargarCatalogo<{ id: number; nombre: string | null }>(`/api/v1/distritos/${provId}`, i => ({ id: i.id, nombre: (i.nombre ?? '').trim() }))
+      setDistritos(dists)
+      setSelDistrito(homeDistrictId)
+      if (homeDistrictId) {
+        const cps = await cargarCatalogo<{ id: number; nombre: string | null }>(`/api/v1/centros-poblados/${homeDistrictId}`, i => ({ id: i.id, nombre: (i.nombre ?? '').trim() }))
+        setCentrosPoblados(cps)
+        setSelCentroPoblado(homeCenterId ?? '')
+      }
+    }
+  }
+
+  async function handleBuscar() {
     const num = numeroDocumento.trim()
     if (!num) {
       setError('Ingrese el número de documento.')
       return
     }
+    const tipo = tiposDocumentos.find(t => String(t.id) === String(tipoDocumento))
+    if (!tipo) {
+      setError('Seleccione el tipo de documento.')
+      return
+    }
     setError('')
-    const registro = mockPatientsDB[`${tipoDocumento}-${num}`] ?? null
-    setEncontrado(registro)
-    setBuscado(true)
-    if (!registro) {
-      setHcNueva(`HC-${210000 + Math.floor(Math.random() * 9000)}`)
-      setNombres('')
-      setApellidos('')
-      setFechaNacimiento('')
-      setSexo('')
-      setTelefono('')
-      setSeguro('')
-      setDireccion('')
+    setBuscando(true)
+    setBuscado(false)
+    limpiarFormulario()
+    setHcNueva('')
+    setSisInfo(null)
+    let enBd = false
+    let reniecOk = false
+    try {
+      const res = await fetch(`/api/v1/pacientes/por-documento?nroDocumento=${encodeURIComponent(num)}&idTipoDocIdentidad=${tipoDocumento}`, { headers: authHeaders() })
+      if (res.ok) {
+        const env = await res.json()
+        const d = env?.data as {
+          patientId?: number
+          historyNumber?: string
+          paternalSurname?: string
+          maternalSurname?: string
+          firstName?: string
+          secondName?: string
+          thirdName?: string
+          dateOfBirth?: string
+          homeDistrictId?: number
+          homeCenterId?: number
+          sexTypeId?: number
+          maritalStatusId?: number
+          educationDegreeId?: number
+          homeAddress?: string
+          phone?: string
+        }
+        enBd = true
+        setEsNuevo(false)
+        setHcNueva(d?.historyNumber ? String(d.historyNumber) : `HC-${210000 + Math.floor(Math.random() * 9000)}`)
+        setApellidoPaterno((d?.paternalSurname ?? '').trim())
+        setApellidoMaterno((d?.maternalSurname ?? '').trim())
+        setPrimerNombre((d?.firstName ?? '').trim())
+        setSegundoNombre(((d?.secondName ?? '') + ' ' + (d?.thirdName ?? '')).trim())
+        setFechaNacimiento(d?.dateOfBirth ? String(d.dateOfBirth).slice(0, 10) : '')
+        const sexoId = d?.sexTypeId
+        const sexoItem = sexoId != null ? sexos.find(s => s.id === sexoId) : undefined
+        setSexo(sexoItem ? String(sexoItem.id) : '')
+        const eci = d?.maritalStatusId
+        const ecItem = eci != null ? estadosCivil.find(e => e.id === eci) : undefined
+        setEstadoCivil(ecItem ? String(ecItem.id) : '')
+        setTelefono((d?.phone ?? '').trim())
+        setDireccion((d?.homeAddress ?? '').trim())
+        await cargarPoblarUbicacion(d?.homeDistrictId ?? undefined, d?.homeCenterId ?? undefined)
+      } else {
+        setEsNuevo(true)
+        setHcNueva(`HC-${210000 + Math.floor(Math.random() * 9000)}`)
+        if (tipo.nombre.toUpperCase() === 'DNI') {
+          try {
+            reniecOk = await consultarReniec(num)
+          } catch {
+            /* si RENIEC no responde, se completa a mano o desde el SIS */
+          }
+        }
+      }
+      try {
+        const sres = await consultarSis(num, tipo)
+        setSisInfo(sres)
+        setSeguro(seguroPorDefecto(sres?.afiliado ?? null))
+        if (!enBd && !reniecOk && sres) {
+          const nombres = (sres.nombres ?? '').trim().toUpperCase().split(/\s+/).filter(Boolean)
+          setApellidoPaterno((sres.apePaterno ?? '').trim().toUpperCase())
+          setApellidoMaterno((sres.apeMaterno ?? '').trim().toUpperCase())
+          setPrimerNombre(nombres[0] ?? '')
+          setSegundoNombre(nombres.slice(1).join(' '))
+          if (sres.fechaNacimiento) setFechaNacimiento(sres.fechaNacimiento.slice(0, 10))
+          const gen = (sres.genero ?? '').trim().toLowerCase()
+          setSexo(gen.startsWith('m') ? sexos.find(s => s.nombre.toLowerCase() === 'masculino')?.id?.toString() ?? '' : gen.startsWith('f') ? sexos.find(s => s.nombre.toLowerCase() === 'femenino')?.id?.toString() ?? '' : '')
+          if (sres.direccion) setDireccion(sres.direccion.trim())
+        }
+      } catch {
+        setSisInfo(null)
+        setSeguro(seguroPorDefecto(null))
+      }
+    } catch {
+      setError('No se pudo consultar el paciente.')
+    } finally {
+      setBuscado(true)
+      setBuscando(false)
     }
   }
 
-  function handleSubmit() {
+  function handleContinuar() {
     if (!buscado) {
-      setError('Busque el documento del paciente antes de registrarlo.')
+      setError('Busque el documento del paciente antes de continuar.')
       return
     }
-    if (encontrado) {
-      onSubmit({
-        tipoDocumento,
-        documento: tipoDocumento === 'SD' ? null : numeroDocumento.trim(),
-        hcCodigo: encontrado.hc,
-        nombre: `${encontrado.nombres} ${encontrado.apellidos}`,
-        seguro: encontrado.seguro,
+    setError('')
+    setPaso('triaje')
+    setMostrarPaciente(false)
+  }
+
+  async function obtenerUltimoTriajeId(): Promise<number | null> {
+    try {
+      const hoy = new Date().toISOString().slice(0, 10)
+      const params = new URLSearchParams({
+        fini: hoy,
+        ffin: hoy,
+        filtro: numeroDocumento.trim(),
+        derivadoAServicio: '-100',
+        idEstado: '-100',
       })
-      return
+      const res = await fetch(`/api/v1/triaje?${params.toString()}`, { headers: authHeaders() })
+      const env = await res.json().catch(() => null)
+      const lista = (env?.data ?? []) as { idTriaje?: number }[]
+      if (!Array.isArray(lista) || lista.length === 0) return null
+      return Math.max(...lista.map((i: { idTriaje?: number }) => i.idTriaje ?? 0))
+    } catch {
+      return null
     }
-    if (!nombres.trim() || !apellidos.trim() || !sexo || !seguro) {
-      setError('Complete los datos obligatorios del paciente nuevo antes de continuar.')
-      return
+  }
+
+  async function handleSubmit() {
+    const tipo = tiposDocumentos.find(t => String(t.id) === String(tipoDocumento))
+    const tipoNombre = tipo?.nombre ?? ''
+    setResultadoMsg(null)
+    if (enviando) return
+    setEnviando(true)
+    try {
+      const body = {
+        idTriaje: null,
+        idDocIdentidad: tipoDocumento ? Number(tipoDocumento) : null,
+        nroDocumento: numeroDocumento.trim() || null,
+        apellidoPaterno: apellidoPaterno.trim() || null,
+        apellidoMaterno: apellidoMaterno.trim() || null,
+        primerNombre: primerNombre.trim() || null,
+        segundoNombre: segundoNombre.trim() || null,
+        tercerNombre: null,
+        idSexo: sexo ? Number(sexo) : null,
+        fechaNacimiento: fechaNacimiento ? `${fechaNacimiento}T00:00:00Z` : null,
+        telefono: telefono.trim() || null,
+        idDepartamentoDomicilio: selDepartamento === '' ? null : Number(selDepartamento),
+        idProvinciaDomicilio: selProvincia === '' ? null : Number(selProvincia),
+        idDistritoDomicilio: selDistrito === '' ? null : Number(selDistrito),
+        idComunidadDomicilio: selCentroPoblado === '' ? null : Number(selCentroPoblado),
+        direccion: direccion.trim() || null,
+        idEsAccidenteTransito: accidenteTransito ? 1 : 0,
+        idFuenteFinanciamiento: seguro ? Number(seguro) : null,
+        email: null,
+        idEstadoCivil: estadoCivil ? Number(estadoCivil) : null,
+        frecCardiaca: fc ? Number(fc) : null,
+        temperatura: temp ? Number(temp) : null,
+        presionArterial: pa.trim() || null,
+        saturacion: spo2 ? Number(spo2) : null,
+        frecRespiratoria: fr ? Number(fr) : null,
+        fiO2: fio2 ? Math.round((Number(fio2) <= 1 ? Number(fio2) * 100 : Number(fio2))) : null,
+        peso: peso ? Number(peso) : null,
+        talla: talla ? Number(talla) : null,
+        imc: imc ? Number(imc) : null,
+        tiempoEvolucionCantidad: tiempoSintomas ? Number(tiempoSintomas) : null,
+        tiempoEvolucionCantidadUnidad: frecuenciaTiempo.trim() || null,
+        escalaDolor: escalaDolor ? Number(escalaDolor) : null,
+        escalaGlasgow: escalaGlasgow ? Number(escalaGlasgow) : null,
+        idTipoPrioridad: tipoPrioridad ? Number(tipoPrioridad) : null,
+        idServicio: servicioDerivado ? Number(servicioDerivado) : null,
+        motivo: sintomasPrincipales.trim() || null,
+        gestante: null,
+        idEstadollego: comoLlego ? Number(comoLlego) : null,
+        foto: null,
+        idEmpleado: null,
+      }
+      const res = await fetch(`/api/v1/triaje`, { method: 'POST', headers: authHeaders({ 'content-type': 'application/json' }), body: JSON.stringify(body) })
+      const env = await res.json().catch(() => null)
+      const resultado = env?.data?.resultado ?? ''
+      if (res.ok && /^OK/.test(resultado)) {
+        onSubmit({
+          tipoDocumento: tipoNombre as TipoDocumento,
+          documento: tipoNombre.toUpperCase() === 'SD' ? null : numeroDocumento.trim(),
+          hcCodigo: hcNueva,
+          nombre: `${primerNombre.trim()} ${segundoNombre.trim()} ${apellidoPaterno.trim()} ${apellidoMaterno.trim()}`.trim(),
+          seguro: seguro || null,
+        })
+        setResultadoMsg({ ok: true, texto: 'El triaje se agregó correctamente.' })
+        const id = await obtenerUltimoTriajeId()
+        if (id) setReporteId(id)
+      } else {
+        const msg = (env?.error?.message ?? resultado ?? 'No se pudo registrar el triaje.').replace(/^Error[;: ]*/i, '')
+        setResultadoMsg({ ok: false, texto: msg })
+      }
+    } catch {
+      setResultadoMsg({ ok: false, texto: 'No se pudo registrar el triaje.' })
+    } finally {
+      setEnviando(false)
     }
-    onSubmit({
-      tipoDocumento,
-      documento: tipoDocumento === 'SD' ? null : numeroDocumento.trim(),
-      hcCodigo: hcNueva,
-      nombre: `${nombres.trim()} ${apellidos.trim()}`,
-      seguro,
-    })
-    void fechaNacimiento
-    void telefono
-    void direccion
   }
 
   return (
-    <Modal title="Registrar paciente" subtitle="Identificación por documento para la bandeja de triaje." onClose={onClose} width={640}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: '#263c7a', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }}>
-        Identificación por documento
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 10, alignItems: 'end' }}>
+    <>
+      <Modal title="Registrar Triaje" subtitle="Identificación por documento para la bandeja de triaje." onClose={onClose} width={1100}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: 10, alignItems: 'end' }}>
         <SelectField
           label="Tipo de documento"
           value={tipoDocumento}
-          onChange={v => handleTipoDocumentoChange(v as TipoDocumento)}
-          options={tipoDocumentoOptions}
+          onChange={v => handleTipoDocumentoChange(v)}
+          disabled={esNN}
+          options={[{ value: '', label: 'Seleccionar...' }, ...tiposDocumentos.map(t => ({ value: String(t.id), label: t.nombre }))]}
         />
         <TextField
           label="Número de documento"
           value={numeroDocumento}
-          onChange={v => { setNumeroDocumento(v); setBuscado(false); setEncontrado(null); setError('') }}
+          onChange={v => { setNumeroDocumento(v); setBuscado(false); setEsNuevo(false); setError('') }}
           onEnter={handleBuscar}
-          placeholder="Ej: 45102233"
-          disabled={tipoDocumento === 'SD'}
+          disabled={esNN}
+          placeholder="Ej: 45220357"
         />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 42, padding: '0 12px', border: `1px solid ${esNN ? '#5eead4' : '#d5dceb'}`, borderRadius: 11, background: esNN ? '#f0fdfa' : '#f8fafc' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#263c7a', whiteSpace: 'nowrap' }}>Paciente NN</span>
+          <button
+            type="button"
+            onClick={() => handleToggleNN(!esNN)}
+            aria-pressed={esNN}
+            style={{
+              width: 40, height: 22, borderRadius: 999, border: 'none', cursor: 'pointer', position: 'relative', flexShrink: 0,
+              background: esNN ? '#0d9488' : '#c3cbd8', transition: 'background .2s',
+            }}
+          >
+            <span style={{
+              position: 'absolute', top: 2, left: esNN ? 20 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .2s',
+            }} />
+          </button>
+        </div>
         <button
           onClick={handleBuscar}
+          disabled={buscando || esNN}
           className="gp-primary-btn"
-          style={{ display: 'flex', alignItems: 'center', gap: 7, height: 42, padding: '0 20px', background: '#263c7a', color: '#fff', border: 'none', borderRadius: 11, fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 7, height: 42, padding: '0 20px', background: '#263c7a', color: '#fff', border: 'none', borderRadius: 11, fontSize: 14, fontWeight: 600, cursor: buscando ? 'wait' : 'pointer', whiteSpace: 'nowrap', opacity: esNN ? 0.5 : 1 }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
           Buscar
@@ -418,7 +854,7 @@ function RegistrarPacienteModal({ onClose, onSubmit }: {
       </div>
 
       <p style={{ fontSize: 12, color: '#7a86a1', margin: '10px 0 0', lineHeight: 1.5 }}>
-        El sistema verifica automáticamente si el documento corresponde a un paciente ya registrado (SÍ) o a uno nuevo (NO).
+        El sistema verifica automáticamente si el documento corresponde a un paciente ya registrado (SÍ) o a uno nuevo (NO). Si no existe, consulta a la RENIEC.
       </p>
 
       {error && (
@@ -427,77 +863,215 @@ function RegistrarPacienteModal({ onClose, onSubmit }: {
         </div>
       )}
 
-      {buscado && encontrado && (
-        <div className="gp-card-in" style={{ marginTop: 16, borderRadius: 14, border: '1px solid #bbf7d0', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '11px 16px', background: '#f0fdf4' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: '#059669' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M20 6L9 17l-5-5" /></svg>
-              Paciente encontrado — SÍ existe en el sistema
-            </span>
-            <span style={{ fontFamily: 'monospace', fontSize: 12.5, fontWeight: 700, color: '#07153a', background: '#fff', border: '1px solid #d5dceb', borderRadius: 8, padding: '3px 10px' }}>{encontrado.hc}</span>
+      {sisInfo && (
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 13px', borderRadius: 11, fontSize: 13, fontWeight: 600, background: sisInfo.afiliado ? '#ecfdf5' : '#fefce8', border: `1px solid ${sisInfo.afiliado ? '#6ee7b7' : '#fde047'}`, color: sisInfo.afiliado ? '#047857' : '#a16207' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            {sisInfo.afiliado
+              ? <path d="M20 6L9 17l-5-5" />
+              : <path d="M12 9v4M12 17h.01M12 3l9 16H3z" />}
+          </svg>
+          <span>
+            {sisInfo.afiliado
+              ? `Afiliado a SIS (${sisInfo.estado})${sisInfo.descripcion ? ` · ${sisInfo.descripcion}` : ''}`
+              : `No registra afiliación activa a SIS${sisInfo.estado ? ` (${sisInfo.estado})` : ''}`}
+          </span>
+        </div>
+      )}
+
+      {buscado && (
+        <div className="gp-card-in" style={{ marginTop: 16, borderRadius: 14, border: esNuevo ? '1px solid #fde68a' : '1px solid #bbf7d0', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '11px 16px', background: '#f0f4ff', cursor: 'pointer', userSelect: 'none' }} onClick={() => setMostrarPaciente(v => !v)}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#263c7a', textTransform: 'uppercase', letterSpacing: '.04em' }}>Datos del paciente</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ color: '#54617f', transform: mostrarPaciente ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}>
+              <path d="M6 9l6 6 6-6" />
+            </svg>
           </div>
-          <div style={{ padding: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13 }}>
-            <div>
-              <div style={{ fontSize: 11, color: '#7a86a1', fontWeight: 600 }}>Nombres y apellidos</div>
-              <div style={{ color: '#07153a', fontWeight: 600 }}>{encontrado.nombres} {encontrado.apellidos}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 11, color: '#7a86a1', fontWeight: 600 }}>Edad / Sexo</div>
-              <div style={{ color: '#07153a' }}>{encontrado.edad} años · {encontrado.sexo}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 11, color: '#7a86a1', fontWeight: 600 }}>Seguro</div>
-              <div style={{ color: '#07153a', display: 'flex', alignItems: 'center', gap: 7 }}>
-                {encontrado.seguro}{encontrado.seguro === 'SIS' && <Badge variant="info">SIS</Badge>}
+          {mostrarPaciente && (
+            <div style={{ padding: 16 }}>
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 14 }}>
+              <TextField label="Apellido paterno" value={apellidoPaterno} onChange={v => { setApellidoPaterno(v); setError('') }} disabled={esNN} placeholder="Apellido paterno" />
+              <TextField label="Apellido materno" value={apellidoMaterno} onChange={v => { setApellidoMaterno(v); setError('') }} disabled={esNN} placeholder="Apellido materno" />
+              <TextField label="Primer nombre" value={primerNombre} onChange={v => { setPrimerNombre(v); setError('') }} disabled={esNN} placeholder="Primer nombre" />
+              <TextField label="Segundo nombre" value={segundoNombre} onChange={v => { setSegundoNombre(v); setError('') }} disabled={esNN} placeholder="Segundo nombre" />
+              <TextField label="Fecha de nacimiento" value={fechaNacimiento} onChange={setFechaNacimiento} type="date" />
+              <SelectField
+                label="Sexo"
+                value={sexo}
+                onChange={v => { setSexo(v); setError('') }}
+                options={[{ value: '', label: 'Seleccionar...' }, ...sexos.map(s => ({ value: String(s.id), label: s.nombre }))]}
+              />
+              <SelectField
+                label="Estado civil"
+                value={estadoCivil}
+                onChange={v => { setEstadoCivil(v); setError('') }}
+                options={[{ value: '', label: 'Seleccionar...' }, ...estadosCivil.map(e => ({ value: String(e.id), label: e.nombre }))]}
+              />
+              <TextField label="Teléfono" value={telefono} onChange={setTelefono} placeholder="9xx xxx xxx" />
+              <SelectField
+                label="Departamento"
+                value={selDepartamento}
+                onChange={v => { setSelDepartamento(v === '' ? '' : Number(v)); if (v === '') { setProvincias([]); setDistritos([]); setCentrosPoblados([]); setSelProvincia(''); setSelDistrito(''); setSelCentroPoblado('') } else void cargarProvincias(Number(v)) }}
+                options={[{ value: '', label: 'Seleccionar...' }, ...departamentos.map(d => ({ value: String(d.id), label: d.nombre }))]}
+              />
+              <SelectField
+                label="Provincia"
+                value={selProvincia}
+                onChange={v => { setSelProvincia(v === '' ? '' : Number(v)); if (v === '') { setDistritos([]); setCentrosPoblados([]); setSelDistrito(''); setSelCentroPoblado('') } else void cargarDistritos(Number(v)) }}
+                options={[{ value: '', label: 'Seleccionar...' }, ...provincias.map(p => ({ value: String(p.id), label: p.nombre }))]}
+              />
+              <SelectField
+                label="Distrito"
+                value={selDistrito}
+                onChange={v => { setSelDistrito(v === '' ? '' : Number(v)); if (v === '') { setCentrosPoblados([]); setSelCentroPoblado('') } else void cargarCentrosPoblados(Number(v)) }}
+                options={[{ value: '', label: 'Seleccionar...' }, ...distritos.map(d => ({ value: String(d.id), label: d.nombre }))]}
+              />
+              <SelectField
+                label="Centro poblado"
+                value={selCentroPoblado}
+                onChange={v => setSelCentroPoblado(v === '' ? '' : Number(v))}
+                options={[{ value: '', label: 'Seleccionar...' }, ...centrosPoblados.map(c => ({ value: String(c.id), label: c.nombre }))]}
+              />
+              <div style={{ gridColumn: 'span 2' }}>
+                <TextField label="Dirección" value={direccion} onChange={setDireccion} placeholder="Dirección completa" />
               </div>
             </div>
-            <div>
-              <div style={{ fontSize: 11, color: '#7a86a1', fontWeight: 600 }}>Teléfono</div>
-              <div style={{ color: '#07153a' }}>{encontrado.telefono}</div>
             </div>
-            <div style={{ gridColumn: '1 / -1' }}>
-              <div style={{ fontSize: 11, color: '#7a86a1', fontWeight: 600 }}>Dirección</div>
-              <div style={{ color: '#07153a' }}>{encontrado.direccion}</div>
+          )}
+        </div>
+      )}
+
+      {paso === 'triaje' && (
+        <div className="gp-card-in" style={{ marginTop: 16, borderRadius: 14, border: '1px solid #d5dceb', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', background: '#f0f4ff', fontSize: 12, fontWeight: 700, color: '#263c7a', textTransform: 'uppercase', letterSpacing: '.04em' }}>
+            Datos del triaje
+          </div>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, alignItems: 'center', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#263c7a' }}>Accidente de tránsito</span>
+                <button
+                  type="button"
+                  onClick={toggleAccidente}
+                  aria-pressed={accidenteTransito}
+                  style={{
+                    width: 52, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', position: 'relative',
+                    background: accidenteTransito ? '#0d9488' : '#d5dceb', transition: 'background .2s',
+                  }}
+                >
+                  <span style={{
+                    position: 'absolute', top: 3, left: accidenteTransito ? 25 : 3, width: 22, height: 22, borderRadius: '50%', background: '#fff', transition: 'left .2s',
+                  }} />
+                </button>
+              </div>
+              <SelectField
+                label="IAFA"
+                value={seguro}
+                disabled
+                onChange={() => {}}
+                options={[{ value: '', label: 'Seleccionar...' }, ...fuentesFinanciamiento.map(s => ({ value: String(s.id), label: s.nombre }))]}
+              />
+              <SelectField
+                label="Cómo llegó"
+                value={comoLlego}
+                onChange={v => setComoLlego(v)}
+                options={[{ value: '', label: 'Seleccionar...' }, ...estadosLlego.map(o => ({ value: String(o.id), label: o.nombre }))]}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 14 }}>
+              <TextField label="F. Cardiaca (lpm)" value={fc} onChange={setFc} disabled={tipoPrioridad === '5'} placeholder="82" />
+              <TextField label="Temp (°C)" value={temp} onChange={setTemp} disabled={tipoPrioridad === '5'} placeholder="36.8" />
+              <TextField label="P.A. (mmHg)" value={pa} onChange={setPa} disabled={tipoPrioridad === '5'} placeholder="120/80" />
+              <TextField label="SAT O₂ (%)" value={spo2} onChange={setSpo2} disabled={tipoPrioridad === '5'} placeholder="98" />
+              <TextField label="F.R. (rpm)" value={fr} onChange={setFr} disabled={tipoPrioridad === '5'} placeholder="18" />
+              <TextField label="FIO₂ (%)" value={fio2} onChange={setFio2} disabled={tipoPrioridad === '5'} placeholder="21" />
+              <TextField label="Peso (kg)" value={peso} onChange={v => { setPeso(v); setImc(calcularImc(v, talla)) }} disabled={tipoPrioridad === '5'} placeholder="70" />
+              <TextField label="Talla (cm)" value={talla} onChange={v => { setTalla(v); setImc(calcularImc(peso, v)) }} disabled={tipoPrioridad === '5'} placeholder="172" />
+              <TextField label="IMC" value={imc} onChange={setImc} disabled placeholder="—" />
+            </div>
+
+            <div style={{ marginTop: 16 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 6 }}>Síntomas principales</label>
+              <textarea
+                value={sintomasPrincipales}
+                onChange={e => setSintomasPrincipales(e.target.value)}
+                placeholder="Describa los síntomas principales del paciente"
+                rows={2}
+                style={{ width: '100%', padding: '10px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14, background: '#f8fafc', color: '#07153a', resize: 'vertical', fontFamily: 'inherit' }}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 14, marginTop: 16 }}>
+              <TextField label="Tiempo de síntomas" value={tiempoSintomas} onChange={setTiempoSintomas} placeholder="Ej: 3" />
+              <SelectField
+                label="Frecuencia"
+                value={frecuenciaTiempo}
+                onChange={v => setFrecuenciaTiempo(v)}
+                options={[{ value: '', label: 'Seleccionar...' }, ...frecuenciaTiempoOptions.map(o => ({ value: o, label: o }))]}
+              />
+              <SelectField
+                label="Escala del dolor"
+                value={escalaDolor}
+                onChange={v => setEscalaDolor(v)}
+                options={[{ value: '', label: 'Seleccionar...' }, ...Array.from({ length: 10 }, (_, i) => i + 1).map(n => ({ value: String(n), label: String(n) }))]}
+              />
+              <SelectField
+                label="Escala de Glasgow"
+                value={escalaGlasgow}
+                onChange={v => setEscalaGlasgow(v)}
+                options={[{ value: '', label: 'Seleccionar...' }, ...Array.from({ length: 13 }, (_, i) => i + 3).map(n => ({ value: String(n), label: String(n) }))]}
+              />
+              <SearchableSelect
+                label="Servicio derivado"
+                value={servicioDerivado}
+                onChange={v => setServicioDerivado(v)}
+                options={servicios.map(s => ({ value: String(s.id), label: s.nombre }))}
+                placeholder="Buscar y seleccionar servicio..."
+              />
+            </div>
+
+            <div style={{ marginTop: 18 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 8 }}>Tipo de prioridad</label>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'nowrap' }}>
+                {tipoPrioridadOptions.map(op => {
+                  const activo = tipoPrioridad === op.id
+                  return (
+                    <button
+                      key={op.id}
+                      type="button"
+                      onClick={() => {
+                        setTipoPrioridad(op.id)
+                        setError('')
+                        if (op.id === '5') {
+                          setFc(''); setTemp(''); setPa(''); setSpo2(''); setFr('')
+                          setFio2(''); setPeso(''); setTalla(''); setImc('')
+                        }
+                      }}
+                      style={{
+                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 8px', borderRadius: 11, cursor: 'pointer', whiteSpace: 'nowrap',
+                        border: activo ? `2px solid ${op.color}` : '1px solid #e0e6f1',
+                        background: activo ? `${op.color}1a` : '#fff', color: '#07153a', fontSize: 12.5, fontWeight: 600,
+                      }}
+                    >
+                      <span style={{ width: 12, height: 12, borderRadius: '50%', background: op.color, flexShrink: 0 }} />
+                      {op.label}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {buscado && !encontrado && (
-        <div className="gp-card-in" style={{ marginTop: 16, borderRadius: 14, border: '1px solid #fde68a', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '11px 16px', background: '#fffbeb' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: '#b45309' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 9v4M12 17h.01M12 3l9 16H3z" /></svg>
-              Paciente nuevo — NO existe registro previo
-            </span>
-            <span style={{ fontFamily: 'monospace', fontSize: 12.5, fontWeight: 700, color: '#07153a', background: '#fff', border: '1px solid #d5dceb', borderRadius: 8, padding: '3px 10px' }}>{hcNueva} (nueva)</span>
-          </div>
-          <div style={{ padding: 16 }}>
-            <p style={{ margin: '0 0 14px', fontSize: 12.5, color: '#7a86a1' }}>
-              No se encontró historia clínica con este documento. Se creará una nueva. Complete los datos básicos del paciente:
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-              <TextField label="Nombres" value={nombres} onChange={v => { setNombres(v); setError('') }} placeholder="Nombres" />
-              <TextField label="Apellidos" value={apellidos} onChange={v => { setApellidos(v); setError('') }} placeholder="Apellidos" />
-              <TextField label="Fecha de nacimiento" value={fechaNacimiento} onChange={setFechaNacimiento} type="date" />
-              <SelectField
-                label="Sexo"
-                value={sexo}
-                onChange={v => { setSexo(v as '' | 'Masculino' | 'Femenino'); setError('') }}
-                options={[{ value: '', label: 'Seleccionar...' }, { value: 'Masculino', label: 'Masculino' }, { value: 'Femenino', label: 'Femenino' }]}
-              />
-              <TextField label="Teléfono" value={telefono} onChange={setTelefono} placeholder="9xx xxx xxx" />
-              <SelectField
-                label="Seguro"
-                value={seguro}
-                onChange={v => { setSeguro(v as '' | Seguro); setError('') }}
-                options={[{ value: '', label: 'Seleccionar...' }, ...seguroOptions.map(s => ({ value: s, label: s }))]}
-              />
-              <div style={{ gridColumn: '1 / -1' }}>
-                <TextField label="Dirección" value={direccion} onChange={setDireccion} placeholder="Dirección completa" />
-              </div>
-            </div>
-          </div>
+      {resultadoMsg && (
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 13px', borderRadius: 11, fontSize: 13, fontWeight: 600, background: resultadoMsg.ok ? '#ecfdf5' : '#fee2e2', border: `1px solid ${resultadoMsg.ok ? '#6ee7b7' : '#fca5a5'}`, color: resultadoMsg.ok ? '#047857' : '#b91c1c' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            {resultadoMsg.ok
+              ? <path d="M20 6L9 17l-5-5" />
+              : <path d="M12 9v4M12 17h.01M12 3l9 16H3z" />}
+          </svg>
+          <span>{resultadoMsg.texto}</span>
         </div>
       )}
 
@@ -505,11 +1079,31 @@ function RegistrarPacienteModal({ onClose, onSubmit }: {
         <button onClick={onClose} className="gp-ghost-btn" style={{ padding: '10px 20px', border: '1px solid #e0e6f1', borderRadius: 11, background: '#fff', fontSize: 14, fontWeight: 600, color: '#54617f', cursor: 'pointer' }}>
           Cancelar
         </button>
-        <button onClick={handleSubmit} className="gp-primary-btn" style={{ padding: '10px 22px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 11, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-          Registrar paciente
-        </button>
+        {paso === 'paciente' ? (
+          <button onClick={handleContinuar} className="gp-primary-btn" style={{ padding: '10px 22px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 11, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+            Continuar con el triaje
+          </button>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            disabled={enviando}
+            className="gp-primary-btn"
+            style={{ padding: '10px 22px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 11, fontSize: 14, fontWeight: 600, cursor: enviando ? 'wait' : 'pointer', opacity: enviando ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            {enviando && <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>}
+            {enviando ? 'Registrando...' : 'Registrar Triaje'}
+          </button>
+        )}
       </div>
     </Modal>
+
+    {reporteId && (
+      <ReporteTriajeModal
+        idTriaje={reporteId}
+        onClose={() => { setReporteId(null); onClose() }}
+      />
+    )}
+    </>
   )
 }
 
@@ -619,19 +1213,81 @@ function TextField({ label, value, onChange, placeholder, type = 'text', disable
   )
 }
 
-function SelectField({ label, value, onChange, options }: {
-  label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[]
+function SelectField({ label, value, onChange, options, disabled }: {
+  label: string; value: string | number; onChange: (v: string) => void; options: { value: string | number; label: string }[]; disabled?: boolean
 }) {
   return (
     <div>
       <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 6 }}>{label}</label>
       <select
-        value={value}
+        value={String(value)}
+        disabled={disabled}
         onChange={e => onChange(e.target.value)}
-        style={{ width: '100%', padding: '10px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14, background: '#f8fafc', color: '#07153a' }}
+        style={{ width: '100%', padding: '10px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14, background: disabled ? '#eef1f6' : '#f8fafc', color: '#07153a' }}
       >
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        {options.map(o => <option key={String(o.value)} value={String(o.value)}>{o.label}</option>)}
       </select>
+    </div>
+  )
+}
+
+function SearchableSelect({ label, options, value, onChange, placeholder = 'Seleccionar...' }: {
+  label: string
+  options: { value: string; label: string }[]
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+}) {
+  const [abierto, setAbierto] = useState(false)
+  const [filtro, setFiltro] = useState('')
+  const seleccionado = options.find(o => o.value === value)
+  const filtrados = options.filter(o => o.label.toLowerCase().includes(filtro.toLowerCase()))
+
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 6 }}>{label}</label>
+      <div style={{ position: 'relative' }}>
+        <button
+          type="button"
+          onClick={() => { setAbierto(v => !v); setFiltro('') }}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+            padding: '10px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14,
+            background: '#f8fafc', color: seleccionado ? '#07153a' : '#94a0bd', cursor: 'pointer', textAlign: 'left',
+          }}
+        >
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{seleccionado ? seleccionado.label : placeholder}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ flexShrink: 0, transform: abierto ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}><path d="M6 9l6 6 6-6" /></svg>
+        </button>
+        {abierto && (
+          <>
+            <div style={{ position: 'relative' }}>
+              <input
+                autoFocus
+                value={filtro}
+                onChange={e => setFiltro(e.target.value)}
+                placeholder="Buscar..."
+                style={{ width: '100%', boxSizing: 'border-box', padding: '9px 14px', border: 'none', outline: 'none', fontSize: 14, background: '#fff' }}
+              />
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a0bd" strokeWidth="2.2" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)' }}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+            </div>
+            <div style={{ borderTop: '1px solid #e8ecf5', maxHeight: 180, overflowY: 'auto' }}>
+              {filtrados.length === 0 && <div style={{ padding: '10px 14px', fontSize: 13, color: '#7a86a1' }}>Sin resultados</div>}
+{filtrados.map(o => (
+                <div
+                  key={o.value}
+                  onClick={() => { onChange(o.value); setAbierto(false) }}
+                  style={{ padding: '9px 14px', fontSize: 13.5, cursor: 'pointer', color: '#07153a', background: o.value === value ? '#eef1fb' : '#fff' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = o.value === value ? '#eef1fb' : '#eef3ff' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = o.value === value ? '#eef1fb' : '#fff' }}
+>
+                  {o.label}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }

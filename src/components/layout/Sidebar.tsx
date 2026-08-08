@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { type Screen } from '../data/navigation'
-import { Logo } from './Logo'
+import { type Screen } from '../../data/navigation'
+import { Logo } from '../ui/Logo'
 
 interface SidebarProps {
   screen: Screen

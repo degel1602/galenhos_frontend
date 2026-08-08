@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { AppointmentStatus } from '../api/types'
+import type { AppointmentStatus } from '../../api/types'
 
 interface BadgeProps {
   variant: 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'blue'
