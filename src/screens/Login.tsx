@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ApiRequestError } from '../api/client'
 import { useAuth } from '../context/AuthContext'
-import { Logo } from '../components/Logo'
+import { Logo } from '../components/ui/Logo'
 
 export function Login() {
   const { login, loginDemo } = useAuth()

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ApiRequestError, api } from '../api/client'
 import type { Appointment } from '../api/types'
-import { appointmentStatusBadge } from '../components/Badge'
+import { appointmentStatusBadge } from '../components/ui/Badge'
 
 const errorMessages: Record<string, string> = {
   INVALID_APPOINTMENT: 'Los datos de la cita no son válidos. Revise pacienteId, doctorId, fechas y motivo.',
