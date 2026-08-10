@@ -4,8 +4,8 @@ import { Topbar } from './Topbar'
 import { Dashboard } from '../../screens/Dashboard'
 import { Pacientes } from '../../screens/Pacientes'
 import { Citas } from '../../screens/Citas'
-import { Triaje } from '../../screens/Triaje'
-import { Admisiones } from '../../screens/Admisiones'
+import { Triaje } from '../../screens/triaje/Triaje'
+import { Admisiones } from '../../screens/admisiones/Admisiones'
 import { Configuracion } from '../../screens/Configuracion'
 
 interface AppShellProps {

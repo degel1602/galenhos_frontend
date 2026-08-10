@@ -1,368 +1,12 @@
-﻿import { useEffect, useState } from 'react'
-import { Modal } from '../components/ui/Modal'
-import { Badge } from '../components/ui/Badge'
-import { getToken } from '../api/client'
-import { ReporteTriajeModal } from '../reports/triaje/ReporteTriaje'
+import { useEffect, useState } from 'react'
+import { Modal } from '../../components/ui/Modal'
+import { ReporteTriajeModal } from '../../reports/triaje/ReporteTriaje'
+import { TextField, SelectField, SearchableSelect } from './formFields'
+import { authHeaders, cargarCatalogo, consultarSis, guardarFiliacionSis } from './api'
+import type { PacienteTriaje, SisAfiliadoData, TipoDocumento, UbicacionItem } from './types'
+import { frecuenciaTiempoOptions, tipoPrioridadOptions } from './types'
 
-function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  const headers: Record<string, string> = { accept: 'application/json', ...extra }
-  const token = getToken()
-  if (token) headers.authorization = `Bearer ${token}`
-  return headers
-}
-
-type TipoDocumento = 'DNI' | 'CE' | 'PAS' | 'SIS' | 'SD'
-type Estado = 'sin-triaje' | 'triado'
-type Prioridad = 'rojo' | 'naranja' | 'amarillo' | 'verde' | 'azul'
-
-interface TriajeEvaluacion {
-  motivo: string
-  pa: string
-  fc: string
-  fr: string
-  temp: string
-  spo2: string
-  prioridad: Prioridad
-}
-
-interface PacienteTriaje {
-  id: string
-  codigo: string
-  hcCodigo: string | null
-  tipoDocumento: TipoDocumento
-  documento: string | null
-  nombre: string
-  seguro: string | null
-  arrivalTs: number
-  estado: Estado
-  evaluacion: TriajeEvaluacion | null
-}
-
-interface RegistroTriaje {
-  idTriaje: number
-  NroDocumento?: string | null
-  Paciente?: string | null
-  fecha_registro?: string
-  Servicio?: string | null
-  TipoGravedad?: string | null
-  IdEstado?: number
-}
-
-const prioridadInfo: Record<Prioridad, { label: string; variant: 'danger' | 'warning' | 'info' | 'success' | 'neutral' }> = {
-  rojo: { label: 'Rojo · Emergencia', variant: 'danger' },
-  naranja: { label: 'Naranja · Muy urgente', variant: 'warning' },
-  amarillo: { label: 'Amarillo · Urgente', variant: 'warning' },
-  verde: { label: 'Verde · Poco urgente', variant: 'success' },
-  azul: { label: 'Azul · No urgente', variant: 'info' },
-}
-
-const frecuenciaTiempoOptions = ['Minutos', 'Horas', 'Días', 'Semanas', 'Meses', 'Años']
-
-const tipoPrioridadOptions: { id: string; label: string; color: string }[] = [
-  { id: '1', label: 'I. Emerg. o Gravedad', color: '#3b82f6' },
-  { id: '2', label: 'II. Urgencia Mayor', color: '#22c55e' },
-  { id: '3', label: 'III. Urgencia Menor', color: '#eab308' },
-  { id: '4', label: 'IV. Patología Aguda Común', color: '#f97316' },
-  { id: '5', label: 'Llegó Cadáver', color: '#ef4444' },
-]
-
-function seedPacientes(): PacienteTriaje[] {
-  const now = Date.now()
-  return [
-    {
-      id: '1', codigo: 'TR-001', hcCodigo: 'HC-198822', tipoDocumento: 'DNI', documento: '45102233',
-      nombre: 'Jorge Luis Quispe Ramos', seguro: 'SIS', arrivalTs: now - 18 * 60_000, estado: 'sin-triaje', evaluacion: null,
-    },
-    {
-      id: '2', codigo: 'TR-002', hcCodigo: 'HC-190044', tipoDocumento: 'DNI', documento: '42678930',
-      nombre: 'Rosa Chumpitaz León', seguro: 'SIS', arrivalTs: now - 9 * 60_000, estado: 'sin-triaje', evaluacion: null,
-    },
-    {
-      id: '3', codigo: 'TR-003', hcCodigo: null, tipoDocumento: 'SD', documento: null,
-      nombre: 'Paciente NN (varón adulto)', seguro: null, arrivalTs: now - 4 * 60_000, estado: 'sin-triaje', evaluacion: null,
-    },
-    {
-      id: '4', codigo: 'TR-004', hcCodigo: 'HC-188213', tipoDocumento: 'DNI', documento: '41556678',
-      nombre: 'Marco Antonio Effio Reyes', seguro: 'Particular', arrivalTs: now - 55 * 60_000, estado: 'triado',
-      evaluacion: { motivo: 'Dolor abdominal', pa: '118/76', fc: '82', fr: '18', temp: '36.8', spo2: '98', prioridad: 'amarillo' },
-    },
-  ]
-}
-
-export function Triaje() {
-  const [pacientes, setPacientes] = useState<PacienteTriaje[]>(seedPacientes)
-  const [referenciasSisPendientes] = useState(1)
-
-  const [showRegistrar, setShowRegistrar] = useState(false)
-  const [pacienteEnTriaje, setPacienteEnTriaje] = useState<PacienteTriaje | null>(null)
-
-  const [fini, setFini] = useState(new Date().toISOString().slice(0, 10))
-  const [ffin, setFfin] = useState(new Date().toISOString().slice(0, 10))
-  const [servicioFiltro, setServicioFiltro] = useState('')
-  const [serviciosTriaje, setServiciosTriaje] = useState<UbicacionItem[]>([])
-  const [triajesRegistrados, setTriajesRegistrados] = useState<RegistroTriaje[]>([])
-  const [buscandoTriajes, setBuscandoTriajes] = useState(false)
-  const [errorTriajes, setErrorTriajes] = useState('')
-  const [reporteSeleccionado, setReporteSeleccionado] = useState<number | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    cargarCatalogo<{ id: number; nombre: string | null }>('/api/v1/servicios/2', i => ({ id: i.id, nombre: (i.nombre ?? '').trim() })).then(list => {
-      if (!cancelled) setServiciosTriaje(list)
-    })
-    return () => { cancelled = true }
-  }, [])
-
-  async function buscarTriajesRegistrados() {
-    setErrorTriajes('')
-    setBuscandoTriajes(true)
-    try {
-      const params = new URLSearchParams({ fini, ffin, derivadoAServicio: servicioFiltro || '-100', idEstado: '-100' })
-      const res = await fetch(`/api/v1/triaje?${params.toString()}`, { headers: authHeaders() })
-      const env = await res.json().catch(() => null)
-      if (!res.ok || !env?.success) {
-        setErrorTriajes(env?.error?.message ?? 'No se pudo obtener los triajes registrados.')
-        setTriajesRegistrados([])
-        return
-      }
-      setTriajesRegistrados((env.data ?? []) as RegistroTriaje[])
-    } catch {
-      setErrorTriajes('No se pudo obtener los triajes registrados.')
-      setTriajesRegistrados([])
-    } finally {
-      setBuscandoTriajes(false)
-    }
-  }
-
-  const enEspera = pacientes.filter(p => p.estado === 'sin-triaje')
-  const triadosHoy = pacientes.filter(p => p.estado === 'triado')
-
-  function handleRegistrarPaciente(nuevo: Omit<PacienteTriaje, 'id' | 'codigo' | 'arrivalTs' | 'estado' | 'evaluacion'>) {
-    const siguiente = pacientes.length + 1
-    setPacientes(prev => [
-      {
-        ...nuevo,
-        id: String(Date.now()),
-        codigo: `TR-${String(siguiente).padStart(3, '0')}`,
-        arrivalTs: Date.now(),
-        estado: 'sin-triaje',
-        evaluacion: null,
-      },
-      ...prev,
-    ])
-    setShowRegistrar(false)
-  }
-
-  function handleGuardarEvaluacion(id: string, evaluacion: TriajeEvaluacion) {
-    setPacientes(prev => prev.map(p => (p.id === id ? { ...p, estado: 'triado', evaluacion } : p)))
-    setPacienteEnTriaje(null)
-  }
-
-  return (
-    <div className="gp-in" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20 }}>
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.14em', color: '#7a86a1', textTransform: 'uppercase' }}>Bandeja en tiempo real</div>
-          <h1 style={{ margin: '4px 0 6px', fontSize: 24, fontWeight: 700, color: '#07153a' }}>Triaje de emergencia</h1>
-          <p style={{ margin: 0, fontSize: 13, color: '#7a86a1', maxWidth: 620, lineHeight: 1.5 }}>
-            Identifica al paciente por su documento, valida si ya existe en el sistema o crea su historia clínica,
-            y registra la evaluación de triaje antes de enviarlo a admisión.
-          </p>
-        </div>
-        <button
-          onClick={() => setShowRegistrar(true)}
-          className="gp-primary-btn"
-          style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '11px 20px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 11, fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-          Registrar Triaje
-        </button>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
-        <StatCard label="En bandeja hoy" value={pacientes.length} unit="pacientes" barColor="#07153a" />
-        <StatCard label="En espera de triaje" value={enEspera.length} unit="pendientes" barColor="#dc2626" />
-        <StatCard label="Triados hoy" value={triadosHoy.length} unit="completados" barColor="#059669" />
-        <StatCard label="Referencias SIS pendientes" value={referenciasSisPendientes} unit="por atender" barColor="#7c3aed" />
-      </div>
-
-      <div style={{ background: '#fff', border: '1px solid #e6eaf2', borderRadius: 16, padding: '18px 20px' }}>
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.14em', color: '#7a86a1', textTransform: 'uppercase' }}>Consulta</div>
-          <h2 style={{ margin: '4px 0 2px', fontSize: 18, fontWeight: 700, color: '#07153a' }}>Triajes registrados</h2>
-          <p style={{ margin: 0, fontSize: 12.5, color: '#7a86a1' }}>Filtre por rango de fechas y servicio de derivación.</p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 12, alignItems: 'end', marginBottom: 16 }}>
-          <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 6 }}>Fecha inicio</label>
-            <input type="date" value={fini} onChange={e => setFini(e.target.value)} style={{ width: '100%', padding: '9px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14, background: '#f8fafc', color: '#07153a' }} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 6 }}>Fecha fin</label>
-            <input type="date" value={ffin} onChange={e => setFfin(e.target.value)} style={{ width: '100%', padding: '9px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14, background: '#f8fafc', color: '#07153a' }} />
-          </div>
-          <SelectField
-            label="Servicio derivado"
-            value={servicioFiltro}
-            onChange={v => setServicioFiltro(v)}
-            options={[{ value: '', label: 'Todos' }, ...serviciosTriaje.map(s => ({ value: String(s.id), label: s.nombre }))]}
-          />
-          <button
-            onClick={buscarTriajesRegistrados}
-            disabled={buscandoTriajes}
-            className="gp-primary-btn"
-            style={{ display: 'flex', alignItems: 'center', gap: 7, height: 42, padding: '0 20px', background: '#263c7a', color: '#fff', border: 'none', borderRadius: 11, fontSize: 14, fontWeight: 600, cursor: buscandoTriajes ? 'wait' : 'pointer', whiteSpace: 'nowrap' }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">{buscandoTriajes ? <path d="M21 12a9 9 0 1 1-6.219-8.56" /> : <circle cx="11" cy="11" r="7" />}{!buscandoTriajes && <path d="M21 21l-4.3-4.3" />}</svg>
-            {buscandoTriajes ? 'Buscando...' : 'Buscar'}
-          </button>
-        </div>
-
-        {errorTriajes && (
-          <div style={{ marginBottom: 12, background: '#fee2e2', border: '1px solid #fca5a5', color: '#b91c1c', fontSize: 13, fontWeight: 500, padding: '10px 13px', borderRadius: 11 }}>
-            {errorTriajes}
-          </div>
-        )}
-
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ textAlign: 'left', color: '#7a86a1', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '.03em' }}>
-                <th style={{ padding: '0 10px 10px' }}>N.º Triaje</th>
-                <th style={{ padding: '0 10px 10px' }}>Documento</th>
-                <th style={{ padding: '0 10px 10px' }}>Paciente</th>
-                <th style={{ padding: '0 10px 10px' }}>Fecha registro</th>
-                <th style={{ padding: '0 10px 10px' }}>Servicio</th>
-                <th style={{ padding: '0 10px 10px' }}>Tipo gravedad</th>
-                <th style={{ padding: '0 10px 10px' }}>Estado</th>
-                <th style={{ padding: '0 10px 10px', textAlign: 'right' }}>Reporte</th>
-              </tr>
-            </thead>
-            <tbody>
-              {triajesRegistrados.length === 0 && (
-                <tr><td colSpan={8} style={{ padding: '20px 10px', color: '#94a0bd', textAlign: 'center' }}>Realice una búsqueda para ver los triajes registrados.</td></tr>
-              )}
-              {triajesRegistrados.map(t => (
-                <tr key={t.idTriaje} className="gp-row" style={{ borderTop: '1px solid #eef1f6' }}>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top', fontWeight: 600, color: '#263c7a' }}>{t.idTriaje}</td>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top', color: '#54617f' }}>{t.NroDocumento ?? '—'}</td>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top', fontWeight: 600, color: '#07153a' }}>{t.Paciente ?? '—'}</td>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top', color: '#54617f' }}>{t.fecha_registro ? new Date(t.fecha_registro).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '—'}</td>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top', color: '#54617f' }}>{t.Servicio ?? 'NO ASIGNADO'}</td>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top', color: '#54617f' }}>{t.TipoGravedad ?? '—'}</td>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top' }}>
-                    <Badge variant={t.IdEstado === 1 ? 'success' : 'neutral'}>{t.IdEstado === 1 ? 'Activo' : 'Otro'}</Badge>
-                  </td>
-                  <td style={{ padding: '12px 10px', verticalAlign: 'top', textAlign: 'right' }}>
-                    <button
-                      onClick={() => setReporteSeleccionado(t.idTriaje)}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#263c7a', color: '#fff', border: 'none', borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8M16 17H8M10 9H8" /></svg>
-                      Reporte
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {showRegistrar && (
-        <RegistrarPacienteModal onClose={() => setShowRegistrar(false)} onSubmit={handleRegistrarPaciente} />
-      )}
-
-      {pacienteEnTriaje && (
-        <EvaluacionTriajeModal
-          paciente={pacienteEnTriaje}
-          onClose={() => setPacienteEnTriaje(null)}
-          onSubmit={evaluacion => handleGuardarEvaluacion(pacienteEnTriaje.id, evaluacion)}
-        />
-      )}
-
-      {reporteSeleccionado && (
-        <ReporteTriajeModal
-          idTriaje={reporteSeleccionado}
-          onClose={() => setReporteSeleccionado(null)}
-        />
-      )}
-    </div>
-  )
-}
-
-function StatCard({ label, value, unit, barColor }: { label: string; value: number; unit: string; barColor: string }) {
-  return (
-    <div style={{ background: '#fff', border: '1px solid #e6eaf2', borderLeft: `4px solid ${barColor}`, borderRadius: 16, padding: '16px 18px' }}>
-      <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.08em', color: '#94a0bd', textTransform: 'uppercase' }}>{label}</div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
-        <span style={{ fontSize: 28, fontWeight: 700, color: '#07153a' }}>{value}</span>
-        <span style={{ fontSize: 12.5, color: '#7a86a1' }}>{unit}</span>
-      </div>
-    </div>
-  )
-}
-
-interface UbicacionItem {
-  id: number
-  nombre: string
-}
-
-async function cargarCatalogo<T>(url: string, map: (item: T) => UbicacionItem): Promise<UbicacionItem[]> {
-  try {
-    const res = await fetch(url, { headers: authHeaders() })
-    if (!res.ok) return []
-    const env = await res.json()
-    const data = (env?.data ?? []) as T[]
-    return data.map(map)
-  } catch {
-    return []
-  }
-}
-
-async function consultarSis(nroDocumento: string, tipo: { nombre: string }): Promise<{
-  afiliado: boolean
-  descripcion?: string
-  estado?: string
-  apePaterno?: string
-  apeMaterno?: string
-  nombres?: string
-  fechaNacimiento?: string
-  genero?: string
-  direccion?: string
-} | null> {
-  const nombre = tipo.nombre.toUpperCase()
-  if (nombre !== 'DNI' && !nombre.includes('EXTRANJER')) return null
-  const strTipoDocumento = nombre.includes('EXTRANJER') ? 3 : 1
-  const res = await fetch(`/api/v1/sis/afiliado/${encodeURIComponent(nroDocumento)}?strTipoDocumento=${strTipoDocumento}&intOpcion=1`, { headers: authHeaders() })
-  const env = await res.json().catch(() => null)
-  const data = env?.data as {
-    estado?: string
-    descTipoSeguro?: string
-    apePaterno?: string
-    apeMaterno?: string
-    nombres?: string
-    fecNacimiento?: string
-    genero?: string
-    direccion?: string
-  } | undefined
-  if (!data?.estado) return null
-  const afiliado = data.estado.toUpperCase() === 'ACTIVO'
-  return {
-    afiliado,
-    descripcion: data.descTipoSeguro ?? '',
-    estado: data.estado,
-    apePaterno: data.apePaterno,
-    apeMaterno: data.apeMaterno,
-    nombres: data.nombres,
-    fechaNacimiento: data.fecNacimiento,
-    genero: data.genero,
-    direccion: data.direccion,
-  }
-}
-
-function RegistrarPacienteModal({ onClose, onSubmit }: {
+export function RegistrarPacienteModal({ onClose, onSubmit }: {
   onClose: () => void
   onSubmit: (nuevo: Omit<PacienteTriaje, 'id' | 'codigo' | 'arrivalTs' | 'estado' | 'evaluacion'>) => void
 }) {
@@ -421,7 +65,8 @@ function RegistrarPacienteModal({ onClose, onSubmit }: {
   const [tipoPrioridad, setTipoPrioridad] = useState('')
   const [servicioDerivado, setServicioDerivado] = useState('')
   const [servicios, setServicios] = useState<UbicacionItem[]>([])
-  const [sisInfo, setSisInfo] = useState<{ afiliado: boolean; descripcion?: string; estado?: string; apePaterno?: string; apeMaterno?: string; nombres?: string; fechaNacimiento?: string; genero?: string; direccion?: string } | null>(null)
+  const [sisInfo, setSisInfo] = useState<SisAfiliadoData | null>(null)
+  const [sisMsg, setSisMsg] = useState<{ ok: boolean; texto: string } | null>(null)
   const [enviando, setEnviando] = useState(false)
   const [resultadoMsg, setResultadoMsg] = useState<{ ok: boolean; texto: string } | null>(null)
 
@@ -679,20 +324,30 @@ function RegistrarPacienteModal({ onClose, onSubmit }: {
       try {
         const sres = await consultarSis(num, tipo)
         setSisInfo(sres)
+        setSisMsg(null)
         setSeguro(seguroPorDefecto(sres?.afiliado ?? null))
+        if (sres) {
+          try {
+            await guardarFiliacionSis(sres)
+            setSisMsg({ ok: true, texto: 'Afiliación SIS guardada correctamente.' })
+          } catch (e) {
+            setSisMsg({ ok: false, texto: e instanceof Error ? e.message : 'No se pudo guardar la afiliación SIS.' })
+          }
+        }
         if (!enBd && !reniecOk && sres) {
           const nombres = (sres.nombres ?? '').trim().toUpperCase().split(/\s+/).filter(Boolean)
           setApellidoPaterno((sres.apePaterno ?? '').trim().toUpperCase())
           setApellidoMaterno((sres.apeMaterno ?? '').trim().toUpperCase())
           setPrimerNombre(nombres[0] ?? '')
           setSegundoNombre(nombres.slice(1).join(' '))
-          if (sres.fechaNacimiento) setFechaNacimiento(sres.fechaNacimiento.slice(0, 10))
+          if (sres.fecNacimiento) setFechaNacimiento(sres.fecNacimiento.slice(0, 10))
           const gen = (sres.genero ?? '').trim().toLowerCase()
           setSexo(gen.startsWith('m') ? sexos.find(s => s.nombre.toLowerCase() === 'masculino')?.id?.toString() ?? '' : gen.startsWith('f') ? sexos.find(s => s.nombre.toLowerCase() === 'femenino')?.id?.toString() ?? '' : '')
           if (sres.direccion) setDireccion(sres.direccion.trim())
         }
       } catch {
         setSisInfo(null)
+        setSisMsg(null)
         setSeguro(seguroPorDefecto(null))
       }
     } catch {
@@ -872,9 +527,20 @@ function RegistrarPacienteModal({ onClose, onSubmit }: {
           </svg>
           <span>
             {sisInfo.afiliado
-              ? `Afiliado a SIS (${sisInfo.estado})${sisInfo.descripcion ? ` · ${sisInfo.descripcion}` : ''}`
+              ? `Afiliado a SIS (${sisInfo.estado})${sisInfo.descTipoSeguro ? ` · ${sisInfo.descTipoSeguro}` : ''}`
               : `No registra afiliación activa a SIS${sisInfo.estado ? ` (${sisInfo.estado})` : ''}`}
           </span>
+        </div>
+      )}
+
+      {sisMsg && (
+        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 13px', borderRadius: 11, fontSize: 13, fontWeight: 600, background: sisMsg.ok ? '#ecfdf5' : '#fee2e2', border: `1px solid ${sisMsg.ok ? '#6ee7b7' : '#fca5a5'}`, color: sisMsg.ok ? '#047857' : '#b91c1c' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            {sisMsg.ok
+              ? <path d="M20 6L9 17l-5-5" />
+              : <path d="M12 9v4M12 17h.01M12 3l9 16H3z" />}
+          </svg>
+          <span>{sisMsg.texto}</span>
         </div>
       )}
 
@@ -1104,190 +770,5 @@ function RegistrarPacienteModal({ onClose, onSubmit }: {
       />
     )}
     </>
-  )
-}
-
-function EvaluacionTriajeModal({ paciente, onClose, onSubmit }: {
-  paciente: PacienteTriaje
-  onClose: () => void
-  onSubmit: (evaluacion: TriajeEvaluacion) => void
-}) {
-  const yaEvaluado = paciente.estado === 'triado' && paciente.evaluacion
-  const [motivo, setMotivo] = useState(paciente.evaluacion?.motivo ?? '')
-  const [pa, setPa] = useState(paciente.evaluacion?.pa ?? '')
-  const [fc, setFc] = useState(paciente.evaluacion?.fc ?? '')
-  const [fr, setFr] = useState(paciente.evaluacion?.fr ?? '')
-  const [temp, setTemp] = useState(paciente.evaluacion?.temp ?? '')
-  const [spo2, setSpo2] = useState(paciente.evaluacion?.spo2 ?? '')
-  const [prioridad, setPrioridad] = useState<Prioridad>(paciente.evaluacion?.prioridad ?? 'amarillo')
-  const [error, setError] = useState('')
-
-  function handleSubmit() {
-    if (!motivo.trim() || !pa.trim() || !fc.trim() || !fr.trim() || !temp.trim() || !spo2.trim()) {
-      setError('Complete el motivo de consulta y todos los signos vitales.')
-      return
-    }
-    onSubmit({ motivo, pa, fc, fr, temp, spo2, prioridad })
-  }
-
-  return (
-    <Modal title={`Evaluación de triaje · ${paciente.nombre}`} subtitle={`${paciente.codigo}${paciente.hcCodigo ? ` · ${paciente.hcCodigo}` : ''}`} onClose={onClose} width={620}>
-      <div style={{ marginBottom: 14 }}>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 6 }}>Motivo de consulta</label>
-        <textarea
-          value={motivo}
-          onChange={e => { setMotivo(e.target.value); setError('') }}
-          placeholder="Describa el motivo de la atención"
-          rows={2}
-          disabled={!!yaEvaluado}
-          style={{ width: '100%', padding: '10px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14, background: yaEvaluado ? '#f3f5fb' : '#f8fafc', color: '#07153a', resize: 'vertical', fontFamily: 'inherit' }}
-        />
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-        <TextField label="Presión arterial" value={pa} onChange={v => { setPa(v); setError('') }} placeholder="120/80" disabled={!!yaEvaluado} />
-        <TextField label="Frec. cardiaca (lpm)" value={fc} onChange={v => { setFc(v); setError('') }} placeholder="82" disabled={!!yaEvaluado} />
-        <TextField label="Frec. respiratoria (rpm)" value={fr} onChange={v => { setFr(v); setError('') }} placeholder="18" disabled={!!yaEvaluado} />
-        <TextField label="Temperatura (°C)" value={temp} onChange={v => { setTemp(v); setError('') }} placeholder="36.8" disabled={!!yaEvaluado} />
-        <TextField label="SpO₂ (%)" value={spo2} onChange={v => { setSpo2(v); setError('') }} placeholder="98" disabled={!!yaEvaluado} />
-      </div>
-
-      <div style={{ marginTop: 16 }}>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 8 }}>Prioridad de atención</label>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {(Object.keys(prioridadInfo) as Prioridad[]).map(key => (
-            <button
-              key={key}
-              onClick={() => !yaEvaluado && setPrioridad(key)}
-              disabled={!!yaEvaluado}
-              className={yaEvaluado ? '' : 'gp-switch-btn'}
-              style={{
-                padding: '8px 14px', borderRadius: 10, fontSize: 12.5, fontWeight: 600, cursor: yaEvaluado ? 'default' : 'pointer',
-                border: prioridad === key ? '2px solid #0f2a5c' : '1px solid #e0e6f1',
-                background: prioridad === key ? '#eef1fb' : '#fff',
-                color: '#07153a',
-              }}
-            >
-              {prioridadInfo[key].label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {error && (
-        <div style={{ marginTop: 16, background: '#fee2e2', border: '1px solid #fca5a5', color: '#b91c1c', fontSize: 13, fontWeight: 500, padding: '10px 13px', borderRadius: 11 }}>
-          {error}
-        </div>
-      )}
-
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 22 }}>
-        <button onClick={onClose} className="gp-ghost-btn" style={{ padding: '10px 20px', border: '1px solid #e0e6f1', borderRadius: 11, background: '#fff', fontSize: 14, fontWeight: 600, color: '#54617f', cursor: 'pointer' }}>
-          {yaEvaluado ? 'Cerrar' : 'Cancelar'}
-        </button>
-        {!yaEvaluado && (
-          <button onClick={handleSubmit} className="gp-primary-btn" style={{ padding: '10px 22px', background: '#263c7a', color: '#fff', border: 'none', borderRadius: 11, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-            Guardar y enviar a admisión
-          </button>
-        )}
-      </div>
-    </Modal>
-  )
-}
-
-function TextField({ label, value, onChange, placeholder, type = 'text', disabled, onEnter }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string; disabled?: boolean; onEnter?: () => void
-}) {
-  return (
-    <div>
-      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 6 }}>{label}</label>
-      <input
-        type={type}
-        value={value}
-        disabled={disabled}
-        onChange={e => onChange(e.target.value)}
-        onKeyDown={e => e.key === 'Enter' && onEnter?.()}
-        placeholder={placeholder}
-        style={{ width: '100%', padding: '10px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14, background: disabled ? '#f3f5fb' : '#f8fafc', color: '#07153a' }}
-      />
-    </div>
-  )
-}
-
-function SelectField({ label, value, onChange, options, disabled }: {
-  label: string; value: string | number; onChange: (v: string) => void; options: { value: string | number; label: string }[]; disabled?: boolean
-}) {
-  return (
-    <div>
-      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 6 }}>{label}</label>
-      <select
-        value={String(value)}
-        disabled={disabled}
-        onChange={e => onChange(e.target.value)}
-        style={{ width: '100%', padding: '10px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14, background: disabled ? '#eef1f6' : '#f8fafc', color: '#07153a' }}
-      >
-        {options.map(o => <option key={String(o.value)} value={String(o.value)}>{o.label}</option>)}
-      </select>
-    </div>
-  )
-}
-
-function SearchableSelect({ label, options, value, onChange, placeholder = 'Seleccionar...' }: {
-  label: string
-  options: { value: string; label: string }[]
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-}) {
-  const [abierto, setAbierto] = useState(false)
-  const [filtro, setFiltro] = useState('')
-  const seleccionado = options.find(o => o.value === value)
-  const filtrados = options.filter(o => o.label.toLowerCase().includes(filtro.toLowerCase()))
-
-  return (
-    <div>
-      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#54617f', marginBottom: 6 }}>{label}</label>
-      <div style={{ position: 'relative' }}>
-        <button
-          type="button"
-          onClick={() => { setAbierto(v => !v); setFiltro('') }}
-          style={{
-            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-            padding: '10px 14px', border: '1px solid #d5dceb', borderRadius: 11, fontSize: 14,
-            background: '#f8fafc', color: seleccionado ? '#07153a' : '#94a0bd', cursor: 'pointer', textAlign: 'left',
-          }}
-        >
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{seleccionado ? seleccionado.label : placeholder}</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ flexShrink: 0, transform: abierto ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}><path d="M6 9l6 6 6-6" /></svg>
-        </button>
-        {abierto && (
-          <>
-            <div style={{ position: 'relative' }}>
-              <input
-                autoFocus
-                value={filtro}
-                onChange={e => setFiltro(e.target.value)}
-                placeholder="Buscar..."
-                style={{ width: '100%', boxSizing: 'border-box', padding: '9px 14px', border: 'none', outline: 'none', fontSize: 14, background: '#fff' }}
-              />
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a0bd" strokeWidth="2.2" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)' }}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
-            </div>
-            <div style={{ borderTop: '1px solid #e8ecf5', maxHeight: 180, overflowY: 'auto' }}>
-              {filtrados.length === 0 && <div style={{ padding: '10px 14px', fontSize: 13, color: '#7a86a1' }}>Sin resultados</div>}
-{filtrados.map(o => (
-                <div
-                  key={o.value}
-                  onClick={() => { onChange(o.value); setAbierto(false) }}
-                  style={{ padding: '9px 14px', fontSize: 13.5, cursor: 'pointer', color: '#07153a', background: o.value === value ? '#eef1fb' : '#fff' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = o.value === value ? '#eef1fb' : '#eef3ff' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = o.value === value ? '#eef1fb' : '#fff' }}
->
-                  {o.label}
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
   )
 }

@@ -11,7 +11,6 @@ interface ModalProps {
 export function Modal({ title, subtitle, onClose, children, width = 640 }: ModalProps) {
   return (
     <div
-      onClick={onClose}
       style={{ position: 'fixed', inset: 0, background: 'rgba(7,21,58,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 100 }}
     >
       <div

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Modal } from '../../components/ui/Modal'
 import { getStoredUsername, getToken } from '../../api/client'
+import { imprimirHtml } from '../printUtils'
 
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
   const headers: Record<string, string> = { accept: 'application/json', ...extra }
@@ -111,10 +112,13 @@ export function ReporteTriajeModal({ idTriaje, onClose }: { idTriaje: number; on
     const v = (x: string | number | null | undefined) => (x === null || x === undefined || x === '' ? '—' : String(x))
     const celda = (value: string | number | null | undefined, centro = false) =>
       `<td style="border:1px solid #000;font-size:10px;text-align:${centro ? 'center' : 'left'};text-transform:uppercase;padding:2px 5px">${v(value)}</td>`
+    const celdaSpan = (n: number, value: string | number | null | undefined, centro = false) =>
+      `<td colspan="${n}" style="border:1px solid #000;font-size:10px;text-align:${centro ? 'center' : 'left'};text-transform:uppercase;padding:2px 5px">${v(value)}</td>`
     const etiqueta = (t: string) => `<td style="background:#cccccc;border:1px solid #000;font-size:10px;text-align:center">${t}</td>`
 
     const tmpl = `<!doctype html><html><head><meta charset="utf-8"><title>Reporte de Triaje N° ${idTriaje}</title>
       <style>
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         @page { margin: 1cm; font-family: Arial; }
         body { font-family: Arial, sans-serif; margin: 1cm; color: #000; }
         table { width: 100%; border-collapse: collapse; }
@@ -132,22 +136,23 @@ export function ReporteTriajeModal({ idTriaje, onClose }: { idTriaje: number; on
           <tr><td style="text-align:center">Telef.: ${institucion?.telefono ?? '—'}</td></tr>
           <tr><td colspan="35">&nbsp;</td></tr>
         </table>
-        <table style="width:100%;font-size:11px">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
           <tr>
-            ${etiqueta('N° DOCUMENTO')} ${celda(c.NroDocumento, false)} ${etiqueta('N° DE TRIAJE')} ${celda(c.idTriaje ?? idTriaje, true)} ${etiqueta('FUEN. FIN')} ${celda(c.fuentefinanciamiento, true)}
+            ${etiqueta('N° DOCUMENTO')} ${celdaSpan(3, c.NroDocumento, false)} ${etiqueta('N° DE TRIAJE')} ${celda(c.idTriaje ?? idTriaje, true)} ${etiqueta('FUEN. FIN')} ${celda(c.fuentefinanciamiento, true)}
           </tr>
-          <tr>${etiqueta('PACIENTE')} ${celda(c.Paciente, false)}</tr>
+          <tr>${etiqueta('PACIENTE')} ${celdaSpan(7, c.Paciente, false)}</tr>
           <tr>
-            ${etiqueta('F.NACIMIENTO')} ${celda(formatFechaReporte(c.FechaNacimiento), false)}
-            ${etiqueta('ESTADO CIVIL')} ${celda(c.EstadoCivil, true)}
-            ${etiqueta('SEXO')} ${celda(c.Sexo, true)}
+            ${etiqueta('F.NACIMIENTO')} ${celdaSpan(2, formatFechaReporte(c.FechaNacimiento), false)}
+            ${etiqueta('ESTADO CIVIL')} ${celdaSpan(2, c.EstadoCivil, true)}
+            ${etiqueta('SEXO')} ${celdaSpan(2, c.Sexo, true)}
           </tr>
           <tr>
-            ${etiqueta('DIRECCIÓN')} ${celda(c.Direccion ? (c.Direccion + (c.Distrito ? ', ' + c.Distrito : '')) : '—', false)}
             ${etiqueta('EDAD')} ${celda(c.Edad, true)}
+            ${etiqueta('DIRECCIÓN')} ${celdaSpan(5, c.Direccion ? (c.Direccion + (c.Distrito ? ', ' + c.Distrito : '')) : '—', false)}
           </tr>
-          <tr><td colspan="35"><br></td></tr>
-          <tr><td colspan="35" style="border:1px solid #000;background:#cccccc;text-align:center;font-size:6.5px;font-weight:bold">FUNCIONES VITALES</td></tr>
+        </table>
+        <table style="width:100%;border-collapse:collapse;margin-top:10px">
+          <tr><td colspan="8" style="border:1px solid #000;background:#cccccc;text-align:center;font-size:6.5px;font-weight:bold">FUNCIONES VITALES</td></tr>
           <tr>
             ${['TEM.','P.A.','F.R.','F.C.','PESO','TALLA','IMC','GLASGOW / DOLOR'].map(h => etiqueta(h)).join('')}
           </tr>
@@ -161,27 +166,23 @@ export function ReporteTriajeModal({ idTriaje, onClose }: { idTriaje: number; on
             ${celda(decodificarBase64Reporte(c.IMC), true)}
             ${celda((c.escala_glasgow ?? '—') + ' / ' + (c.escala_dolor ?? '—'), true)}
           </tr>
-          <tr><td colspan="35"><br></td></tr>
-          <tr><td colspan="35" style="border:1px solid #000;background:#cccccc;text-align:center;font-size:6.5px"><b>MOTIVO DE CONSULTA</b></td></tr>
+        </table>
+        <table style="width:100%;border-collapse:collapse;margin-top:10px">
+          <tr><td colspan="8" style="border:1px solid #000;background:#cccccc;text-align:center;font-size:6.5px"><b>MOTIVO DE CONSULTA</b></td></tr>
           <tr>
-            ${etiqueta('Síntomas principales')} ${celda(c.sintoma_principal, false)}
+            ${etiqueta('Síntomas principales')} ${celdaSpan(5, c.sintoma_principal, false)}
             ${etiqueta('Tiempo de evolución')} ${celda((c.tiempo_evolucion_cantidad ?? '') + ' ' + (c.tiempo_evolucion_unidad ?? ''), true)}
           </tr>
-          <tr><td colspan="35"><br></td></tr>
-          <tr><td colspan="35" style="border:1px solid #000;background:#cccccc;text-align:center;font-size:11px"><b>CLASIFICACIÓN Y DERIVACIÓN</b></td></tr>
+        </table>
+        <table style="width:100%;border-collapse:collapse;margin-top:10px">
+          <tr><td colspan="8" style="border:1px solid #000;background:#cccccc;text-align:center;font-size:11px"><b>CLASIFICACIÓN Y DERIVACIÓN</b></td></tr>
           <tr>
-            ${etiqueta('Tipo de gravedad')} ${celda(c.Gravedad, false)}
-            ${etiqueta('Servicio')} ${celda(c.Servicio, true)}
+            ${etiqueta('Tipo de gravedad')} ${celdaSpan(3, c.Gravedad, false)}
+            ${etiqueta('Servicio')} ${celdaSpan(3, c.Servicio, true)}
           </tr>
         </table>
       </body></html>`
-    const win = window.open('', '_blank', 'width=820,height=1000')
-    if (win) {
-      win.document.write(tmpl)
-      win.document.close()
-      win.focus()
-      setTimeout(() => win.print(), 300)
-    }
+    imprimirHtml(tmpl)
   }
 
   return (
@@ -236,13 +237,9 @@ export function ReporteTriajeModal({ idTriaje, onClose }: { idTriaje: number; on
               </tr>
               <tr>
                 <td style={tdLabel}>EDAD</td>
-                <td style={tdValue} colSpan={3}>{cabecera?.Edad ?? '—'}</td>
-                <td style={tdLabel}>TELÉFONO</td>
-                <td style={tdValueLeft} colSpan={4}>{cabecera?.Telefono ?? '—'}</td>
-              </tr>
-              <tr>
+                <td style={tdValue}>{cabecera?.Edad ?? '—'}</td>
                 <td style={tdLabel}>DIRECCIÓN</td>
-                <td style={tdValueLeft} colSpan={7}>{cabecera?.Direccion ?? '—'}{cabecera?.Distrito ? `, ${cabecera.Distrito}` : ''}</td>
+                <td style={tdValueLeft} colSpan={5}>{cabecera?.Direccion ?? '—'}{cabecera?.Distrito ? `, ${cabecera.Distrito}` : ''}</td>
               </tr>
 
               <tr><td colSpan={8} style={{ height: 8 }}>&nbsp;</td></tr>
