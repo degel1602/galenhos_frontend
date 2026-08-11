@@ -1,0 +1,96 @@
+<div class="gp-in" style="display: flex; flex-direction: column; gap: 14px; max-width: 1200px; margin: 0 auto;">
+  
+  <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
+    <div style="font-size: 14px; font-weight: 600; color: #07153a; margin-bottom: 14px;">Búsqueda de pacientes</div>
+    
+    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+      <label style="display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 12px; font-weight: 600; color: #54617f;">Documento</span>
+        <input [(ngModel)]="filtros.documento" (keydown.enter)="buscarPacientes()" placeholder="DNI, CE, etc." style="padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc;" />
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 12px; font-weight: 600; color: #54617f;">Historia Clínica</span>
+        <input [(ngModel)]="filtros.historiaClinica" (keydown.enter)="buscarPacientes()" placeholder="Nro de H.C." style="padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc;" />
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 12px; font-weight: 600; color: #54617f;">Apellido Paterno</span>
+        <input [(ngModel)]="filtros.apellidoPaterno" (keydown.enter)="buscarPacientes()" placeholder="Paterno" style="padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc;" />
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 12px; font-weight: 600; color: #54617f;">Apellido Materno</span>
+        <input [(ngModel)]="filtros.apellidoMaterno" (keydown.enter)="buscarPacientes()" placeholder="Materno" style="padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc;" />
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 12px; font-weight: 600; color: #54617f;">Nombres</span>
+        <input [(ngModel)]="filtros.nombres" (keydown.enter)="buscarPacientes()" placeholder="Nombres" style="padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc;" />
+      </label>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end;">
+      <button (click)="limpiarFiltros()" class="gp-ghost-btn" style="padding: 9px 18px; border: 1px solid #e0e6f1; border-radius: 11px; background: #fff; font-size: 13px; font-weight: 600; color: #54617f; cursor: pointer;">Limpiar</button>
+      <button (click)="buscarPacientes()" [disabled]="cargando" class="gp-primary-btn" style="padding: 9px 18px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer;">Buscar</button>
+      <button (click)="abrirNuevoPaciente()" class="gp-primary-btn" style="padding: 9px 18px; background: #059669; color: #fff; border: none; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer;">Nuevo Paciente</button>
+    </div>
+  </div>
+
+  @if (error) {
+    <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+      {{ error }}
+    </div>
+  }
+
+  <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; overflow: hidden;">
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <thead>
+          <tr style="background: #f8fafc; border-bottom: 1px solid #e6eaf2;">
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f;">Documento</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f;">H.C.</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f;">Paciente</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f;">F. Nacimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (cargando) {
+            <tr><td colspan="4" style="padding: 24px; text-align: center; color: #7a86a1;">Cargando...</td></tr>
+          } @else if (pacientes.length === 0) {
+            <tr><td colspan="4" style="padding: 24px; text-align: center; color: #7a86a1;">No se encontraron pacientes.</td></tr>
+          } @else {
+            @for (p of pacientes; track p.patientId) {
+              <tr style="border-bottom: 1px solid #e6eaf2;">
+                <td style="padding: 12px 16px; color: #07153a;">{{ p.documentNumber }}</td>
+                <td style="padding: 12px 16px; color: #07153a;">{{ p.historyNumber }}</td>
+                <td style="padding: 12px 16px; color: #07153a; font-weight: 500;">
+                  {{ p.paternalSurname }} {{ p.maternalSurname }}, {{ p.firstName }} {{ p.secondName }}
+                </td>
+                <td style="padding: 12px 16px; color: #07153a;">{{ p.dateOfBirth }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPaginas > 1) {
+      <div style="padding: 12px 16px; border-top: 1px solid #e6eaf2; display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #7a86a1;">
+        <div>Mostrando página {{ paginaActual }} de {{ totalPaginas }} ({{ totalRegistros }} registros)</div>
+        <div style="display: flex; gap: 6px;">
+          <button [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)" style="padding: 6px 12px; border: 1px solid #d5dceb; border-radius: 8px; background: #fff; cursor: pointer;">Anterior</button>
+          <button [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)" style="padding: 6px 12px; border: 1px solid #d5dceb; border-radius: 8px; background: #fff; cursor: pointer;">Siguiente</button>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (modalAbierto) {
+    <ventana-modal titulo="Registrar Nuevo Paciente" (alCerrar)="cerrarModal()">
+      <div style="padding: 20px; font-size: 14px; color: #54617f;">
+        <p>El formulario de registro completo será implementado en un componente separado para mantener la cohesión del código.</p>
+        <button (click)="cerrarModal()" class="gp-primary-btn" style="margin-top: 10px; padding: 10px 22px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-weight: 600; cursor: pointer;">
+          Entendido
+        </button>
+      </div>
+    </ventana-modal>
+  }
+
+</div>
