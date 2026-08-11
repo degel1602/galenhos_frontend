@@ -1,0 +1,97 @@
+<div class="gp-in" style="display: flex; flex-direction: column; gap: 18px;">
+  <!-- Agendar Cita -->
+  <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
+    <div style="font-size: 14px; font-weight: 600; color: #07153a; margin-bottom: 14px;">Agendar cita</div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+      <div>
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">ID del paciente</label>
+        <input type="text" [(ngModel)]="agendarState.patientId" placeholder="uuid del paciente" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">ID del médico</label>
+        <input type="text" [(ngModel)]="agendarState.doctorId" placeholder="uuid del médico" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Inicio</label>
+        <input type="datetime-local" [(ngModel)]="agendarState.startsAt" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Fin</label>
+        <input type="datetime-local" [(ngModel)]="agendarState.endsAt" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+      </div>
+    </div>
+
+    <div style="margin-top: 14px;">
+      <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Motivo</label>
+      <textarea [(ngModel)]="agendarState.reason" placeholder="Motivo de la consulta" rows="2" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a; resize: vertical; font-family: inherit;"></textarea>
+    </div>
+
+    @if (agendarState.error) {
+      <div style="margin-top: 14px; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+        {{ agendarState.error }}
+      </div>
+    }
+
+    @if (agendarState.created) {
+      <div class="gp-card-in" style="margin-top: 14px; padding: 14px; border-radius: 12px; background: #f0fdf4; border: 1px solid #bbf7d0;">
+        <div style="font-size: 13px; font-weight: 600; color: #07153a; margin-bottom: 4px;">Cita agendada correctamente</div>
+        <div style="font-size: 12px; color: #54617f;">ID: {{ agendarState.created.id }}</div>
+      </div>
+    }
+
+    <button
+      (click)="handleAgendarSubmit()"
+      [disabled]="agendarState.loading"
+      class="gp-primary-btn"
+      style="margin-top: 16px; padding: 11px 24px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer;"
+    >
+      {{ agendarState.loading ? 'Agendando…' : 'Agendar cita' }}
+    </button>
+  </div>
+
+  <!-- Buscar Cita -->
+  <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
+    <div style="font-size: 14px; font-weight: 600; color: #07153a; margin-bottom: 14px;">Buscar cita por ID</div>
+
+    <div style="display: flex; gap: 10px;">
+      <input
+        [(ngModel)]="buscarState.id"
+        (input)="buscarState.error = ''"
+        (keydown.enter)="handleBuscar()"
+        placeholder="uuid de la cita"
+        style="flex: 1; max-width: 360px; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;"
+      />
+      <button
+        (click)="handleBuscar()"
+        [disabled]="buscarState.loading"
+        class="gp-primary-btn"
+        style="padding: 10px 22px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer;"
+      >
+        {{ buscarState.loading ? 'Buscando…' : 'Buscar' }}
+      </button>
+    </div>
+
+    @if (buscarState.error) {
+      <div style="margin-top: 14px; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+        {{ buscarState.error }}
+      </div>
+    }
+
+    @if (buscarState.appointment) {
+      <div class="gp-card-in" style="margin-top: 14px; padding: 16px; border-radius: 12px; background: #f7faff; border: 1px solid #dbe3f4;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <span style="font-size: 13px; font-weight: 600; color: #07153a;">Cita {{ buscarState.appointment.id }}</span>
+          <etiqueta [variante]="getStatusBadgeType(buscarState.appointment.status)">{{ buscarState.appointment.status }}</etiqueta>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12.5px; color: #54617f;">
+          <div><strong style="color: #07153a;">Paciente:</strong> {{ buscarState.appointment.patientId }}</div>
+          <div><strong style="color: #07153a;">Médico:</strong> {{ buscarState.appointment.doctorId }}</div>
+          <div><strong style="color: #07153a;">Inicio:</strong> {{ buscarState.appointment.slot.startsAt | date:'short' }}</div>
+          <div><strong style="color: #07153a;">Fin:</strong> {{ buscarState.appointment.slot.endsAt | date:'short' }}</div>
+          <div style="grid-column: 1 / -1;"><strong style="color: #07153a;">Motivo:</strong> {{ buscarState.appointment.reason }}</div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

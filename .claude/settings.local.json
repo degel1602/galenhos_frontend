@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(aws sts *)",
-      "Bash(docker info *)",
-      "Bash(aws ecr *)"
-    ]
-  }
-}
