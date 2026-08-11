@@ -1,0 +1,90 @@
+<div class="gp-in" style="display: flex; flex-direction: column; gap: 18px;">
+  <div>
+    <div style="font-size: 11px; font-weight: 700; letter-spacing: .14em; color: #7a86a1; text-transform: uppercase;">Bandeja de admisión</div>
+    <h1 style="margin: 4px 0 6px; font-size: 24px; font-weight: 700; color: #07153a;">Pacientes post-triaje sin admisión</h1>
+    <p style="margin: 0; font-size: 13px; color: #7a86a1; max-width: 640px; line-height: 1.5;">
+      Listado de pacientes ya triados que aún no tienen admisión registrada. Filtre por fecha, paciente,
+      departamento, especialidad o consultorio para localizar la bandeja.
+    </p>
+  </div>
+
+  <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
+    <div style="display: grid; grid-template-columns: 150px 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+      <div>
+        <label for="fechaAdmision" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Fecha</label>
+        <input id="fechaAdmision" type="date" [(ngModel)]="fecha" style="width: 100%; padding: 9px 12px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;" />
+      </div>
+
+      <div>
+        <label for="pacienteAdmision" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Paciente</label>
+        <input
+          id="pacienteAdmision"
+          [(ngModel)]="filtro"
+          (keydown.enter)="handleBuscar()"
+          placeholder="Buscar por nombre o documento..."
+          style="width: 100%; padding: 10px 14px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;"
+        />
+      </div>
+
+      <div>
+        <label for="departamentoAdmision" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Departamento</label>
+        <select id="departamentoAdmision" [(ngModel)]="idDepartamento" style="width: 100%; padding: 10px 12px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;">
+          <option value="0">Todos</option>
+          @for (d of departamentos; track d.id) {
+            <option [value]="d.id">{{ d.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label for="especialidadAdmision" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Especialidad</label>
+        <select id="especialidadAdmision" [(ngModel)]="idEspecialidad" style="width: 100%; padding: 10px 12px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;">
+          <option value="0">Todas</option>
+          @for (e of especialidades; track e.id) {
+            <option [value]="e.id">{{ e.nombre }}</option>
+          }
+        </select>
+      </div>
+      
+      <div>
+        <label for="servicioAdmision" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Servicio</label>
+        <select id="servicioAdmision" [(ngModel)]="idServicio" style="width: 100%; padding: 10px 12px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;">
+          <option value="0">Todos</option>
+          @for (s of servicios; track s.id) {
+            <option [value]="s.id">{{ s.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <button
+        (click)="handleBuscar()"
+        [disabled]="cargando"
+        class="gp-primary-btn"
+        style="padding: 10px 22px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 13.5px; font-weight: 600; cursor: pointer; height: 38px; display: flex; align-items: center;"
+      >
+        {{ cargando ? 'Buscando…' : 'Buscar' }}
+      </button>
+    </div>
+  </div>
+
+  @if (error) {
+    <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+      {{ error }}
+    </div>
+  }
+
+  @if (mensajeExito) {
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+      {{ mensajeExito }}
+    </div>
+  }
+
+  <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; overflow: hidden;">
+    <div style="padding: 18px 20px; border-bottom: 1px solid #e6eaf2; display: flex; align-items: center; justify-content: space-between;">
+      <div style="font-size: 14px; font-weight: 600; color: #07153a;">Resultados</div>
+    </div>
+    <div style="padding: 24px; text-align: center; color: #7a86a1;">
+      Módulo en construcción (Migración a Angular). Utilice el botón "Buscar" para listar los pacientes pendientes de admisión una vez implementado el API.
+    </div>
+  </div>
+</div>

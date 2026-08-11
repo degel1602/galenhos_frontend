@@ -1,70 +1,59 @@
-# GALENOS PRO — Frontend
+# FrontGalenos
 
-Frontend en React + TypeScript + Vite + Tailwind para el sistema hospitalario **GALENOS PRO**, consumiendo la REST API en Go de [`galenos_backend`](../galenos_backend).
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.3.
 
-Reutiliza la identidad visual (paleta navy/blue/sky, tipografía Poppins, layout de sidebar + topbar) del proyecto SEIDOR SSA, adaptada a la marca y al dominio de citas médicas.
+## Development server
 
-## Stack
-
-- React 18 + TypeScript
-- Vite 5
-- Tailwind CSS 3 (paleta `navy`, `blue`, `sky` definida en `tailwind.config.js`)
-- Sin librerías de routing/estado: navegación por `useState` y contexto de React (`AuthContext`), igual que el proyecto de referencia.
-
-## Requisitos
-
-- Node.js 18+
-- La API de `galenos_backend` corriendo (ver su propio README) con `JWT_SECRET`, `API_USERNAME` y `API_PASSWORD` configurados.
-
-## Configuración
-
-Copia `.env.example` a `.env`:
+To start a local development server, run:
 
 ```bash
-cp .env.example .env
+ng serve
 ```
 
-| Variable | Descripción | Default |
-|---|---|---|
-| `VITE_API_BASE_URL` | URL base de la API Go | `http://localhost:8080` |
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-La URL también puede cambiarse en caliente desde la pantalla **Configuración** de la app (se guarda en `localStorage` y tiene prioridad sobre la variable de entorno).
+## Code scaffolding
 
-## Cómo correr
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
 ```bash
-npm install
-npm run dev
+ng generate component component-name
 ```
 
-Abre `http://localhost:5173`. Inicia sesión con las credenciales configuradas en el backend (`API_USERNAME` / `API_PASSWORD`).
-
-## Build de producción
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
 
 ```bash
-npm run build
-npm run preview
+ng generate --help
 ```
 
-## Estructura
+## Building
 
-```
-src/
-  api/          cliente HTTP (fetch + manejo de JWT) y tipos del contrato con el backend
-  context/      AuthContext: sesión, login/logout, token en localStorage
-  components/   AppShell, Sidebar, Topbar, Badge, Logo (design system)
-  screens/      Login, Dashboard, Pacientes, Citas, Configuración
-  data/         navigation.ts (pantallas y títulos)
+To build the project run:
+
+```bash
+ng build
 ```
 
-## Pantallas
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-| Pantalla | Qué hace | Endpoint(s) |
-|---|---|---|
-| Login | Autentica y guarda el JWT | `POST /api/v1/auth/login` |
-| Dashboard | Resumen y accesos rápidos | `GET /api/v1/pacientes?page=1&pageSize=1` |
-| Pacientes | Búsqueda por documento + listado paginado | `GET /api/v1/pacientes/:numDocumento`, `GET /api/v1/pacientes` |
-| Citas Médicas | Agendar cita y buscar cita por id | `POST /api/v1/appointments`, `GET /api/v1/appointments/:id` |
-| Configuración | URL de la API y cierre de sesión | — |
+## Running unit tests
 
-Todas las peticiones (salvo login) envían `Authorization: Bearer <token>`. Si el backend responde `401`, la sesión se cierra automáticamente y se vuelve a la pantalla de Login.
+To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+
+```bash
+ng test
+```
+
+## Running end-to-end tests
+
+For end-to-end (e2e) testing, run:
+
+```bash
+ng e2e
+```
+
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Additional Resources
+
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
