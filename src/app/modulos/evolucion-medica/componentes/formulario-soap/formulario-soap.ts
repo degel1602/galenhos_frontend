@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { EvolucionService } from '../../servicios/evolucion.service';
 import { SignosVitalesComponent } from './signos-vitales/signos-vitales';
 import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
@@ -7,7 +8,7 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
 @Component({
   selector: 'app-formulario-soap',
   standalone: true,
-  imports: [CommonModule, SignosVitalesComponent, DiagnosticosComponent],
+  imports: [CommonModule, ReactiveFormsModule, SignosVitalesComponent, DiagnosticosComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (evolucionService.activePatient(); as paciente) {
@@ -100,7 +101,7 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
         </nav>
 
         <!-- ===================== CONTENT ===================== -->
-        <div class="p-6 md:p-8 pb-16 bg-slate-50">
+        <div class="p-6 md:p-8 pb-16 bg-slate-50" [formGroup]="soapForm">
           
           @if (activePanel() === 'p1') {
             <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -120,7 +121,7 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
           }
 
           @if (activePanel() === 'p2') {
-            <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <section class="animate-in fade-in slide-in-from-bottom-2 duration-300" formGroupName="motivo">
               <div class="mb-5">
                 <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 02</span>
                 <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Motivo de evolución</h2>
@@ -133,18 +134,18 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
                 </h3>
                 <div class="flex flex-wrap gap-2 mb-4">
                   <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                    <input type="checkbox" class="accent-teal-600"> Seguimiento
+                    <input type="checkbox" formControlName="seguimiento" class="accent-teal-600"> Seguimiento
                   </label>
                   <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                    <input type="checkbox" class="accent-teal-600"> Emergencia
+                    <input type="checkbox" formControlName="emergencia" class="accent-teal-600"> Emergencia
                   </label>
                   <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                    <input type="checkbox" class="accent-teal-600"> Interconsulta
+                    <input type="checkbox" formControlName="interconsulta" class="accent-teal-600"> Interconsulta
                   </label>
                 </div>
                 <div class="flex flex-col">
                   <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Detalle del motivo</label>
-                  <textarea rows="3" class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none transition-all resize-y" placeholder="Especifique brevemente el motivo..."></textarea>
+                  <textarea formControlName="detalle" rows="3" class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none transition-all resize-y" placeholder="Especifique brevemente el motivo..."></textarea>
                 </div>
               </div>
             </section>
@@ -157,8 +158,8 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
                 <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Subjetivo (S)</h2>
                 <p class="text-slate-500 text-[13px] m-0">Lo que refiere el paciente.</p>
               </div>
-              <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm text-center py-10 text-slate-400">
-                 Área de contenido Subjetivo
+              <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
+                 <textarea formControlName="subjetivo" rows="6" class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none transition-all resize-y" placeholder="Describa la evolución subjetiva..."></textarea>
               </div>
             </section>
           }
@@ -171,7 +172,7 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
                 <p class="text-slate-500 text-[13px] m-0">Signos vitales y hallazgos del examen físico.</p>
               </div>
               
-              <app-signos-vitales />
+              <app-signos-vitales [form]="signosVitalesForm" />
 
             </section>
           }
@@ -184,11 +185,11 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
                 <p class="text-slate-500 text-[13px] m-0">Interpretación clínica de la evolución y diagnósticos.</p>
               </div>
               
-              <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
+              <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm" formGroupName="evaluacion">
                 <div class="grid grid-cols-2 gap-4">
                   <div class="flex flex-col">
                     <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Estado clínico</label>
-                    <select class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                    <select formControlName="estadoClinico" class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
                       <option>Mejoría</option>
                       <option>Estacionario</option>
                       <option>Empeoramiento</option>
@@ -197,7 +198,7 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
                   </div>
                   <div class="flex flex-col">
                     <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Pronóstico</label>
-                    <select class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                    <select formControlName="pronostico" class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
                       <option>Bueno</option>
                       <option>Reservado</option>
                       <option>Malo</option>
@@ -206,7 +207,7 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
                 </div>
               </div>
 
-              <app-diagnosticos />
+              <app-diagnosticos [formArray]="diagnosticosArray" />
 
             </section>
           }
@@ -218,8 +219,8 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
                 <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Plan (P)</h2>
                 <p class="text-slate-500 text-[13px] m-0">Plan de tratamiento, indicaciones y próximos pasos.</p>
               </div>
-              <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm text-center py-12 text-slate-400">
-                Área de contenido para Plan de tratamiento (indicaciones médicas).
+              <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <textarea formControlName="plan" rows="8" class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none transition-all resize-y" placeholder="Describa el plan de tratamiento..."></textarea>
               </div>
             </section>
           }
@@ -239,8 +240,9 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
                 </div>
                 <h3 class="font-semibold text-teal-950 text-lg mb-2">Finalizar evolución</h3>
                 <p class="text-teal-800 text-sm max-w-md mx-auto mb-6">Al firmar digitalmente la nota, se cerrará el registro y se anexará permanentemente a la historia clínica del paciente. Esta acción es irreversible.</p>
-                <button class="bg-teal-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow-sm hover:bg-teal-800 transition-colors">
-                  Firmar documento y guardar
+                <button class="bg-teal-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow-sm hover:bg-teal-800 transition-colors disabled:opacity-50"
+                  (click)="firmar()" [disabled]="isSaving()">
+                  {{ isSaving() ? 'Guardando...' : 'Firmar documento y guardar' }}
                 </button>
               </div>
             </section>
@@ -253,5 +255,71 @@ import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
 })
 export class FormularioSoapComponent {
   public evolucionService = inject(EvolucionService);
+  private fb = inject(FormBuilder);
   public activePanel = signal<string>('p1');
+  public isSaving = signal<boolean>(false);
+
+  public soapForm = this.fb.group({
+    motivo: this.fb.group({
+      seguimiento: [false],
+      emergencia: [false],
+      interconsulta: [false],
+      detalle: ['']
+    }),
+    subjetivo: [''],
+    signosVitales: this.fb.group({
+      presionArterial: [''],
+      frecuenciaCardiaca: [null],
+      frecuenciaRespiratoria: [null],
+      temperatura: [null],
+      saturacionOxigeno: [null],
+      peso: [null],
+      talla: [null],
+      imc: ['—'],
+      glucemia: [null]
+    }),
+    evaluacion: this.fb.group({
+      estadoClinico: ['Mejoría'],
+      pronostico: ['Bueno']
+    }),
+    diagnosticos: this.fb.array([
+      this.fb.group({
+        cie10: [''],
+        descripcion: [''],
+        tipo: ['Presuntivo'],
+        condicion: ['Principal'],
+        estado: ['Activo']
+      })
+    ]),
+    plan: ['']
+  });
+
+  get signosVitalesForm(): FormGroup {
+    return this.soapForm.get('signosVitales') as FormGroup;
+  }
+
+  get diagnosticosArray(): FormArray {
+    return this.soapForm.get('diagnosticos') as FormArray;
+  }
+
+  async firmar() {
+    this.isSaving.set(true);
+    const formData = {
+      timestamp: new Date().toISOString(),
+      ...this.soapForm.value
+    };
+    
+    // Codificar a base64 string
+    const dataB64 = btoa(unescape(encodeURIComponent(JSON.stringify(formData))));
+    
+    const success = await this.evolucionService.guardarEvolucion(dataB64);
+    this.isSaving.set(false);
+    
+    if (success) {
+      alert('Evolución firmada y guardada correctamente.');
+      this.evolucionService.clearSelection();
+    } else {
+      alert('Error al intentar guardar la evolución.');
+    }
+  }
 }

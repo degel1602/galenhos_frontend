@@ -1,9 +1,12 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { ApiClientService } from '../../../compartido/api-client/api-client.service';
+import { firstValueFrom } from 'rxjs';
 
 export type ViewMode = 'tray' | 'form';
 
-export interface PacienteMock {
-  id: string;
+export interface PacienteItem {
+  idRegAtencion: number;
+  idPaciente: number;
   historia: string;
   nombre: string;
   edad: string;
@@ -16,18 +19,17 @@ export interface PacienteMock {
   providedIn: 'root'
 })
 export class EvolucionService {
+  private api = inject(ApiClientService);
+
   // Estado base con Signals
   public viewMode = signal<ViewMode>('tray');
   public patientSearch = signal<string>('');
   
-  // Datos simulados (mocks) para la bandeja
-  public pacientes = signal<PacienteMock[]>([
-    { id: '1', historia: 'HC-99201', nombre: 'Carlos Ruiz', edad: '45 años', sexo: 'Masculino', ubicacion: 'Cama 12 - Hosp', estado: 'Estable' },
-    { id: '2', historia: 'HC-99202', nombre: 'Ana López', edad: '32 años', sexo: 'Femenino', ubicacion: 'Emergencia - Triage', estado: 'Delicado' },
-    { id: '3', historia: 'HC-99203', nombre: 'Miguel Santos', edad: '68 años', sexo: 'Masculino', ubicacion: 'UCI - Cama 4', estado: 'Crítico' },
-  ]);
+  // Datos reales para la bandeja
+  public pacientes = signal<PacienteItem[]>([]);
+  public isLoading = signal<boolean>(false);
 
-  public activePatient = signal<PacienteMock | null>(null);
+  public activePatient = signal<PacienteItem | null>(null);
 
   // Derivados (Computed)
   public filteredPacientes = computed(() => {
@@ -39,11 +41,44 @@ export class EvolucionService {
   });
 
   // Acciones
+  public  async cargarPacientes() {
+    this.isLoading.set(true);
+    try {
+      const data = await this.api.request<PacienteItem[]>('/api/v1/evoluciones/pacientes', { method: 'GET' });
+      if (data) {
+        this.pacientes.set(data);
+      }
+    } catch (error) {
+      console.error('Error cargando pacientes:', error);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async guardarEvolucion(dataB64: string): Promise<boolean> {
+    const paciente = this.activePatient();
+    if (!paciente) return false;
+
+    try {
+      await this.api.request('/api/v1/evoluciones', {
+        method: 'POST',
+        body: JSON.stringify({
+          idRegAtencion: paciente.idRegAtencion,
+          dataB64: dataB64
+        })
+      });
+      return true;
+    } catch (error) {
+      console.error('Error guardando evolución:', error);
+      return false;
+    }
+  }
+
   public setViewMode(mode: ViewMode) {
     this.viewMode.set(mode);
   }
 
-  public selectPatient(paciente: PacienteMock) {
+  public selectPatient(paciente: PacienteItem) {
     this.activePatient.set(paciente);
     this.setViewMode('form');
   }
@@ -51,5 +86,7 @@ export class EvolucionService {
   public clearSelection() {
     this.activePatient.set(null);
     this.setViewMode('tray');
+    this.cargarPacientes(); // Reload on back
   }
 }
+

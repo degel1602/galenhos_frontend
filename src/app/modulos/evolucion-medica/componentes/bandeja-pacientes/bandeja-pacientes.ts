@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EvolucionService, PacienteMock } from '../../servicios/evolucion.service';
+import { EvolucionService } from '../../servicios/evolucion.service';
 
 @Component({
   selector: 'app-bandeja-pacientes',
@@ -23,12 +23,12 @@ import { EvolucionService, PacienteMock } from '../../servicios/evolucion.servic
           Pacientes activos
         </div>
         <div class="flex flex-col gap-2">
-          @for (paciente of evolucionService.filteredPacientes(); track paciente.id) {
+          @for (paciente of evolucionService.filteredPacientes(); track paciente.idRegAtencion) {
             <div 
               class="border rounded-xl p-3 cursor-pointer bg-white transition-colors duration-150 ease-in-out hover:border-teal-600"
-              [class.bg-teal-50]="evolucionService.activePatient()?.id === paciente.id"
-              [class.border-teal-600]="evolucionService.activePatient()?.id === paciente.id"
-              [class.border-slate-200]="evolucionService.activePatient()?.id !== paciente.id"
+              [class.bg-teal-50]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
+              [class.border-teal-600]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
+              [class.border-slate-200]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
               (click)="evolucionService.selectPatient(paciente)"
             >
               <div class="font-bold text-[13.5px] text-slate-900">{{ paciente.nombre }}</div>

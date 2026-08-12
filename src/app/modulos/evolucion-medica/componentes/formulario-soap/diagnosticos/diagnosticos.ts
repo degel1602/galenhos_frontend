@@ -1,19 +1,11 @@
-import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-interface Diagnostico {
-  id: number;
-  cie10: string;
-  descripcion: string;
-  tipo: string;
-  condicion: string;
-  estado: string;
-}
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-diagnosticos',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
@@ -36,35 +28,35 @@ interface Diagnostico {
             </tr>
           </thead>
           <tbody>
-            @for (dx of diagnosticos(); track dx.id) {
-              <tr class="border-b border-slate-100 group">
+            @for (dx of formArray.controls; track $index) {
+              <tr class="border-b border-slate-100 group" [formGroup]="$any(dx)">
                 <td class="p-1.5 align-top">
-                  <input type="text" [value]="dx.cie10" (change)="actualizarDx(dx.id, 'cie10', $event)" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="A00.0">
+                  <input type="text" formControlName="cie10" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="A00.0">
                 </td>
                 <td class="p-1.5 align-top">
-                  <input type="text" [value]="dx.descripcion" (change)="actualizarDx(dx.id, 'descripcion', $event)" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Descripción del diagnóstico">
+                  <input type="text" formControlName="descripcion" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Descripción del diagnóstico">
                 </td>
                 <td class="p-1.5 align-top">
-                  <select [value]="dx.tipo" (change)="actualizarDx(dx.id, 'tipo', $event)" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                  <select formControlName="tipo" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
                     <option value="Presuntivo">Presuntivo</option>
                     <option value="Definitivo">Definitivo</option>
                   </select>
                 </td>
                 <td class="p-1.5 align-top">
-                  <select [value]="dx.condicion" (change)="actualizarDx(dx.id, 'condicion', $event)" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                  <select formControlName="condicion" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
                     <option value="Principal">Principal</option>
                     <option value="Secundario">Secundario</option>
                   </select>
                 </td>
                 <td class="p-1.5 align-top">
-                  <select [value]="dx.estado" (change)="actualizarDx(dx.id, 'estado', $event)" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                  <select formControlName="estado" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
                     <option value="Activo">Activo</option>
                     <option value="Resuelto">Resuelto</option>
                     <option value="Descartado">Descartado</option>
                   </select>
                 </td>
                 <td class="p-1.5 align-middle text-center">
-                  <button (click)="removerDx(dx.id)" class="text-slate-400 hover:text-rose-600 transition-colors opacity-0 group-hover:opacity-100" title="Eliminar fila">
+                  <button (click)="removerDx($index)" class="text-slate-400 hover:text-rose-600 transition-colors opacity-0 group-hover:opacity-100" title="Eliminar fila">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
                   </button>
                 </td>
@@ -81,27 +73,20 @@ interface Diagnostico {
   `
 })
 export class DiagnosticosComponent {
-  diagnosticos = signal<Diagnostico[]>([
-    { id: 1, cie10: '', descripcion: '', tipo: 'Presuntivo', condicion: 'Principal', estado: 'Activo' }
-  ]);
-  
-  private nextId = 2;
+  @Input({required: true}) formArray!: FormArray;
+  private fb = inject(FormBuilder);
 
   agregarDx() {
-    this.diagnosticos.update(dxs => [
-      ...dxs, 
-      { id: this.nextId++, cie10: '', descripcion: '', tipo: 'Presuntivo', condicion: 'Secundario', estado: 'Activo' }
-    ]);
+    this.formArray.push(this.fb.group({
+      cie10: [''],
+      descripcion: [''],
+      tipo: ['Presuntivo'],
+      condicion: ['Secundario'],
+      estado: ['Activo']
+    }));
   }
 
-  removerDx(id: number) {
-    this.diagnosticos.update(dxs => dxs.filter(d => d.id !== id));
-  }
-
-  actualizarDx(id: number, campo: keyof Diagnostico, event: Event) {
-    const valor = (event.target as HTMLInputElement | HTMLSelectElement).value;
-    this.diagnosticos.update(dxs => 
-      dxs.map(d => d.id === id ? { ...d, [campo]: valor } : d)
-    );
+  removerDx(index: number) {
+    this.formArray.removeAt(index);
   }
 }

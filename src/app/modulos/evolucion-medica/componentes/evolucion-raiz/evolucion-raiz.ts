@@ -62,6 +62,7 @@ export class EvolucionRaizComponent implements AfterViewInit, OnDestroy {
     setTimeout(() => {
       this.headerActionsService.setTemplate(this.headerActionsTpl);
     });
+    this.evolucionService.cargarPacientes();
   }
 
   ngOnDestroy() {
