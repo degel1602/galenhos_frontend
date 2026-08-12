@@ -21,6 +21,7 @@ export class LoginComponent {
   pass = '';
   error = '';
   loading = false;
+  showPassword = false;
 
   async handleLogin() {
     if (!this.user || !this.pass) {
