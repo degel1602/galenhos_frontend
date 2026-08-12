@@ -35,6 +35,8 @@ export class LoginComponent {
     try {
       const response = await this.authApi.login(this.user, this.pass);
       this.authService.setSession(response.accessToken, this.user);
+      const authMenus = await this.authApi.getMenus();
+      this.authService.setMenus(authMenus);
       this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
       if (err instanceof ApiRequestError && err.code === 'INVALID_CREDENTIALS') {

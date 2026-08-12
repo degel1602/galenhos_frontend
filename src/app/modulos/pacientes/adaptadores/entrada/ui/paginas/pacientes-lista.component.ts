@@ -49,22 +49,56 @@ export class PacientesListaComponent implements OnInit {
     this.cargando = true;
     this.error = '';
 
-    const query = new URLSearchParams();
-    if (this.filtros.documento) query.append('nroDocumento', this.filtros.documento);
-    if (this.filtros.historiaClinica) query.append('nroHistoriaClinica', this.filtros.historiaClinica);
-    if (this.filtros.apellidoPaterno) query.append('apellidoPaterno', this.filtros.apellidoPaterno);
-    if (this.filtros.apellidoMaterno) query.append('apellidoMaterno', this.filtros.apellidoMaterno);
-    if (this.filtros.nombres) query.append('nombres', this.filtros.nombres);
-    
-    query.append('page', this.paginaActual.toString());
-    query.append('pageSize', '20');
+    const doc = this.filtros.documento?.trim();
+    const hc = this.filtros.historiaClinica?.trim();
+    const pat = this.filtros.apellidoPaterno?.trim();
+    const mat = this.filtros.apellidoMaterno?.trim();
+    const nom = this.filtros.nombres?.trim();
+
+    const hasFiltros = !!(doc || hc || pat || mat || nom);
+
+    if (hasFiltros) {
+      // Si no busca por documento ni HC, requerimos que el texto ingresado tenga al menos 3 caracteres
+      if (!doc && !hc) {
+        if ((pat && pat.length < 3) || (mat && mat.length < 3) || (nom && nom.length < 3)) {
+          this.error = 'Para búsquedas por nombre o apellido, ingrese al menos 3 caracteres.';
+          this.cargando = false;
+          return;
+        }
+      } else if (doc && doc.length < 4) {
+        this.error = 'El documento debe tener al menos 4 caracteres.';
+        this.cargando = false;
+        return;
+      }
+    }
 
     try {
-      const res = await this.pacientesApi.buscar(query.toString());
-      this.pacientes = res.items || [];
-      this.paginaActual = res.page;
-      this.totalPaginas = res.totalPages;
-      this.totalRegistros = res.totalItems;
+      if (hasFiltros) {
+        // Modo búsqueda (limitado a 100 resultados por seguridad)
+        const query = new URLSearchParams();
+        if (doc) query.append('documento', doc);
+        if (hc) query.append('hc', hc);
+        if (pat) query.append('paterno', pat);
+        if (mat) query.append('materno', mat);
+        if (nom) query.append('nombres', nom);
+        
+        const res = await this.pacientesApi.buscar(query.toString());
+        this.pacientes = res || [];
+        this.paginaActual = 1;
+        this.totalPaginas = 1;
+        this.totalRegistros = this.pacientes.length;
+      } else {
+        // Modo listado normal (paginado)
+        const query = new URLSearchParams();
+        query.append('page', this.paginaActual.toString());
+        query.append('pageSize', '20');
+
+        const res = await this.pacientesApi.listar(query.toString());
+        this.pacientes = res.items || [];
+        this.paginaActual = res.page;
+        this.totalPaginas = res.totalPages;
+        this.totalRegistros = res.totalItems;
+      }
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) {
         this.error = err.message;
