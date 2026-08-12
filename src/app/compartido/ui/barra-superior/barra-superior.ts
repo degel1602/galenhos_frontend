@@ -1,7 +1,9 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { HeaderActionsService } from '../../servicios/header-actions.service';
 @Component({
   selector: 'barra-superior',
+  standalone: true,
   template: `
     <header class="h-[66px] shrink-0 bg-white border-b border-[#e3e8f2] flex items-center justify-between px-[30px]">
       <div class="flex items-center gap-4">
@@ -17,6 +19,10 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
           <h2 class="m-0 mt-[1px] text-[19px] font-bold text-[#07153a]">{{ title }}</h2>
         </div>
       </div>
+      <div class="flex-1 flex justify-end px-6">
+        <ng-container *ngTemplateOutlet="headerActions.template()"></ng-container>
+      </div>
+
       <div class="flex items-center gap-[14px]">
         <div class="flex items-center gap-[9px] bg-[#f3f5fb] border border-[#e6eaf5] px-3.5 py-[7px] rounded-xl">
           <span class="w-2 h-2 rounded-full bg-[#059669]"></span>
@@ -24,9 +30,12 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
         </div>
       </div>
     </header>
-  `
+  `,
+  imports: [NgTemplateOutlet]
 })
 export class BarraSuperior {
+  headerActions = inject(HeaderActionsService);
+
   @Input() title: string = '';
   @Input() username: string | null = null;
   @Output() onToggleSidebar = new EventEmitter<void>();

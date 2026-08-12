@@ -27,6 +27,11 @@ export const rutasPrincipales: Routes = [
       { path: 'triaje', component: TriajeComponent, data: { title: 'Triaje' } },
       { path: 'admisiones', component: AdmisionesComponent, data: { title: 'Admisiones' } },
       { path: 'configuracion', component: ConfiguracionComponent, data: { title: 'Configuración' } },
+      { 
+        path: 'evolucion', 
+        loadComponent: () => import('../modulos/evolucion-medica/componentes/evolucion-raiz/evolucion-raiz').then(m => m.EvolucionRaizComponent),
+        data: { title: 'Evolución Médica' } 
+      }
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

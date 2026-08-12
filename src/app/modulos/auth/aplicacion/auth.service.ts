@@ -1,9 +1,11 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private router = inject(Router);
   private readonly TOKEN_KEY = 'galenos.accessToken';
   private readonly USERNAME_KEY = 'galenos.username';
 
@@ -39,5 +41,6 @@ export class AuthService {
 
   logout(): void {
     this.clearSession();
+    this.router.navigate(['/login']);
   }
 }

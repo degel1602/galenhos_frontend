@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evolución Médica · HCE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F7F6;
+    --surface:#FFFFFF;
+    --ink:#16302E;
+    --muted:#5C726F;
+    --line:#DCE6E3;
+    --primary:#0E5F5C;
+    --primary-dark:#093F3D;
+    --primary-soft:#E4F0EE;
+    --gold:#B8863B;
+    --gold-soft:#F6ECDA;
+    --alert:#B23A3A;
+    --alert-soft:#FBEAEA;
+    --ok:#2E7D5B;
+    --radius:10px;
+    --font-display:'Fraunces', serif;
+    --font-body:'Inter', system-ui, sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:14px;
+    line-height:1.45;
+  }
+  a{color:inherit;}
+
+  /* ---------- Top identity bar ---------- */
+  .topbar{
+    background:var(--primary-dark);
+    color:#F2F7F6;
+    padding:14px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .topbar .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .topbar .brand .mark{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:20px;
+    letter-spacing:0.2px;
+  }
+  .topbar .brand .sub{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#B9D3CF;
+  }
+  .topbar .actions{display:flex; gap:10px;}
+  .btn{
+    font-family:var(--font-body);
+    font-size:13px;
+    font-weight:600;
+    padding:8px 14px;
+    border-radius:7px;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:transform .08s ease, background .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--gold); color:#2A1E08; }
+  .btn-primary:hover{background:#C79644;}
+  .btn-ghost{background:transparent; color:#EAF3F1; border-color:#3E6664;}
+  .btn-ghost:hover{background:#154C49;}
+
+  /* ---------- Encounter strip (Sección 1 resumida, siempre visible) ---------- */
+  .encounter-strip{
+    background:var(--surface);
+    border-bottom:1px solid var(--line);
+    padding:12px 24px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
+    gap:10px 20px;
+  }
+  .encounter-strip .field label{
+    display:block;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--muted);
+    margin-bottom:3px;
+  }
+  .encounter-strip input, .encounter-strip select{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:6px 8px;
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    background:#FBFDFC;
+    color:var(--ink);
+  }
+
+  /* ---------- Layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns:260px 1fr;
+    min-height:calc(100vh - 130px);
+  }
+  @media (max-width: 860px){
+    .layout{grid-template-columns:1fr;}
+    .nav{position:static; order:2;}
+  }
+
+  /* ---------- Side nav ---------- */
+  .nav{
+    background:var(--surface);
+    border-right:1px solid var(--line);
+    padding:18px 10px 40px;
+  }
+  .nav-group-title{
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--muted);
+    padding:14px 12px 6px;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    color:var(--ink);
+    font-size:13.2px;
+    font-weight:500;
+    margin-bottom:2px;
+    position:relative;
+  }
+  .nav-item:hover{background:var(--primary-soft);}
+  .nav-item.active{background:var(--primary); color:#fff;}
+  .nav-item .num{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--muted);
+    min-width:20px;
+  }
+  .nav-item.active .num{color:#CFE7E3;}
+
+  /* SOAP pipeline connector — el eje S-O-A-P es secuencial por método clínico real */
+  .soap-block{position:relative; margin-left:6px; padding-left:14px; border-left:2px solid var(--gold-soft);}
+  .soap-block .nav-item{margin-left:-14px; padding-left:26px;}
+  .soap-block .nav-item .letter{
+    position:absolute; left:-9px;
+    width:16px; height:16px; border-radius:50%;
+    background:var(--gold); color:#2A1E08;
+    font-family:var(--font-mono); font-size:9.5px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- Main content ---------- */
+  .content{padding:26px 32px 60px;}
+  .panel{display:none;}
+  .panel.active{display:block; animation:fade .18s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(3px);} to{opacity:1; transform:none;}}
+
+  .panel-header{margin-bottom:20px;}
+  .panel-header .eyebrow{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--gold);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+  .panel-header h2{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:26px;
+    margin:2px 0 4px;
+    color:var(--primary-dark);
+  }
+  .panel-header p{color:var(--muted); margin:0; font-size:13px;}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px 22px;
+    margin-bottom:18px;
+  }
+  .card h3{
+    font-size:14px;
+    margin:0 0 14px;
+    color:var(--primary-dark);
+    display:flex; align-items:center; gap:8px;
+  }
+  .card h3::before{
+    content:"";
+    width:5px; height:15px;
+    background:var(--gold);
+    border-radius:2px;
+    display:inline-block;
+  }
+
+  .grid{display:grid; gap:14px;}
+  .grid-2{grid-template-columns:1fr 1fr;}
+  .grid-3{grid-template-columns:1fr 1fr 1fr;}
+  .grid-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+  @media (max-width:700px){ .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;} }
+
+  .field label{
+    display:block;
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--muted);
+    margin-bottom:5px;
+    letter-spacing:.01em;
+  }
+  input[type=text], input[type=number], input[type=date], input[type=time],
+  select, textarea{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:8px 10px;
+    font-family:var(--font-body);
+    font-size:13.3px;
+    color:var(--ink);
+    background:#FBFDFC;
+  }
+  textarea{resize:vertical; font-family:var(--font-body);}
+  input:focus, select:focus, textarea:focus{
+    outline:2px solid var(--primary);
+    outline-offset:1px;
+    border-color:var(--primary);
+  }
+
+  .checklist{display:flex; flex-wrap:wrap; gap:8px 16px;}
+  .checklist label{
+    display:flex; align-items:center; gap:6px;
+    font-size:13px; font-weight:400; color:var(--ink);
+    background:var(--bg); border:1px solid var(--line);
+    padding:6px 10px; border-radius:20px;
+  }
+  .checklist input{width:auto;}
+
+  .vitals-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px;}
+  .vital-box{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 10px;
+    background:var(--bg);
+  }
+  .vital-box label{font-size:10.5px;}
+  .vital-box input{
+    border:none; background:transparent; padding:0;
+    font-family:var(--font-mono); font-size:16px; font-weight:500;
+    color:var(--primary-dark);
+  }
+  .vital-box .unit{font-size:10.5px; color:var(--muted);}
+
+  .system-exam{display:grid; grid-template-columns:170px 1fr; gap:10px 14px; align-items:start;}
+  .system-exam .sys-name{font-size:12.6px; font-weight:600; padding-top:8px; color:var(--ink);}
+  .system-row{display:contents;}
+  .system-row + .system-row .sys-name, .system-row + .system-row textarea{border-top:1px dashed var(--line); padding-top:10px; margin-top:2px;}
+
+  table.data-table{width:100%; border-collapse:collapse; font-size:13px;}
+  table.data-table th{
+    text-align:left;
+    font-size:10.8px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--muted);
+    border-bottom:2px solid var(--line);
+    padding:8px 8px;
+  }
+  table.data-table td{
+    padding:6px 6px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  table.data-table td input, table.data-table td select{padding:6px 8px; font-size:12.5px;}
+  .row-remove{
+    background:none; border:none; color:var(--alert);
+    cursor:pointer; font-size:16px; line-height:1;
+  }
+  .add-row-btn{
+    margin-top:10px;
+    background:var(--primary-soft);
+    color:var(--primary-dark);
+    border:1px dashed var(--primary);
+    padding:8px 14px;
+    border-radius:7px;
+    font-size:12.6px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .add-row-btn:hover{background:#D8ECE9;}
+
+  .tag-badge{
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    padding:2px 8px;
+    border-radius:20px;
+    background:var(--gold-soft);
+    color:#6E4E1D;
+    font-weight:600;
+  }
+
+  .free-text-block textarea{min-height:170px; font-size:14.5px; line-height:1.6;}
+  .char-count{text-align:right; font-size:11px; color:var(--muted); margin-top:4px;}
+
+  .attach-drop{
+    border:2px dashed var(--line);
+    border-radius:10px;
+    padding:26px;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    background:var(--bg);
+  }
+  .attach-list{list-style:none; padding:0; margin:12px 0 0; display:flex; flex-direction:column; gap:8px;}
+  .attach-list li{
+    display:flex; align-items:center; justify-content:space-between;
+    border:1px solid var(--line); border-radius:8px; padding:8px 12px;
+    background:var(--surface); font-size:12.8px;
+  }
+
+  .signature-box{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+  }
+  .signature-pad{
+    border:2px solid var(--primary);
+    border-radius:10px;
+    height:150px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--muted);
+    font-family:var(--font-display);
+    font-style:italic;
+    background:repeating-linear-gradient(45deg, var(--primary-soft) 0 2px, transparent 2px 14px);
+  }
+  .audit-list{list-style:none; margin:0; padding:0;}
+  .audit-list li{
+    display:flex; justify-content:space-between;
+    font-family:var(--font-mono); font-size:11.8px;
+    padding:7px 0; border-bottom:1px solid var(--line);
+    color:var(--muted);
+  }
+  .audit-list li span:last-child{color:var(--ink);}
+
+  .status-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:11.5px; font-weight:600;
+    padding:4px 10px; border-radius:20px;
+  }
+  .status-active{background:var(--primary-soft); color:var(--primary-dark);}
+  .status-alert{background:var(--alert-soft); color:var(--alert);}
+  .status-ok{background:#E7F5EE; color:var(--ok);}
+
+  .footer-nav{
+    display:flex; justify-content:space-between;
+    margin-top:26px; padding-top:16px; border-top:1px solid var(--line);
+  }
+
+  ::selection{background:var(--gold-soft);}
+
+  @media (prefers-reduced-motion: reduce){
+    .panel.active{animation:none;}
+  }
+
+  /* ===================== BANDEJA DE PACIENTES / EVOLUCIONES ===================== */
+  #bandejaView{display:block;}
+  #formView{display:none;}
+
+  .bandeja-layout{
+    display:grid;
+    grid-template-columns:300px 1fr;
+    min-height:calc(100vh - 62px);
+  }
+  @media (max-width:860px){ .bandeja-layout{grid-template-columns:1fr;} }
+
+  .patient-rail{
+    background:var(--surface);
+    border-right:1px solid var(--line);
+    padding:16px 14px 40px;
+  }
+  .patient-search{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:9px 12px;
+    font-size:13px;
+    margin-bottom:14px;
+    background:var(--bg);
+  }
+  .patient-rail-title{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--muted); padding:4px 4px 8px;
+  }
+  .patient-card{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:11px 12px;
+    margin-bottom:8px;
+    cursor:pointer;
+    background:var(--surface);
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .patient-card:hover{border-color:var(--primary);}
+  .patient-card.active{
+    background:var(--primary-soft);
+    border-color:var(--primary);
+  }
+  .patient-card .pname{font-weight:700; font-size:13.5px; color:var(--ink);}
+  .patient-card .pmeta{
+    font-family:var(--font-mono); font-size:10.8px; color:var(--muted);
+    margin-top:3px; display:flex; justify-content:space-between;
+  }
+  .patient-card .ploc{font-size:11px; color:var(--muted); margin-top:4px;}
+
+  .bandeja-main{padding:26px 32px 60px;}
+  .patient-banner{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-bottom:20px;
+  }
+  .patient-banner .pb-name{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:24px;
+    color:var(--primary-dark);
+  }
+  .patient-banner .pb-meta{
+    display:flex; gap:18px; flex-wrap:wrap;
+    font-size:12.5px; color:var(--muted); margin-top:4px;
+  }
+  .patient-banner .pb-meta span b{color:var(--ink); font-weight:600;}
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--muted);
+  }
+  .empty-state .glyph{font-size:34px; margin-bottom:10px;}
+
+  table.tray-table{width:100%; border-collapse:collapse; font-size:13px;}
+  table.tray-table th{
+    text-align:left; font-size:10.8px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--muted); border-bottom:2px solid var(--line); padding:10px 10px;
+  }
+  table.tray-table td{padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  table.tray-table tr:hover td{background:var(--bg);}
+  .tray-type{
+    font-family:var(--font-mono); font-size:10.5px; padding:3px 9px; border-radius:20px;
+    background:var(--primary-soft); color:var(--primary-dark); font-weight:600;
+  }
+  .tray-link{
+    background:none; border:1px solid var(--primary); color:var(--primary-dark);
+    padding:6px 12px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer;
+  }
+  .tray-link:hover{background:var(--primary-soft);}
+  .tray-link.continue{background:var(--gold); border-color:var(--gold); color:#2A1E08;}
+  .tray-link.continue:hover{background:#C79644;}
+
+  .actions-form{display:none;}
+  body.mode-form .actions-bandeja{display:none;}
+  body.mode-form .actions-form{display:flex;}
+  body.mode-form #bandejaView{display:none;}
+  body.mode-form #formView{display:block;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark">Evolución Médica</span>
+    <span class="sub" id="brandSub">Historia Clínica Electrónica</span>
+  </div>
+  <div class="actions actions-bandeja">
+    <span class="status-pill status-active">● Bandeja de evoluciones</span>
+  </div>
+  <div class="actions actions-form">
+    <button class="btn btn-ghost" id="backToTrayBtn">← Volver a la bandeja</button>
+    <span class="status-pill status-active" id="statusPill">● Nota en borrador</span>
+    <button class="btn btn-ghost" onclick="window.print()">Imprimir / PDF</button>
+    <button class="btn btn-primary" id="saveBtn">Guardar evolución</button>
+  </div>
+</div>
+
+<!-- ===================== BANDEJA: pacientes + evoluciones ===================== -->
+<div id="bandejaView">
+  <div class="bandeja-layout">
+    <aside class="patient-rail">
+      <input type="text" class="patient-search" id="patientSearch" placeholder="Buscar paciente o N.º HC...">
+      <div class="patient-rail-title">Pacientes activos</div>
+      <div id="patientList"></div>
+    </aside>
+    <main class="bandeja-main" id="bandejaMain">
+      <!-- se llena por JS -->
+    </main>
+  </div>
+</div>
+
+<!-- ===================== FORMULARIO DE EVOLUCIÓN ===================== -->
+<div id="formView">
+
+<!-- ===================== 1. INFORMACIÓN GENERAL (franja fija) ===================== -->
+<div class="patient-banner" id="formPatientBanner" style="margin:16px 24px 0;"></div>
+<div class="encounter-strip">
+  <div class="field"><label>N.º de evolución</label><input type="text" value="EV-2026-000482" readonly></div>
+  <div class="field"><label>Fecha</label><input type="date" id="fecha"></div>
+  <div class="field"><label>Hora</label><input type="time" id="hora"></div>
+  <div class="field"><label>Médico tratante</label><input type="text" placeholder="Dr(a). Nombre Apellido"></div>
+  <div class="field"><label>Especialidad</label><input type="text" placeholder="Ej. Medicina Interna"></div>
+  <div class="field"><label>Servicio</label><input type="text" placeholder="Ej. Hospitalización"></div>
+  <div class="field"><label>Consultorio / Sala / Cama</label><input type="text" placeholder="Ej. Sala 3 - Cama 12"></div>
+  <div class="field">
+    <label>Tipo de atención</label>
+    <select>
+      <option>Consulta externa</option>
+      <option>Emergencia</option>
+      <option>Hospitalización</option>
+      <option>UCI</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Estado del paciente</label>
+    <select>
+      <option>Estable</option>
+      <option>Delicado</option>
+      <option>Crítico</option>
+      <option>Alta</option>
+    </select>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- ===================== NAV ===================== -->
+  <nav class="nav" id="nav">
+    <div class="nav-group-title">Encuentro</div>
+    <div class="nav-item active" data-target="p1"><span class="num">01</span> Información general</div>
+    <div class="nav-item" data-target="p2"><span class="num">02</span> Motivo de evolución</div>
+
+    <div class="nav-group-title">Método SOAP</div>
+    <div class="soap-block">
+      <div class="nav-item" data-target="p3"><span class="letter">S</span><span class="num">03</span> Subjetivo</div>
+      <div class="nav-item" data-target="p4"><span class="letter">O</span><span class="num">04</span> Objetivo</div>
+      <div class="nav-item" data-target="p5"><span class="num">05</span> Resultados revisados</div>
+      <div class="nav-item" data-target="p6"><span class="letter">A</span><span class="num">06</span> Evaluación</div>
+      <div class="nav-item" data-target="p7"><span class="letter">P</span><span class="num">07</span> Plan</div>
+    </div>
+
+    <div class="nav-group-title">Documentación clínica</div>
+    <div class="nav-item" data-target="p8"><span class="num">08</span> Evolución clínica (libre)</div>
+    <div class="nav-item" data-target="p9"><span class="num">09</span> Órdenes médicas</div>
+    <div class="nav-item" data-target="p10"><span class="num">10</span> Prescripción médica</div>
+    <div class="nav-item" data-target="p11"><span class="num">11</span> Procedimientos realizados</div>
+    <div class="nav-item" data-target="p12"><span class="num">12</span> Incapacidad / Descanso</div>
+    <div class="nav-item" data-target="p13"><span class="num">13</span> Certificados</div>
+    <div class="nav-item" data-target="p14"><span class="num">14</span> Adjuntos</div>
+
+    <div class="nav-group-title">Cierre</div>
+    <div class="nav-item" data-target="p15"><span class="num">15</span> Firma y auditoría</div>
+  </nav>
+
+  <!-- ===================== CONTENT ===================== -->
+  <div class="content">
+
+    <!-- 1 -->
+    <section class="panel active" id="p1">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 01</span>
+        <h2>Información general</h2>
+        <p>Estos datos ya están capturados en la franja superior y se aplican a toda la nota de evolución.</p>
+      </div>
+      <div class="card">
+        <h3>Resumen del encuentro</h3>
+        <p style="color:var(--muted); font-size:13px;">Verifique arriba: número de evolución, fecha, hora, médico tratante, especialidad, servicio, consultorio/sala/cama, tipo de atención y estado del paciente. Cualquier cambio se reflejará automáticamente en el encabezado de impresión.</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="panel" id="p2">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 02</span>
+        <h2>Motivo de evolución</h2>
+        <p>Seleccione el motivo que origina este registro.</p>
+      </div>
+      <div class="card">
+        <h3>Motivo</h3>
+        <div class="checklist">
+          <label><input type="checkbox">Motivo de consulta</label>
+          <label><input type="checkbox">Seguimiento</label>
+          <label><input type="checkbox">Control</label>
+          <label><input type="checkbox">Reevaluación</label>
+          <label><input type="checkbox">Postoperatorio</label>
+          <label><input type="checkbox">Interconsulta</label>
+          <label><input type="checkbox">Emergencia</label>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label>Detalle del motivo</label>
+          <textarea rows="2" placeholder="Especifique brevemente el motivo de esta evolución..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 : SUBJETIVO -->
+    <section class="panel" id="p3">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 03 · Método SOAP</span>
+        <h2>Subjetivo (S)</h2>
+        <p>Lo que refiere el paciente.</p>
+      </div>
+      <div class="card">
+        <h3>Síntomas referidos</h3>
+        <div class="checklist">
+          <label><input type="checkbox">Dolor</label>
+          <label><input type="checkbox">Fiebre</label>
+          <label><input type="checkbox">Tos</label>
+          <label><input type="checkbox">Náuseas</label>
+          <label><input type="checkbox">Vómitos</label>
+          <label><input type="checkbox">Mareos</label>
+          <label><input type="checkbox">Disnea</label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="grid grid-2">
+          <div class="field">
+            <label>Evolución de síntomas</label>
+            <textarea rows="3" placeholder="Describa cómo han evolucionado los síntomas desde la última atención..."></textarea>
+          </div>
+          <div class="field">
+            <label>Escala del dolor (EVA 0–10)</label>
+            <input type="number" min="0" max="10" placeholder="0">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 : OBJETIVO -->
+    <section class="panel" id="p4">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 04 · Método SOAP</span>
+        <h2>Objetivo (O)</h2>
+        <p>Signos vitales y hallazgos del examen físico.</p>
+      </div>
+
+      <div class="card">
+        <h3>Signos vitales</h3>
+        <div class="vitals-grid">
+          <div class="vital-box"><label>Presión arterial</label><input type="text" placeholder="120/80"><span class="unit">mmHg</span></div>
+          <div class="vital-box"><label>Frec. cardíaca</label><input type="number" placeholder="72"><span class="unit">lpm</span></div>
+          <div class="vital-box"><label>Frec. respiratoria</label><input type="number" placeholder="16"><span class="unit">rpm</span></div>
+          <div class="vital-box"><label>Temperatura</label><input type="number" step="0.1" placeholder="36.5"><span class="unit">°C</span></div>
+          <div class="vital-box"><label>Saturación O₂</label><input type="number" placeholder="98"><span class="unit">%</span></div>
+          <div class="vital-box"><label>Peso</label><input type="number" step="0.1" id="peso" placeholder="70"><span class="unit">kg</span></div>
+          <div class="vital-box"><label>Talla</label><input type="number" step="0.01" id="talla" placeholder="1.70"><span class="unit">m</span></div>
+          <div class="vital-box"><label>IMC</label><input type="text" id="imc" placeholder="—" readonly><span class="unit">kg/m²</span></div>
+          <div class="vital-box"><label>Glucemia</label><input type="number" placeholder="90"><span class="unit">mg/dL</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Examen físico por sistemas</h3>
+        <div class="system-exam" id="examFisico">
+          <!-- filas generadas por JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 : RESULTADOS -->
+    <section class="panel" id="p5">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 05</span>
+        <h2>Resultados revisados</h2>
+        <p>Resultados de exámenes disponibles en el expediente, mostrados automáticamente para su revisión.</p>
+      </div>
+
+      <div class="card">
+        <h3>Laboratorio</h3>
+        <table class="data-table">
+          <thead><tr><th>Examen</th><th>Fecha</th><th>Resultado</th><th>Revisado</th></tr></thead>
+          <tbody>
+            <tr><td>Hemograma</td><td class="mono-cell">26/07/2026</td><td>Leucocitos 9.8, Hb 13.2</td><td><input type="checkbox"></td></tr>
+            <tr><td>Bioquímica</td><td>26/07/2026</td><td>Glucosa 92, Creatinina 0.9</td><td><input type="checkbox"></td></tr>
+            <tr><td>Cultivos</td><td>25/07/2026</td><td>Pendiente</td><td><input type="checkbox"></td></tr>
+            <tr><td>Gases arteriales</td><td>—</td><td>No solicitado</td><td><input type="checkbox"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Imágenes</h3>
+        <table class="data-table">
+          <thead><tr><th>Estudio</th><th>Fecha</th><th>Informe</th><th>Revisado</th></tr></thead>
+          <tbody>
+            <tr><td>Rayos X</td><td>24/07/2026</td><td>Sin hallazgos agudos</td><td><input type="checkbox"></td></tr>
+            <tr><td>Ecografía</td><td>—</td><td>No solicitado</td><td><input type="checkbox"></td></tr>
+            <tr><td>Tomografía</td><td>—</td><td>No solicitado</td><td><input type="checkbox"></td></tr>
+            <tr><td>Resonancia</td><td>—</td><td>No solicitado</td><td><input type="checkbox"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Otros exámenes</h3>
+        <table class="data-table">
+          <thead><tr><th>Examen</th><th>Fecha</th><th>Resultado</th><th>Revisado</th></tr></thead>
+          <tbody>
+            <tr><td>ECG</td><td>26/07/2026</td><td>Ritmo sinusal</td><td><input type="checkbox"></td></tr>
+            <tr><td>Anatomía patológica</td><td>—</td><td>No solicitado</td><td><input type="checkbox"></td></tr>
+            <tr><td>Endoscopía</td><td>—</td><td>No solicitado</td><td><input type="checkbox"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6 : EVALUACIÓN -->
+    <section class="panel" id="p6">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 06 · Método SOAP</span>
+        <h2>Evaluación (A)</h2>
+        <p>Interpretación clínica de la evolución y diagnósticos.</p>
+      </div>
+
+      <div class="card">
+        <div class="grid grid-2">
+          <div class="field">
+            <label>Estado clínico</label>
+            <select>
+              <option>Mejoría</option>
+              <option>Estacionario</option>
+              <option>Empeoramiento</option>
+              <option>Resuelto</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Pronóstico</label>
+            <select>
+              <option>Bueno</option>
+              <option>Reservado</option>
+              <option>Malo</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Diagnósticos</h3>
+        <p style="color:var(--muted); font-size:12.5px; margin-top:-8px;">Incluya diagnóstico principal, secundarios, nuevos y descartados. Cada uno con código CIE-10, tipo, condición y estado.</p>
+        <table class="data-table" id="dxTable">
+          <thead>
+            <tr><th style="width:100px;">CIE-10</th><th>Descripción</th><th>Tipo</th><th>Condición</th><th>Estado</th><th></th></tr>
+          </thead>
+          <tbody id="dxBody"></tbody>
+        </table>
+        <button class="add-row-btn" onclick="addDxRow()">+ Agregar diagnóstico</button>
+      </div>
+    </section>
+
+    <!-- 7 : PLAN -->
+    <section class="panel" id="p7">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 07 · Método SOAP</span>
+        <h2>Plan (P)</h2>
+        <p>Tratamiento, procedimientos, exámenes, interconsultas e indicaciones.</p>
+      </div>
+
+      <div class="card">
+        <h3>Tratamiento farmacológico</h3>
+        <table class="data-table" id="rxTable">
+          <thead>
+            <tr><th>Medicamento</th><th>Dosis</th><th>Frecuencia</th><th>Vía</th><th>Duración</th><th></th></tr>
+          </thead>
+          <tbody id="rxBody"></tbody>
+        </table>
+        <button class="add-row-btn" onclick="addRxRow()">+ Agregar medicamento</button>
+      </div>
+
+      <div class="card">
+        <h3>Procedimientos indicados</h3>
+        <div class="checklist">
+          <label><input type="checkbox">Curaciones</label>
+          <label><input type="checkbox">Suturas</label>
+          <label><input type="checkbox">Catéter</label>
+          <label><input type="checkbox">Intubación</label>
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <label>Otro procedimiento</label>
+          <input type="text" placeholder="Especifique...">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Solicitud de exámenes</h3>
+        <div class="grid grid-3">
+          <div class="field"><label>Laboratorio</label><textarea rows="2" placeholder="Ej. Hemograma de control"></textarea></div>
+          <div class="field"><label>Imágenes</label><textarea rows="2" placeholder="Ej. TAC abdominal"></textarea></div>
+          <div class="field"><label>Otros procedimientos</label><textarea rows="2" placeholder="Ej. ECG de control"></textarea></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Interconsultas</h3>
+        <div class="checklist">
+          <label><input type="checkbox">Cardiología</label>
+          <label><input type="checkbox">Cirugía</label>
+          <label><input type="checkbox">Nutrición</label>
+          <label><input type="checkbox">Psicología</label>
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <label>Otra especialidad</label>
+          <input type="text" placeholder="Especifique...">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Indicaciones generales</h3>
+        <div class="grid grid-4">
+          <div class="field"><label>Dieta</label><input type="text" placeholder="Ej. Blanda"></div>
+          <div class="field"><label>Reposo</label><input type="text" placeholder="Ej. Relativo"></div>
+          <div class="field"><label>Hidratación</label><input type="text" placeholder="Ej. VO libre demanda"></div>
+          <div class="field"><label>Oxígeno</label><input type="text" placeholder="Ej. Cánula 2L/min"></div>
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <label>Restricciones</label>
+          <textarea rows="2" placeholder="Ej. Restricción de sodio, no deambular sin apoyo..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 : LIBRE -->
+    <section class="panel" id="p8">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 08</span>
+        <h2>Evolución clínica</h2>
+        <p>Campo libre para la redacción narrativa del médico.</p>
+      </div>
+      <div class="card free-text-block">
+        <textarea id="freeText" placeholder="Paciente hemodinámicamente estable. Continúa con disminución del dolor abdominal. Tolera vía oral. Sin fiebre. Se mantiene tratamiento antibiótico con buena respuesta clínica."></textarea>
+        <div class="char-count" id="charCount">0 caracteres</div>
+      </div>
+    </section>
+
+    <!-- 9 : ÓRDENES -->
+    <section class="panel" id="p9">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 09</span>
+        <h2>Órdenes médicas</h2>
+      </div>
+      <div class="card">
+        <div class="checklist">
+          <label><input type="radio" name="orden">Hospitalización</label>
+          <label><input type="radio" name="orden">Alta</label>
+          <label><input type="radio" name="orden">Traslado</label>
+          <label><input type="radio" name="orden">Observación</label>
+          <label><input type="radio" name="orden">Cirugía</label>
+          <label><input type="radio" name="orden">Aislamiento</label>
+          <label><input type="radio" name="orden">Referencia</label>
+          <label><input type="radio" name="orden">Contrarreferencia</label>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label>Detalle de la orden</label>
+          <textarea rows="2" placeholder="Especifique detalles, destino de traslado, motivo de referencia, etc."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 : PRESCRIPCIÓN -->
+    <section class="panel" id="p10">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 10</span>
+        <h2>Prescripción médica</h2>
+        <p>Integrada con farmacia — receta electrónica.</p>
+      </div>
+      <div class="card">
+        <h3>Receta electrónica</h3>
+        <table class="data-table" id="pxTable">
+          <thead><tr><th>Ítem</th><th>Tipo</th><th>Cantidad</th><th>Indicación</th><th></th></tr></thead>
+          <tbody id="pxBody"></tbody>
+        </table>
+        <button class="add-row-btn" onclick="addPxRow()">+ Agregar ítem (medicamento / material / insumo)</button>
+      </div>
+    </section>
+
+    <!-- 11 : PROCEDIMIENTOS REALIZADOS -->
+    <section class="panel" id="p11">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 11</span>
+        <h2>Procedimientos realizados</h2>
+      </div>
+      <div class="card">
+        <table class="data-table" id="procTable">
+          <thead><tr><th>Código CPT</th><th>Descripción</th><th>Hora</th><th>Profesional responsable</th><th></th></tr></thead>
+          <tbody id="procBody"></tbody>
+        </table>
+        <button class="add-row-btn" onclick="addProcRow()">+ Agregar procedimiento</button>
+      </div>
+    </section>
+
+    <!-- 12 : INCAPACIDAD -->
+    <section class="panel" id="p12">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 12</span>
+        <h2>Incapacidad / Descanso médico</h2>
+      </div>
+      <div class="card">
+        <div class="grid grid-3">
+          <div class="field"><label>Días</label><input type="number" placeholder="3"></div>
+          <div class="field"><label>Fecha de inicio</label><input type="date"></div>
+          <div class="field"><label>Fecha de fin</label><input type="date"></div>
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <label>Motivo</label>
+          <textarea rows="2" placeholder="Especifique el motivo del descanso médico..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13 : CERTIFICADOS -->
+    <section class="panel" id="p13">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 13</span>
+        <h2>Certificados</h2>
+      </div>
+      <div class="card">
+        <div class="checklist">
+          <label><input type="checkbox">Certificado médico</label>
+          <label><input type="checkbox">Informe médico</label>
+          <label><input type="checkbox">Epicrisis</label>
+          <label><input type="checkbox">Constancias</label>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label>Contenido / observaciones del documento</label>
+          <textarea rows="4" placeholder="Redacte el contenido del certificado o informe seleccionado..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 : ADJUNTOS -->
+    <section class="panel" id="p14">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 14</span>
+        <h2>Adjuntos</h2>
+      </div>
+      <div class="card">
+        <div class="attach-drop">
+          Arrastre archivos aquí o haga clic para adjuntar<br>
+          <span class="tag-badge">Imágenes</span> <span class="tag-badge">PDF</span> <span class="tag-badge">Fotografías</span> <span class="tag-badge">Consentimientos</span> <span class="tag-badge">Resultados externos</span>
+        </div>
+        <ul class="attach-list" id="attachList">
+          <li><span>📄 informe_ecografia_240726.pdf</span><span class="status-pill status-ok">Cargado</span></li>
+          <li><span>🖼️ foto_lesion_post_qx.jpg</span><span class="status-pill status-ok">Cargado</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 15 : FIRMA -->
+    <section class="panel" id="p15">
+      <div class="panel-header">
+        <span class="eyebrow">Sección 15</span>
+        <h2>Firma y auditoría</h2>
+        <p>Al firmar, la evolución queda bloqueada para edición y registrada en el trazo de auditoría.</p>
+      </div>
+      <div class="card signature-box">
+        <div>
+          <h3>Firma digital</h3>
+          <div class="signature-pad">Firma pendiente</div>
+          <button class="btn btn-primary" style="margin-top:14px; width:100%;">Firmar evolución</button>
+        </div>
+        <div>
+          <h3>Registro de auditoría</h3>
+          <ul class="audit-list">
+            <li><span>Fecha</span><span id="auditFecha">—</span></li>
+            <li><span>Hora</span><span id="auditHora">—</span></li>
+            <li><span>Usuario</span><span>—</span></li>
+            <li><span>IP del equipo</span><span>—</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-nav">
+      <button class="btn btn-ghost" id="prevBtn" style="color:var(--primary-dark); border-color:var(--line);">← Anterior</button>
+      <button class="btn btn-ghost" id="nextBtn" style="color:var(--primary-dark); border-color:var(--line);">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /formView -->
+
+<script>
+  // ==========================================================================
+  // BANDEJA DE PACIENTES Y EVOLUCIONES
+  // ==========================================================================
+  // Datos de ejemplo — en producción esto vendría del backend de la HCE.
+  const patients = [
+    {
+      id: 'p1', nombre: 'García Rojas, Manuel', hc: 'HC-004821', edad: 68, sexo: 'M',
+      servicio: 'Hospitalización', ubicacion: 'Sala 3 · Cama 12',
+      evoluciones: [
+        { n:'EV-2026-000481', fecha:'2026-07-26', hora:'08:15', tipo:'Hospitalización', medico:'Dr. Salazar', motivo:'Control', estado:'Estable' },
+        { n:'EV-2026-000465', fecha:'2026-07-25', hora:'19:40', tipo:'Hospitalización', medico:'Dra. Peña', motivo:'Postoperatorio', estado:'Delicado' },
+        { n:'EV-2026-000450', fecha:'2026-07-24', hora:'09:05', tipo:'Emergencia', medico:'Dr. Salazar', motivo:'Motivo de consulta', estado:'Crítico' },
+      ]
+    },
+    {
+      id: 'p2', nombre: 'Fernández Cruz, Lucía', hc: 'HC-003390', edad: 34, sexo: 'F',
+      servicio: 'UCI', ubicacion: 'UCI · Cama 04',
+      evoluciones: [
+        { n:'EV-2026-000479', fecha:'2026-07-26', hora:'06:50', tipo:'UCI', medico:'Dr. Ibáñez', motivo:'Reevaluación', estado:'Crítico' },
+        { n:'EV-2026-000460', fecha:'2026-07-25', hora:'06:30', tipo:'UCI', medico:'Dr. Ibáñez', motivo:'Seguimiento', estado:'Delicado' },
+      ]
+    },
+    {
+      id: 'p3', nombre: 'Torres Medina, Ana Sofía', hc: 'HC-005112', edad: 5, sexo: 'F',
+      servicio: 'Consulta externa', ubicacion: 'Consultorio 7',
+      evoluciones: [
+        { n:'EV-2026-000410', fecha:'2026-07-10', hora:'11:20', tipo:'Consulta externa', medico:'Dra. Vidal', motivo:'Control', estado:'Estable' },
+      ]
+    },
+    {
+      id: 'p4', nombre: 'Huamán Quispe, Roberto', hc: 'HC-002207', edad: 52, sexo: 'M',
+      servicio: 'Hospitalización', ubicacion: 'Sala 1 · Cama 05',
+      evoluciones: []
+    },
+  ];
+
+  let selectedPatientId = null;
+  let evCounter = 483; // siguiente correlativo de evolución
+
+  function renderPatientList(filter){
+    const list = document.getElementById('patientList');
+    list.innerHTML = '';
+    const f = (filter||'').toLowerCase();
+    patients
+      .filter(p => p.nombre.toLowerCase().includes(f) || p.hc.toLowerCase().includes(f))
+      .forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'patient-card' + (p.id === selectedPatientId ? ' active' : '');
+        card.innerHTML = `
+          <div class="pname">${p.nombre}</div>
+          <div class="pmeta"><span>${p.hc}</span><span>${p.edad} años · ${p.sexo}</span></div>
+          <div class="ploc">${p.servicio} — ${p.ubicacion}</div>
+        `;
+        card.addEventListener('click', () => selectPatient(p.id));
+        list.appendChild(card);
+      });
+  }
+
+  function selectPatient(id){
+    selectedPatientId = id;
+    renderPatientList(document.getElementById('patientSearch').value);
+    renderBandejaMain();
+  }
+
+  function renderBandejaMain(){
+    const main = document.getElementById('bandejaMain');
+    const p = patients.find(x => x.id === selectedPatientId);
+    if(!p){
+      main.innerHTML = `
+        <div class="empty-state">
+          <div class="glyph">🗂️</div>
+          <div>Seleccione un paciente en el panel izquierdo para ver su bandeja de evoluciones.</div>
+        </div>`;
+      return;
+    }
+    const rows = p.evoluciones.map(e => `
+      <tr>
+        <td style="font-family:var(--font-mono); font-size:11.5px;">${e.n}</td>
+        <td>${formatFecha(e.fecha)}</td>
+        <td>${e.hora}</td>
+        <td><span class="tray-type">${e.tipo}</span></td>
+        <td>${e.medico}</td>
+        <td>${e.motivo}</td>
+        <td>${estadoPill(e.estado)}</td>
+        <td><button class="tray-link" onclick="openEvolution('${p.id}', '${e.n}')">Ver / continuar</button></td>
+      </tr>
+    `).join('');
+
+    main.innerHTML = `
+      <div class="patient-banner">
+        <div>
+          <div class="pb-name">${p.nombre}</div>
+          <div class="pb-meta">
+            <span><b>${p.hc}</b></span>
+            <span>${p.edad} años · ${p.sexo}</span>
+            <span>${p.servicio}</span>
+            <span>${p.ubicacion}</span>
+            <span>${p.evoluciones.length} evolución(es) registrada(s)</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="openEvolution('${p.id}')">+ Nueva evolución</button>
+      </div>
+      <div class="card">
+        <h3>Bandeja de evoluciones</h3>
+        ${p.evoluciones.length ? `
+        <table class="tray-table">
+          <thead><tr><th>N.º</th><th>Fecha</th><th>Hora</th><th>Tipo</th><th>Médico</th><th>Motivo</th><th>Estado</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` : `
+        <div class="empty-state" style="padding:34px 10px;">
+          <div class="glyph">📝</div>
+          <div>Este paciente aún no tiene evoluciones registradas. Use "+ Nueva evolución" para crear la primera.</div>
+        </div>`}
+      </div>
+    `;
+  }
+
+  function formatFecha(iso){
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function estadoPill(estado){
+    const map = { 'Crítico':'status-alert', 'Delicado':'status-alert', 'Estable':'status-ok', 'Alta':'status-active' };
+    const cls = map[estado] || 'status-active';
+    return `<span class="status-pill ${cls}">${estado}</span>`;
+  }
+
+  document.getElementById('patientSearch').addEventListener('input', (e) => renderPatientList(e.target.value));
+
+  // Abre el formulario de evolución para un paciente. Si se pasa un N.º de
+  // evolución existente, lo carga en modo "continuar"; si no, crea una nueva.
+  function openEvolution(patientId, existingN){
+    const p = patients.find(x => x.id === patientId);
+    if(!p) return;
+    selectedPatientId = patientId;
+
+    let ev;
+    if(existingN){
+      ev = p.evoluciones.find(x => x.n === existingN);
+    } else {
+      evCounter++;
+      ev = { n:`EV-2026-${String(evCounter).padStart(6,'0')}`, fecha:new Date().toISOString().slice(0,10),
+             hora:new Date().toTimeString().slice(0,5), tipo:p.servicio, medico:'', motivo:'', estado:'Estable' };
+      p.evoluciones.unshift(ev);
+    }
+
+    // Encabezado del formulario
+    document.getElementById('brandSub').textContent = `Evolución de ${p.nombre}`;
+    document.querySelector('.encounter-strip input[readonly]').value = ev.n;
+    document.getElementById('fecha').value = ev.fecha;
+    document.getElementById('hora').value = ev.hora;
+
+    document.getElementById('formPatientBanner').innerHTML = `
+      <div>
+        <div class="pb-name">${p.nombre}</div>
+        <div class="pb-meta">
+          <span><b>${p.hc}</b></span>
+          <span>${p.edad} años · ${p.sexo}</span>
+          <span>${p.servicio}</span>
+          <span>${p.ubicacion}</span>
+        </div>
+      </div>
+      <span class="tag-badge">${ev.n}</span>
+    `;
+
+    document.body.classList.add('mode-form');
+    showPanel('p1');
+  }
+
+  document.getElementById('backToTrayBtn').addEventListener('click', () => {
+    document.body.classList.remove('mode-form');
+    renderPatientList(document.getElementById('patientSearch').value);
+    renderBandejaMain();
+  });
+
+  // Estado inicial: bandeja vacía hasta que se elija un paciente
+  renderPatientList('');
+  renderBandejaMain();
+
+  // ---------- Navegación entre secciones ----------
+  const navItems = Array.from(document.querySelectorAll('.nav-item'));
+  const panels = Array.from(document.querySelectorAll('.panel'));
+
+  function showPanel(id){
+    panels.forEach(p => p.classList.toggle('active', p.id === id));
+    navItems.forEach(n => n.classList.toggle('active', n.dataset.target === id));
+    document.querySelector('.content').scrollTo(0,0);
+    window.scrollTo(0,0);
+  }
+  navItems.forEach(item => item.addEventListener('click', () => showPanel(item.dataset.target)));
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    const idx = navItems.findIndex(n => n.classList.contains('active'));
+    if(idx > 0) showPanel(navItems[idx-1].dataset.target);
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    const idx = navItems.findIndex(n => n.classList.contains('active'));
+    if(idx < navItems.length-1) showPanel(navItems[idx+1].dataset.target);
+  });
+
+  // ---------- Fecha/hora por defecto ----------
+  const now = new Date();
+  document.getElementById('fecha').value = now.toISOString().slice(0,10);
+  document.getElementById('hora').value = now.toTimeString().slice(0,5);
+  document.getElementById('auditFecha').textContent = now.toISOString().slice(0,10);
+  document.getElementById('auditHora').textContent = now.toTimeString().slice(0,5);
+
+  // ---------- IMC automático ----------
+  function calcIMC(){
+    const peso = parseFloat(document.getElementById('peso').value);
+    const talla = parseFloat(document.getElementById('talla').value);
+    const imcBox = document.getElementById('imc');
+    if(peso > 0 && talla > 0){
+      imcBox.value = (peso / (talla*talla)).toFixed(1);
+    } else {
+      imcBox.value = '';
+    }
+  }
+  document.getElementById('peso').addEventListener('input', calcIMC);
+  document.getElementById('talla').addEventListener('input', calcIMC);
+
+  // ---------- Examen físico por sistemas ----------
+  const sistemas = ['Estado general','Piel','Cabeza','Cuello','Ojos','Oídos','Nariz','Boca',
+    'Tórax','Pulmones','Corazón','Abdomen','Genitourinario','Extremidades','Neurológico',
+    'Osteomuscular','Estado mental'];
+  const examContainer = document.getElementById('examFisico');
+  sistemas.forEach(sys => {
+    const row = document.createElement('div');
+    row.className = 'system-row';
+    row.innerHTML = `
+      <div class="sys-name">${sys}</div>
+      <textarea rows="1" placeholder="Hallazgos normales / anormales de ${sys.toLowerCase()}..."></textarea>
+    `;
+    examContainer.appendChild(row);
+  });
+
+  // ---------- Filas dinámicas: Diagnósticos ----------
+  function addDxRow(){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" placeholder="A09.9"></td>
+      <td><input type="text" placeholder="Descripción del diagnóstico"></td>
+      <td>
+        <select>
+          <option>Presuntivo</option>
+          <option>Definitivo</option>
+          <option>Repetido</option>
+        </select>
+      </td>
+      <td>
+        <select>
+          <option>Principal</option>
+          <option>Secundario</option>
+        </select>
+      </td>
+      <td>
+        <select>
+          <option>Activo</option>
+          <option>Resuelto</option>
+        </select>
+      </td>
+      <td><button class="row-remove" onclick="this.closest('tr').remove()">✕</button></td>
+    `;
+    document.getElementById('dxBody').appendChild(tr);
+  }
+
+  // ---------- Filas dinámicas: Tratamiento farmacológico ----------
+  function addRxRow(){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" placeholder="Medicamento"></td>
+      <td><input type="text" placeholder="Ej. 500mg"></td>
+      <td><input type="text" placeholder="Ej. c/8h"></td>
+      <td>
+        <select>
+          <option>Oral</option>
+          <option>Endovenosa</option>
+          <option>Intramuscular</option>
+          <option>Subcutánea</option>
+          <option>Tópica</option>
+          <option>Inhalatoria</option>
+        </select>
+      </td>
+      <td><input type="text" placeholder="Ej. 7 días"></td>
+      <td><button class="row-remove" onclick="this.closest('tr').remove()">✕</button></td>
+    `;
+    document.getElementById('rxBody').appendChild(tr);
+  }
+
+  // ---------- Filas dinámicas: Prescripción / receta ----------
+  function addPxRow(){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" placeholder="Nombre del ítem"></td>
+      <td>
+        <select>
+          <option>Medicamento</option>
+          <option>Material médico</option>
+          <option>Insumo</option>
+        </select>
+      </td>
+      <td><input type="text" placeholder="Ej. 1 caja"></td>
+      <td><input type="text" placeholder="Indicación de uso"></td>
+      <td><button class="row-remove" onclick="this.closest('tr').remove()">✕</button></td>
+    `;
+    document.getElementById('pxBody').appendChild(tr);
+  }
+
+  // ---------- Filas dinámicas: Procedimientos realizados ----------
+  function addProcRow(){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" placeholder="Ej. 12001"></td>
+      <td><input type="text" placeholder="Descripción del procedimiento"></td>
+      <td><input type="time"></td>
+      <td><input type="text" placeholder="Profesional responsable"></td>
+      <td><button class="row-remove" onclick="this.closest('tr').remove()">✕</button></td>
+    `;
+    document.getElementById('procBody').appendChild(tr);
+  }
+
+  // filas iniciales
+  addDxRow(); addRxRow(); addPxRow(); addProcRow();
+
+  // ---------- Contador de caracteres, evolución libre ----------
+  const freeText = document.getElementById('freeText');
+  const charCount = document.getElementById('charCount');
+  freeText.addEventListener('input', () => {
+    charCount.textContent = freeText.value.length + ' caracteres';
+  });
+
+  // ---------- Guardar (simulado) ----------
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    const pill = document.getElementById('statusPill');
+    pill.textContent = '● Evolución guardada';
+    pill.classList.remove('status-active');
+    pill.classList.add('status-ok');
+  });
+</script>
+
+</body>
+</html>
