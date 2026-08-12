@@ -14,4 +14,10 @@ export class AuthApiService {
       body: JSON.stringify({ username, password })
     }, false);
   }
+
+  getMenus(): Promise<import('../../../../../compartido/tipos/tipos').IAuthMenus> {
+    return this.apiClient.request<import('../../../../../compartido/tipos/tipos').IAuthMenus>('/api/v1/auth/menus', {
+      method: 'GET'
+    });
+  }
 }

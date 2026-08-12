@@ -1,0 +1,150 @@
+<!-- FARMACOLÓGICO -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
+  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+    Tratamiento farmacológico
+  </h3>
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse text-[13px]">
+      <thead>
+        <tr>
+          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Medicamento</th>
+          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Dosis</th>
+          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Frecuencia</th>
+          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Vía</th>
+          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Duración</th>
+          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold w-10"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (ctrl of farmacologicoArray.controls; track ctrl; let i = $index) {
+          <tr [formGroup]="getFormGroup(i)" class="border-b border-slate-100">
+            <td class="p-1.5"><input type="text" formControlName="medicamento" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Medicamento"></td>
+            <td class="p-1.5"><input type="text" formControlName="dosis" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. 500mg"></td>
+            <td class="p-1.5"><input type="text" formControlName="frecuencia" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. c/8h"></td>
+            <td class="p-1.5">
+              <select formControlName="via" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800">
+                <option>Oral</option>
+                <option>Endovenosa</option>
+                <option>Intramuscular</option>
+                <option>Subcutánea</option>
+                <option>Tópica</option>
+                <option>Inhalatoria</option>
+              </select>
+            </td>
+            <td class="p-1.5"><input type="text" formControlName="duracion" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. 7 días"></td>
+            <td class="p-1.5 text-center">
+              <button class="text-red-600 hover:text-red-800 font-bold" (click)="removerMedicamento(i)">✕</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <button class="mt-3 bg-teal-50 text-teal-700 border border-dashed border-teal-500 px-3 py-2 rounded-lg text-[12.6px] font-semibold hover:bg-teal-100 transition-colors"
+      (click)="agregarMedicamento()">+ Agregar medicamento</button>
+  </div>
+</div>
+
+<!-- PROCEDIMIENTOS INDICADOS -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm" [formGroup]="procedimientosIndicadosGroup">
+  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+    Procedimientos indicados
+  </h3>
+  <div class="flex flex-wrap gap-2 mb-4">
+    <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+      <input type="checkbox" formControlName="curaciones" class="accent-teal-600"> Curaciones
+    </label>
+    <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+      <input type="checkbox" formControlName="suturas" class="accent-teal-600"> Suturas
+    </label>
+    <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+      <input type="checkbox" formControlName="cateter" class="accent-teal-600"> Catéter
+    </label>
+    <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+      <input type="checkbox" formControlName="intubacion" class="accent-teal-600"> Intubación
+    </label>
+  </div>
+  <div class="flex flex-col">
+    <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Otro procedimiento</label>
+    <input type="text" formControlName="otro" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Especifique...">
+  </div>
+</div>
+
+<!-- SOLICITUD EXÁMENES -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm" [formGroup]="examenesGroup">
+  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+    Solicitud de exámenes
+  </h3>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="flex flex-col">
+      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Laboratorio</label>
+      <textarea rows="2" formControlName="laboratorio" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. Hemograma de control"></textarea>
+    </div>
+    <div class="flex flex-col">
+      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Imágenes</label>
+      <textarea rows="2" formControlName="imagenes" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. TAC abdominal"></textarea>
+    </div>
+    <div class="flex flex-col">
+      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Otros procedimientos</label>
+      <textarea rows="2" formControlName="otros" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. ECG de control"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- INTERCONSULTAS -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm" [formGroup]="interconsultasGroup">
+  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+    Interconsultas
+  </h3>
+  <div class="flex flex-wrap gap-2 mb-4">
+    <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+      <input type="checkbox" formControlName="cardiologia" class="accent-teal-600"> Cardiología
+    </label>
+    <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+      <input type="checkbox" formControlName="cirugia" class="accent-teal-600"> Cirugía
+    </label>
+    <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+      <input type="checkbox" formControlName="nutricion" class="accent-teal-600"> Nutrición
+    </label>
+    <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+      <input type="checkbox" formControlName="psicologia" class="accent-teal-600"> Psicología
+    </label>
+  </div>
+  <div class="flex flex-col">
+    <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Otra especialidad</label>
+    <input type="text" formControlName="otra" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Especifique...">
+  </div>
+</div>
+
+<!-- INDICACIONES GENERALES -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm" [formGroup]="indicacionesGroup">
+  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+    Indicaciones generales
+  </h3>
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+    <div class="flex flex-col">
+      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Dieta</label>
+      <input type="text" formControlName="dieta" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. Blanda">
+    </div>
+    <div class="flex flex-col">
+      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Reposo</label>
+      <input type="text" formControlName="reposo" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. Relativo">
+    </div>
+    <div class="flex flex-col">
+      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Hidratación</label>
+      <input type="text" formControlName="hidratacion" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. VO libre demanda">
+    </div>
+    <div class="flex flex-col">
+      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Oxígeno</label>
+      <input type="text" formControlName="oxigeno" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. Cánula 2L/min">
+    </div>
+  </div>
+  <div class="flex flex-col">
+    <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Restricciones</label>
+    <textarea rows="2" formControlName="restricciones" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. Restricción de sodio, no deambular sin apoyo..."></textarea>
+  </div>
+</div>

@@ -1,0 +1,67 @@
+<!-- ÓRDENES MÉDICAS -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm" [formGroup]="ordenesGroup">
+  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+    Órdenes médicas
+  </h3>
+  <div class="flex flex-col gap-3">
+    <div class="flex gap-4">
+      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer">
+        <input type="radio" formControlName="orden" value="alta" class="accent-teal-600"> Alta médica
+      </label>
+      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer">
+        <input type="radio" formControlName="orden" value="hospitalizacion" class="accent-teal-600"> Ingreso hospitalario
+      </label>
+      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer">
+        <input type="radio" formControlName="orden" value="observacion" class="accent-teal-600"> Observación
+      </label>
+      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer">
+        <input type="radio" formControlName="orden" value="traslado" class="accent-teal-600"> Traslado
+      </label>
+    </div>
+    <div class="flex flex-col">
+      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Detalle de la orden (servicio, cama, especialidad...)</label>
+      <textarea rows="2" formControlName="detalle" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Detalles..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- PRESCRIPCIÓN MÉDICA Y RECETA -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2">
+      <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+      Prescripción médica (Receta)
+    </h3>
+    <button class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded text-[12.6px] font-semibold shadow-sm transition-colors flex items-center gap-1.5">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+      Imprimir Receta
+    </button>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse text-[13px]">
+      <thead>
+        <tr>
+          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Medicamento y Presentación</th>
+          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold w-24">Cantidad</th>
+          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Indicaciones para el paciente</th>
+          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold w-10"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (ctrl of prescripcionArray.controls; track ctrl; let i = $index) {
+          <tr [formGroup]="getPrescripcionGroup(i)" class="border-b border-slate-100">
+            <td class="p-1.5"><input type="text" formControlName="medicamento" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. Paracetamol 500mg tabletas"></td>
+            <td class="p-1.5"><input type="number" formControlName="cantidad" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="0"></td>
+            <td class="p-1.5"><input type="text" formControlName="indicaciones" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Tomar 1 tableta cada 8h por 3 días"></td>
+            <td class="p-1.5 text-center">
+              <button class="text-red-600 hover:text-red-800 font-bold" (click)="removerPrescripcion(i)">✕</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <button class="mt-3 bg-teal-50 text-teal-700 border border-dashed border-teal-500 px-3 py-2 rounded-lg text-[12.6px] font-semibold hover:bg-teal-100 transition-colors"
+      (click)="agregarPrescripcion()">+ Agregar prescripción</button>
+  </div>
+</div>

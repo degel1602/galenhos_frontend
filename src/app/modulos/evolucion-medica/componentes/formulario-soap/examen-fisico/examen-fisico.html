@@ -1,0 +1,23 @@
+<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
+  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+    Examen físico por sistemas
+  </h3>
+  
+  <div class="grid grid-cols-[140px_1fr] md:grid-cols-[170px_1fr] gap-x-3.5 gap-y-2.5 items-start">
+    @for (control of formArray.controls; track i; let i = $index) {
+      <ng-container [formGroup]="getFormGroup(i)">
+        <div class="text-[12.6px] font-semibold pt-2 text-slate-800"
+             [class.border-t]="i > 0" [class.border-dashed]="i > 0" [class.border-slate-200]="i > 0"
+             [class.pt-2.5]="i > 0" [class.mt-0.5]="i > 0">
+          {{ control.get('sistema')?.value }}
+        </div>
+        <textarea formControlName="hallazgos" rows="1" 
+                  class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none transition-all resize-y" 
+                  [class.border-t]="i > 0" [class.border-dashed]="i > 0" [class.border-slate-200]="i > 0"
+                  [class.pt-2.5]="i > 0" [class.mt-0.5]="i > 0"
+                  placeholder="Hallazgos normales / anormales de {{ control.get('sistema')?.value | lowercase }}..."></textarea>
+      </ng-container>
+    }
+  </div>
+</div>

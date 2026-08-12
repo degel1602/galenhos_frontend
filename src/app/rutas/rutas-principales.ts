@@ -24,11 +24,12 @@ export const rutasPrincipales: Routes = [
       { path: 'dashboard', component: DashboardComponent, data: { title: 'Dashboard' } },
       { path: 'pacientes', component: PacientesListaComponent, data: { title: 'Pacientes' } },
       { path: 'citas', component: CitasComponent, data: { title: 'Citas' } },
-      { path: 'triaje', component: TriajeComponent, data: { title: 'Triaje' } },
-      { path: 'admisiones', component: AdmisionesComponent, data: { title: 'Admisiones' } },
+      { path: 'triajes', component: TriajeComponent, data: { title: 'Triaje' } },
+      { path: 'emergencia_triaje', component: TriajeComponent, data: { title: 'Triaje Emergencia' } },
+      { path: 'admisionemergencia', component: AdmisionesComponent, data: { title: 'Admisiones' } },
       { path: 'configuracion', component: ConfiguracionComponent, data: { title: 'Configuración' } },
       { 
-        path: 'evolucion', 
+        path: 'hospitalizacion', 
         loadComponent: () => import('../modulos/evolucion-medica/componentes/evolucion-raiz/evolucion-raiz').then(m => m.EvolucionRaizComponent),
         data: { title: 'Evolución Médica' } 
       }

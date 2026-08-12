@@ -42,3 +42,32 @@ export interface IApiErrorPayload {
   code: string;
   message: string;
 }
+
+export interface IMenu {
+  idListGrupo: number;
+  texto: string;
+  keyIconWeb: string;
+  claveWeb: string;
+  indice: number;
+  estado: boolean;
+  nroSubMenu: number;
+}
+
+export interface IMenuPermiso {
+  opciones: string;
+  indice: number;
+  texto: string;
+  menu: string;
+  idListGrupo: number;
+  keyIconWeb: string;
+  estado: boolean;
+  claveWeb: string;
+  agregar: boolean;
+  modificar: boolean;
+  eliminar: boolean;
+}
+
+export interface IAuthMenus {
+  menus: IMenu[];
+  permisos: IMenuPermiso[];
+}

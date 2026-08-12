@@ -7,6 +7,10 @@ import { ApiClientService } from '../../../../../compartido/api-client/api-clien
 export class PacientesApiService {
   private apiClient = inject(ApiClientService);
 
+  listar(params: string): Promise<any> {
+    return this.apiClient.request<any>(`/api/v1/pacientes?${params}`);
+  }
+
   buscar(params: string): Promise<any> {
     return this.apiClient.request<any>(`/api/v1/pacientes/buscar?${params}`);
   }
