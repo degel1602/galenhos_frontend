@@ -13,59 +13,81 @@
     </button>
   </div>
 
+  <div style="display: flex; gap: 10px; align-items: end;">
+    <div>
+      <label for="fechaTriaje" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Fecha</label>
+      <input id="fechaTriaje" type="date" [(ngModel)]="fecha" style="width: 100%; padding: 9px 12px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;" />
+    </div>
+    <div style="flex: 1; max-width: 360px;">
+      <label for="filtroTriaje" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Buscar</label>
+      <input id="filtroTriaje" [(ngModel)]="filtro" (keydown.enter)="cargarLista()" placeholder="Nombre o documento..."
+             style="width: 100%; padding: 10px 14px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;" />
+    </div>
+    <button (click)="cargarLista()" [disabled]="cargando" class="gp-primary-btn" style="padding: 10px 22px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 13.5px; font-weight: 600; cursor: pointer; height: 38px; display: flex; align-items: center;">
+      {{ cargando ? 'Cargando…' : 'Buscar' }}
+    </button>
+  </div>
+
+  @if (error) {
+    <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+      {{ error }}
+    </div>
+  }
+
+  @if (mensajeExito) {
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+      {{ mensajeExito }}
+    </div>
+  }
+
   <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; overflow: hidden;">
     <div style="padding: 18px 20px; border-bottom: 1px solid #e6eaf2; display: flex; align-items: center; justify-content: space-between;">
       <div style="font-size: 14px; font-weight: 600; color: #07153a;">Pacientes en espera de triaje</div>
     </div>
-    
+
     <div style="overflow-x: auto;">
       <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
         <thead>
           <tr style="background: #f8fafc; border-bottom: 1px solid #e6eaf2;">
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f; width: 90px;">Código</th>
             <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f; width: 110px;">Documento</th>
             <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f;">Paciente</th>
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f; width: 140px;">Seguro</th>
             <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f; width: 100px;">Llegada</th>
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f; width: 120px;">Estado</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f; width: 120px;">Esperando</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #54617f; width: 150px;">Prioridad</th>
             <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #54617f; width: 120px;">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          @if (pacientes.length === 0) {
-            <tr><td colspan="7" style="padding: 24px; text-align: center; color: #7a86a1;">No hay pacientes en espera de triaje.</td></tr>
+          @if (cargando) {
+            <tr><td colspan="6" style="padding: 24px; text-align: center; color: #7a86a1;">Cargando...</td></tr>
+          } @else if (pacientes.length === 0) {
+            <tr><td colspan="6" style="padding: 24px; text-align: center; color: #7a86a1;">No hay pacientes en esta bandeja.</td></tr>
           } @else {
-            @for (p of pacientes; track p.id) {
+            @for (p of pacientes; track $index) {
               <tr style="border-bottom: 1px solid #e6eaf2;">
-                <td style="padding: 12px 16px; color: #07153a; font-weight: 500;">{{ p.codigo }}</td>
                 <td style="padding: 12px 16px; color: #54617f;">
-                  @if (p.documento) {
-                    {{ p.tipoDocumento }}: {{ p.documento }}
-                  } @else {
-                    <span style="color: #9aa6c0; font-style: italic;">Sin doc.</span>
-                  }
+                  @if (tipoDocumento(p)) { <span style="font-size: 10.5px; font-weight: 700; color: #94a0bd; display: block;">{{ tipoDocumento(p) }}</span> }
+                  {{ documento(p) || '—' }}
                 </td>
-                <td style="padding: 12px 16px; color: #07153a; font-weight: 500;">{{ p.nombre }}</td>
-                <td style="padding: 12px 16px; color: #54617f;">
-                  @if (p.seguro) {
-                    <span style="display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; background: #e0e9fb; color: #263c7a;">{{ p.seguro }}</span>
-                  } @else {
-                    <span style="color: #9aa6c0; font-style: italic;">No indicado</span>
-                  }
-                </td>
-                <td style="padding: 12px 16px; color: #54617f;">{{ tiempoEspera(p.arrivalTs) }} min</td>
+                <td style="padding: 12px 16px; color: #07153a; font-weight: 500;">{{ nombrePaciente(p) }}</td>
+                <td style="padding: 12px 16px; color: #54617f;">{{ hora(p) }}</td>
+                <td style="padding: 12px 16px; color: #54617f;">{{ tiempoEspera(p) }}</td>
                 <td style="padding: 12px 16px;">
-                  @if (p.estado === 'sin-triaje') {
-                    <etiqueta type="warning">En Espera</etiqueta>
+                  @if (estadoTriaje(p) === 'triado') {
+                    @if (prioridad(p)) {
+                      <etiqueta variante="warning">{{ prioridad(p) }}</etiqueta>
+                    } @else {
+                      <etiqueta variante="success">Triado</etiqueta>
+                    }
                   } @else {
-                    <etiqueta type="success">Triado</etiqueta>
+                    <etiqueta variante="neutral">Sin triaje</etiqueta>
                   }
                 </td>
                 <td style="padding: 12px 16px; text-align: center;">
-                  @if (p.estado === 'sin-triaje') {
-                    <button (click)="iniciarTriaje(p)" class="gp-ghost-btn" style="padding: 6px 12px; border: 1px solid #d5dceb; border-radius: 8px; background: #fff; font-size: 12px; font-weight: 600; color: #263c7a; cursor: pointer;">Evaluar</button>
+                  @if (estadoTriaje(p) === 'triado') {
+                    <button (click)="abrirEvaluacion(p)" class="gp-ghost-btn" style="padding: 6px 12px; border: 1px solid #e0e9fb; border-radius: 8px; background: #f2f5fb; font-size: 12px; font-weight: 600; color: #263c7a; cursor: pointer;">Ver</button>
                   } @else {
-                    <button class="gp-ghost-btn" style="padding: 6px 12px; border: 1px solid #e0e9fb; border-radius: 8px; background: #f2f5fb; font-size: 12px; font-weight: 600; color: #263c7a; cursor: pointer;">Ver</button>
+                    <button (click)="abrirEvaluacion(p)" class="gp-ghost-btn" style="padding: 6px 12px; border: 1px solid #d5dceb; border-radius: 8px; background: #fff; font-size: 12px; font-weight: 600; color: #263c7a; cursor: pointer;">Evaluar</button>
                   }
                 </td>
               </tr>
@@ -75,4 +97,113 @@
       </table>
     </div>
   </div>
+
+  <!-- Modal global de registro de paciente (compartido con la página Pacientes) -->
+  <registro-paciente-modal
+    [abierto]="modalRegistro"
+    [modo]="'triaje'"
+    titulo="Registrar paciente"
+    subtitulo="Identificación por documento para la bandeja de triaje"
+    (alCerrar)="cerrarModalRegistro()"
+    (registrado)="onPacienteRegistrado()">
+  </registro-paciente-modal>
+
+  @if (pacienteEvaluar) {
+    <ventana-modal [titulo]="'Evaluación de triaje · ' + nombrePaciente(pacienteEvaluar)" [ancho]="680" (alCerrar)="cerrarEvaluacion()">
+      <div style="display: flex; flex-direction: column; gap: 14px; font-size: 14px;">
+
+        <label style="display: flex; flex-direction: column; gap: 5px;">
+          <span style="font-size: 12px; font-weight: 600; color: #54617f;">Motivo de consulta <span style="color: #dc2626;">*</span></span>
+          <textarea [(ngModel)]="formEvaluacion.motivo" rows="2" placeholder="Describa el motivo de la atención" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a; resize: vertical; font-family: inherit;"></textarea>
+        </label>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">Presión arterial <span style="color: #dc2626;">*</span></span>
+            <input [(ngModel)]="formEvaluacion.presionArterial" maxlength="7" placeholder="120/80" style="width: 100%; min-width: 0; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">Frec. cardiaca (lpm) <span style="color: #dc2626;">*</span></span>
+            <input type="number" min="0" max="300" [(ngModel)]="formEvaluacion.frecCardiaca" placeholder="82" style="width: 100%; min-width: 0; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">Frec. respiratoria (rpm) <span style="color: #dc2626;">*</span></span>
+            <input type="number" min="0" max="100" [(ngModel)]="formEvaluacion.frecRespiratoria" placeholder="18" style="width: 100%; min-width: 0; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">Temperatura (°C) <span style="color: #dc2626;">*</span></span>
+            <input type="number" min="30" max="45" step="0.1" [(ngModel)]="formEvaluacion.temperatura" placeholder="36.8" style="width: 100%; min-width: 0; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">SpO₂ (%) <span style="color: #dc2626;">*</span></span>
+            <input type="number" min="0" max="100" [(ngModel)]="formEvaluacion.saturacion" placeholder="98" style="width: 100%; min-width: 0; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">Escala del dolor (EVA 0–10)</span>
+            <input type="number" min="0" max="10" [(ngModel)]="formEvaluacion.escalaDolor" placeholder="0" style="width: 100%; min-width: 0; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">FiO₂ (%)</span>
+            <input type="number" min="21" max="100" [(ngModel)]="formEvaluacion.fiO2" placeholder="21" style="width: 100%; min-width: 0; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">Escala de Glasgow (3–15)</span>
+            <input type="number" min="3" max="15" [(ngModel)]="formEvaluacion.escalaGlasgow" placeholder="15" style="width: 100%; min-width: 0; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">Peso (kg)</span>
+            <input type="number" min="0" max="300" step="0.1" [(ngModel)]="formEvaluacion.peso" placeholder="70.5" style="width: 100%; min-width: 0; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">Talla (cm)</span>
+            <input type="number" min="0" max="250" step="0.1" [(ngModel)]="formEvaluacion.talla" placeholder="168" style="width: 100%; min-width: 0; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">Tiempo de evolución</span>
+            <div style="display: flex; gap: 8px;">
+              <input type="number" min="0" max="3650" [(ngModel)]="formEvaluacion.tiempoEvolucionCantidad" placeholder="30" style="width: 60%; min-width: 0; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+              <select [(ngModel)]="formEvaluacion.tiempoEvolucionCantidadUnidad" style="width: 40%; min-width: 0; padding: 10px 8px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 13px; background: #f8fafc; color: #07153a;">
+                <option value="">Unidad</option>
+                @for (u of unidadesTiempo; track u.value) {
+                  <option [value]="u.value">{{ u.label }}</option>
+                }
+              </select>
+            </div>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <span style="font-size: 12px; font-weight: 600; color: #54617f;">Servicio</span>
+            <select [(ngModel)]="formEvaluacion.idServicio" style="width: 100%; min-width: 0; padding: 10px 12px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+              <option value="">Seleccione…</option>
+              @for (s of servicios; track s.id) {
+                <option [value]="s.id">{{ s.nombre }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <label style="display: flex; flex-direction: column; gap: 5px;">
+          <span style="font-size: 12px; font-weight: 600; color: #54617f;">Prioridad de atención</span>
+          <select [(ngModel)]="formEvaluacion.idTipoPrioridad" style="padding: 10px 12px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+            <option value="">Seleccione…</option>
+            @for (pr of prioridades; track pr.value) {
+              <option [value]="pr.value">{{ pr.label }}</option>
+            }
+          </select>
+        </label>
+
+        @if (errorEvaluacion) {
+          <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+            {{ errorEvaluacion }}
+          </div>
+        }
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button (click)="cerrarEvaluacion()" class="gp-ghost-btn" style="padding: 10px 18px; border: 1px solid #e0e6f1; border-radius: 11px; background: #fff; font-size: 13px; font-weight: 600; color: #54617f; cursor: pointer;">Cancelar</button>
+          <button (click)="guardarEvaluacion()" [disabled]="guardandoEvaluacion" class="gp-primary-btn" style="padding: 10px 22px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer;">
+            {{ guardandoEvaluacion ? 'Guardando…' : 'Guardar evaluación' }}
+          </button>
+        </div>
+      </div>
+    </ventana-modal>
+  }
 </div>

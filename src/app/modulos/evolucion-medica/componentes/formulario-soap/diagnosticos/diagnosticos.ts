@@ -1,6 +1,14 @@
 import { Component, ChangeDetectionStrategy, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+
+export interface DxForm {
+  cie10: FormControl<string | null>;
+  descripcion: FormControl<string | null>;
+  tipo: FormControl<string | null>;
+  condicion: FormControl<string | null>;
+  estado: FormControl<string | null>;
+}
 
 @Component({
   selector: 'app-diagnosticos',
@@ -29,7 +37,7 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular
           </thead>
           <tbody>
             @for (dx of formArray.controls; track $index) {
-              <tr class="border-b border-slate-100 group" [formGroup]="$any(dx)">
+              <tr class="border-b border-slate-100 group" [formGroup]="dx">
                 <td class="p-1.5 align-top">
                   <input type="text" formControlName="cie10" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="A00.0">
                 </td>
@@ -73,7 +81,7 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular
   `
 })
 export class DiagnosticosComponent {
-  @Input({required: true}) formArray!: FormArray;
+  @Input({required: true}) formArray!: FormArray<FormGroup<DxForm>>;
   private fb = inject(FormBuilder);
 
   agregarDx() {
@@ -83,7 +91,7 @@ export class DiagnosticosComponent {
       tipo: ['Presuntivo'],
       condicion: ['Secundario'],
       estado: ['Activo']
-    }));
+    }) as FormGroup<DxForm>);
   }
 
   removerDx(index: number) {

@@ -4,9 +4,9 @@ import { Injectable, TemplateRef, signal } from '@angular/core';
   providedIn: 'root'
 })
 export class HeaderActionsService {
-  readonly template = signal<TemplateRef<any> | null>(null);
+  readonly template = signal<TemplateRef<unknown> | null>(null);
 
-  setTemplate(tpl: TemplateRef<any> | null) {
+  setTemplate(tpl: TemplateRef<unknown> | null) {
     this.template.set(tpl);
   }
 }

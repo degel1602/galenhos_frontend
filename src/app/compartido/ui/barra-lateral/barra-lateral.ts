@@ -21,9 +21,7 @@ export class BarraLateral {
   }
 
   get permisos() {
-    const p = this.authService.permisos();
-    console.log('Permisos:', p);
-    return p;
+    return this.authService.permisos();
   }
 
   getPermisosPorGrupo(idListGrupo: number) {

@@ -56,7 +56,7 @@ export class EvolucionRaizComponent implements AfterViewInit, OnDestroy {
   evolucionService = inject(EvolucionService);
   headerActionsService = inject(HeaderActionsService);
   
-  @ViewChild('headerActions') headerActionsTpl!: TemplateRef<any>;
+  @ViewChild('headerActions') headerActionsTpl!: TemplateRef<unknown>;
 
   ngAfterViewInit() {
     setTimeout(() => {

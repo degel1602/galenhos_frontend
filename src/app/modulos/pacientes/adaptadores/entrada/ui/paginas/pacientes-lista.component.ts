@@ -1,8 +1,9 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PacientesApiService } from '../../../salida/http/pacientes.api.service';
-import { VentanaModal } from '../../../../../../compartido/ui/ventana-modal/ventana-modal';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
+import { IPaciente } from '../../../../../../compartido/tipos/api-tipos';
+import { RegistroPacienteModal } from '../../../../../../compartido/ui/registro-paciente/registro-paciente-modal';
 
 interface Filtros {
   documento: string;
@@ -15,7 +16,7 @@ interface Filtros {
 @Component({
   selector: 'app-pacientes-lista',
   standalone: true,
-  imports: [FormsModule, VentanaModal],
+  imports: [FormsModule, RegistroPacienteModal],
   templateUrl: './pacientes-lista.component.html'
 })
 export class PacientesListaComponent implements OnInit {
@@ -30,11 +31,12 @@ export class PacientesListaComponent implements OnInit {
     nombres: ''
   };
 
-  pacientes: any[] = [];
+  pacientes: IPaciente[] = [];
   cargando = false;
   error = '';
   modalAbierto = false;
-  
+  mensajeExito = '';
+
   // Paginación
   paginaActual = 1;
   totalPaginas = 1;
@@ -84,7 +86,7 @@ export class PacientesListaComponent implements OnInit {
         if (pat) query.append('paterno', pat);
         if (mat) query.append('materno', mat);
         if (nom) query.append('nombres', nom);
-        
+
         const res = await this.pacientesApi.buscar(query.toString());
         this.pacientes = res || [];
         this.paginaActual = 1;
@@ -138,5 +140,11 @@ export class PacientesListaComponent implements OnInit {
 
   cerrarModal() {
     this.modalAbierto = false;
+  }
+
+  onPacienteRegistrado(nombre: string) {
+    this.mensajeExito = `Paciente ${nombre} registrado correctamente.`;
+    setTimeout(() => this.mensajeExito = '', 5000);
+    this.buscarPacientes();
   }
 }
