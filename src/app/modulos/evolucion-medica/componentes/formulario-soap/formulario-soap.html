@@ -2,32 +2,32 @@
   <!-- 1. INFORMACIÓN GENERAL (franja fija) -->
   <div class="bg-white border-b border-slate-200 p-3 md:p-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
     <div class="flex flex-col">
-      <label class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">N.º de evolución</label>
-      <input type="text" value="EV-2026-000482" readonly class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800">
+      <label for="soap-num-evolucion" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">N.º de evolución</label>
+      <input id="soap-num-evolucion" type="text" value="EV-2026-000482" readonly class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800">
     </div>
     <div class="flex flex-col">
-      <label class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Fecha</label>
-      <input type="date" value="2026-08-11" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+      <label for="soap-fecha" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Fecha</label>
+      <input id="soap-fecha" type="date" value="2026-08-11" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
     </div>
     <div class="flex flex-col">
-      <label class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Hora</label>
-      <input type="time" value="09:15" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+      <label for="soap-hora" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Hora</label>
+      <input id="soap-hora" type="time" value="09:15" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
     </div>
     <div class="flex flex-col">
-      <label class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Médico tratante</label>
-      <input type="text" placeholder="Dr(a). Nombre Apellido" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+      <label for="soap-medico" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Médico tratante</label>
+      <input id="soap-medico" type="text" placeholder="Dr(a). Nombre Apellido" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
     </div>
     <div class="flex flex-col">
-      <label class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Tipo de atención</label>
-      <select class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+      <label for="soap-tipo-atencion" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Tipo de atención</label>
+      <select id="soap-tipo-atencion" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
         <option>Consulta externa</option>
         <option>Emergencia</option>
         <option>Hospitalización</option>
       </select>
     </div>
     <div class="flex flex-col">
-      <label class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Estado</label>
-      <select class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+      <label for="soap-estado" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Estado</label>
+      <select id="soap-estado" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
         <option>Estable</option>
         <option>Delicado</option>
         <option>Crítico</option>
@@ -39,90 +39,96 @@
     <!-- NAV -->
     <nav class="bg-white border-r border-slate-200 p-4 pb-12 flex flex-col gap-1 overflow-y-auto">
       <div class="text-[10.5px] uppercase tracking-widest text-slate-500 p-3 pb-1">Encuentro</div>
-      <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
            [class.bg-teal-700]="activePanel() === 'p1'" [class.text-white]="activePanel() === 'p1'"
            [class.hover:bg-teal-50]="activePanel() !== 'p1'" [class.text-slate-800]="activePanel() !== 'p1'"
+           (keydown.enter)="activePanel.set('p1')"
            (click)="activePanel.set('p1')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p1'" [class.text-slate-400]="activePanel() !== 'p1'">01</span> Info. general
-      </div>
-      <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p1'" [class.text-slate-400]="activePanel() !== 'p1'">01</span> Info. general</button>
+      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
            [class.bg-teal-700]="activePanel() === 'p2'" [class.text-white]="activePanel() === 'p2'"
            [class.hover:bg-teal-50]="activePanel() !== 'p2'" [class.text-slate-800]="activePanel() !== 'p2'"
+           (keydown.enter)="activePanel.set('p2')"
            (click)="activePanel.set('p2')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p2'" [class.text-slate-400]="activePanel() !== 'p2'">02</span> Motivo
-      </div>
+        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p2'" [class.text-slate-400]="activePanel() !== 'p2'">02</span> Motivo</button>
 
       <div class="text-[10.5px] uppercase tracking-widest text-slate-500 p-3 pt-4 mt-2">Método SOAP</div>
       <div class="border-l-2 border-amber-200 ml-1.5 pl-2">
-        <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
+        <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
              [class.bg-teal-700]="activePanel() === 'p3'" [class.text-white]="activePanel() === 'p3'"
              [class.hover:bg-teal-50]="activePanel() !== 'p3'" [class.text-slate-800]="activePanel() !== 'p3'"
+             (keydown.enter)="activePanel.set('p3')"
              (click)="activePanel.set('p3')">
           <span class="absolute -left-2.5 w-4 h-4 rounded-full bg-amber-500 text-amber-950 font-mono text-[9.5px] font-bold flex items-center justify-center">S</span>
-          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p3'" [class.text-slate-400]="activePanel() !== 'p3'">03</span> Subjetivo
-        </div>
-        <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
+          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p3'" [class.text-slate-400]="activePanel() !== 'p3'">03</span> Subjetivo</button>
+        <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
              [class.bg-teal-700]="activePanel() === 'p4'" [class.text-white]="activePanel() === 'p4'"
              [class.hover:bg-teal-50]="activePanel() !== 'p4'" [class.text-slate-800]="activePanel() !== 'p4'"
+             (keydown.enter)="activePanel.set('p4')"
              (click)="activePanel.set('p4')">
           <span class="absolute -left-2.5 w-4 h-4 rounded-full bg-amber-500 text-amber-950 font-mono text-[9.5px] font-bold flex items-center justify-center">O</span>
-          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p4'" [class.text-slate-400]="activePanel() !== 'p4'">04</span> Objetivo
-        </div>
-        <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
+          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p4'" [class.text-slate-400]="activePanel() !== 'p4'">04</span> Objetivo</button>
+        <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
              [class.bg-teal-700]="activePanel() === 'p5'" [class.text-white]="activePanel() === 'p5'"
              [class.hover:bg-teal-50]="activePanel() !== 'p5'" [class.text-slate-800]="activePanel() !== 'p5'"
+             (keydown.enter)="activePanel.set('p5')"
              (click)="activePanel.set('p5')">
-          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p5'" [class.text-slate-400]="activePanel() !== 'p5'">05</span> Resultados
-        </div>
-        <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
+          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p5'" [class.text-slate-400]="activePanel() !== 'p5'">05</span> Resultados</button>
+        <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
              [class.bg-teal-700]="activePanel() === 'p6'" [class.text-white]="activePanel() === 'p6'"
              [class.hover:bg-teal-50]="activePanel() !== 'p6'" [class.text-slate-800]="activePanel() !== 'p6'"
+             (keydown.enter)="activePanel.set('p6')"
              (click)="activePanel.set('p6')">
           <span class="absolute -left-2.5 w-4 h-4 rounded-full bg-amber-500 text-amber-950 font-mono text-[9.5px] font-bold flex items-center justify-center">A</span>
-          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p6'" [class.text-slate-400]="activePanel() !== 'p6'">06</span> Evaluación
-        </div>
-        <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
+          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p6'" [class.text-slate-400]="activePanel() !== 'p6'">06</span> Evaluación</button>
+        <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
              [class.bg-teal-700]="activePanel() === 'p7'" [class.text-white]="activePanel() === 'p7'"
              [class.hover:bg-teal-50]="activePanel() !== 'p7'" [class.text-slate-800]="activePanel() !== 'p7'"
+             (keydown.enter)="activePanel.set('p7')"
              (click)="activePanel.set('p7')">
           <span class="absolute -left-2.5 w-4 h-4 rounded-full bg-amber-500 text-amber-950 font-mono text-[9.5px] font-bold flex items-center justify-center">P</span>
-          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p7'" [class.text-slate-400]="activePanel() !== 'p7'">07</span> Plan
-        </div>
+          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p7'" [class.text-slate-400]="activePanel() !== 'p7'">07</span> Plan</button>
       </div>
 
       <div class="text-[10.5px] uppercase tracking-widest text-slate-500 p-3 pt-4 mt-2">Documentación</div>
-      <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
            [class.bg-teal-700]="activePanel() === 'p8'" [class.text-white]="activePanel() === 'p8'"
            [class.hover:bg-teal-50]="activePanel() !== 'p8'" [class.text-slate-800]="activePanel() !== 'p8'"
+           (keydown.enter)="activePanel.set('p8')"
            (click)="activePanel.set('p8')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p8'" [class.text-slate-400]="activePanel() !== 'p8'">08</span> Evolución libre
-      </div>
-      <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p8'" [class.text-slate-400]="activePanel() !== 'p8'">08</span> Evolución libre</button>
+      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
            [class.bg-teal-700]="activePanel() === 'p9'" [class.text-white]="activePanel() === 'p9'"
            [class.hover:bg-teal-50]="activePanel() !== 'p9'" [class.text-slate-800]="activePanel() !== 'p9'"
+           (keydown.enter)="activePanel.set('p9')"
            (click)="activePanel.set('p9')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p9'" [class.text-slate-400]="activePanel() !== 'p9'">09</span> Órdenes médicas
-      </div>
-      <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p9'" [class.text-slate-400]="activePanel() !== 'p9'">09</span> Órdenes médicas</button>
+      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
            [class.bg-teal-700]="activePanel() === 'p11'" [class.text-white]="activePanel() === 'p11'"
            [class.hover:bg-teal-50]="activePanel() !== 'p11'" [class.text-slate-800]="activePanel() !== 'p11'"
+           (keydown.enter)="activePanel.set('p11')"
            (click)="activePanel.set('p11')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p11'" [class.text-slate-400]="activePanel() !== 'p11'">11</span> Proced. y Certif.
-      </div>
-      <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p11'" [class.text-slate-400]="activePanel() !== 'p11'">11</span> Proced. y Certif.</button>
+      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+           [class.bg-teal-700]="activePanel() === 'p10'" [class.text-white]="activePanel() === 'p10'"
+           [class.hover:bg-teal-50]="activePanel() !== 'p10'" [class.text-slate-800]="activePanel() !== 'p10'"
+           (keydown.enter)="activePanel.set('p10')"
+           (click)="activePanel.set('p10')">
+        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p10'" [class.text-slate-400]="activePanel() !== 'p10'">10</span> Interconsultas</button>
+      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
            [class.bg-teal-700]="activePanel() === 'p14'" [class.text-white]="activePanel() === 'p14'"
            [class.hover:bg-teal-50]="activePanel() !== 'p14'" [class.text-slate-800]="activePanel() !== 'p14'"
+           (keydown.enter)="activePanel.set('p14')"
            (click)="activePanel.set('p14')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p14'" [class.text-slate-400]="activePanel() !== 'p14'">14</span> Adjuntos
-      </div>
+        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p14'" [class.text-slate-400]="activePanel() !== 'p14'">14</span> Adjuntos</button>
 
       <div class="text-[10.5px] uppercase tracking-widest text-slate-500 p-3 pt-4 mt-2">Cierre</div>
-      <div class="nav-item flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
            [class.bg-teal-700]="activePanel() === 'p15'" [class.text-white]="activePanel() === 'p15'"
            [class.hover:bg-teal-50]="activePanel() !== 'p15'" [class.text-slate-800]="activePanel() !== 'p15'"
+           (keydown.enter)="activePanel.set('p15')"
            (click)="activePanel.set('p15')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p15'" [class.text-slate-400]="activePanel() !== 'p15'">15</span> Firma y auditoría
-      </div>
+        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p15'" [class.text-slate-400]="activePanel() !== 'p15'">15</span> Firma y auditoría</button>
     </nav>
 
     <!-- CONTENT -->
@@ -158,31 +164,31 @@
               Motivo principal
             </h3>
             <div class="flex flex-wrap gap-3 mb-4">
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="motivoConsulta" class="accent-teal-600"> Motivo de consulta
+              <label for="motivo-consulta" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="motivo-consulta" type="checkbox" formControlName="motivoConsulta" class="accent-teal-600"> Motivo de consulta
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="seguimiento" class="accent-teal-600"> Seguimiento
+              <label for="motivo-seguimiento" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="motivo-seguimiento" type="checkbox" formControlName="seguimiento" class="accent-teal-600"> Seguimiento
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="control" class="accent-teal-600"> Control
+              <label for="motivo-control" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="motivo-control" type="checkbox" formControlName="control" class="accent-teal-600"> Control
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="reevaluacion" class="accent-teal-600"> Reevaluación
+              <label for="motivo-reevaluacion" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="motivo-reevaluacion" type="checkbox" formControlName="reevaluacion" class="accent-teal-600"> Reevaluación
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="postoperatorio" class="accent-teal-600"> Postoperatorio
+              <label for="motivo-postoperatorio" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="motivo-postoperatorio" type="checkbox" formControlName="postoperatorio" class="accent-teal-600"> Postoperatorio
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="interconsulta" class="accent-teal-600"> Interconsulta
+              <label for="motivo-interconsulta" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="motivo-interconsulta" type="checkbox" formControlName="interconsulta" class="accent-teal-600"> Interconsulta
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="emergencia" class="accent-teal-600"> Emergencia
+              <label for="motivo-emergencia" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="motivo-emergencia" type="checkbox" formControlName="emergencia" class="accent-teal-600"> Emergencia
               </label>
             </div>
             <div class="flex flex-col">
-              <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Detalle del motivo</label>
-              <textarea rows="2" formControlName="detalle" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Especifique brevemente..."></textarea>
+              <label for="motivo-detalle" class="text-[11.5px] font-semibold text-slate-500 mb-1">Detalle del motivo</label>
+              <textarea id="motivo-detalle" rows="2" formControlName="detalle" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Especifique brevemente..."></textarea>
             </div>
           </div>
         </section>
@@ -201,38 +207,38 @@
               Síntomas referidos
             </h3>
             <div class="flex flex-wrap gap-3 mb-4">
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="dolor" class="accent-teal-600"> Dolor
+              <label for="subjetivo-dolor" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="subjetivo-dolor" type="checkbox" formControlName="dolor" class="accent-teal-600"> Dolor
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="fiebre" class="accent-teal-600"> Fiebre
+              <label for="subjetivo-fiebre" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="subjetivo-fiebre" type="checkbox" formControlName="fiebre" class="accent-teal-600"> Fiebre
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="tos" class="accent-teal-600"> Tos
+              <label for="subjetivo-tos" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="subjetivo-tos" type="checkbox" formControlName="tos" class="accent-teal-600"> Tos
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="nauseas" class="accent-teal-600"> Náuseas
+              <label for="subjetivo-nauseas" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="subjetivo-nauseas" type="checkbox" formControlName="nauseas" class="accent-teal-600"> Náuseas
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="vomitos" class="accent-teal-600"> Vómitos
+              <label for="subjetivo-vomitos" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="subjetivo-vomitos" type="checkbox" formControlName="vomitos" class="accent-teal-600"> Vómitos
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="mareos" class="accent-teal-600"> Mareos
+              <label for="subjetivo-mareos" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="subjetivo-mareos" type="checkbox" formControlName="mareos" class="accent-teal-600"> Mareos
               </label>
-              <label class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input type="checkbox" formControlName="disnea" class="accent-teal-600"> Disnea
+              <label for="subjetivo-disnea" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+                <input id="subjetivo-disnea" type="checkbox" formControlName="disnea" class="accent-teal-600"> Disnea
               </label>
             </div>
           </div>
           <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="flex flex-col">
-                <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Evolución de síntomas</label>
-                <textarea rows="3" formControlName="evolucionSintomas" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Describa cómo han evolucionado los síntomas..."></textarea>
+                <label for="subjetivo-evolucion" class="text-[11.5px] font-semibold text-slate-500 mb-1">Evolución de síntomas</label>
+                <textarea id="subjetivo-evolucion" rows="3" formControlName="evolucionSintomas" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Describa cómo han evolucionado los síntomas..."></textarea>
               </div>
               <div class="flex flex-col">
-                <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Escala del dolor (EVA 0–10)</label>
-                <input type="number" min="0" max="10" formControlName="escalaDolor" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="0">
+                <label for="subjetivo-escala-dolor" class="text-[11.5px] font-semibold text-slate-500 mb-1">Escala del dolor (EVA 0–10)</label>
+                <input id="subjetivo-escala-dolor" type="number" min="0" max="10" formControlName="escalaDolor" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="0">
               </div>
             </div>
           </div>
@@ -272,8 +278,8 @@
           <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm" formGroupName="evaluacion">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="flex flex-col">
-                <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Estado clínico</label>
-                <select formControlName="estadoClinico" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                <label for="evaluacion-estado-clinico" class="text-[11.5px] font-semibold text-slate-500 mb-1">Estado clínico</label>
+                <select id="evaluacion-estado-clinico" formControlName="estadoClinico" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
                   <option>Mejoría</option>
                   <option>Estacionario</option>
                   <option>Empeoramiento</option>
@@ -281,8 +287,8 @@
                 </select>
               </div>
               <div class="flex flex-col">
-                <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Pronóstico</label>
-                <select formControlName="pronostico" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                <label for="evaluacion-pronostico" class="text-[11.5px] font-semibold text-slate-500 mb-1">Pronóstico</label>
+                <select id="evaluacion-pronostico" formControlName="pronostico" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
                   <option>Bueno</option>
                   <option>Reservado</option>
                   <option>Malo</option>
@@ -313,7 +319,8 @@
             <p class="text-slate-500 text-[13px] m-0">Campo libre para la redacción narrativa del médico.</p>
           </div>
           <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-            <textarea formControlName="evolucionLibre" rows="8" class="w-full border border-slate-200 rounded-md p-3 text-[14.5px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y leading-relaxed" placeholder="Redacte la evolución clínica libremente..."></textarea>
+            <label for="evolucion-libre" class="sr-only">Evolución libre</label>
+            <textarea id="evolucion-libre" formControlName="evolucionLibre" rows="8" class="w-full border border-slate-200 rounded-md p-3 text-[14.5px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y leading-relaxed" placeholder="Redacte la evolución clínica libremente..."></textarea>
             <div class="text-right text-[11px] text-slate-500 mt-2">
               {{ soapForm.get('evolucionLibre')?.value?.length || 0 }} caracteres
             </div>
@@ -329,6 +336,17 @@
             <p class="text-slate-500 text-[13px] m-0">Integrada con farmacia.</p>
           </div>
           <app-ordenes-medicas [formGroup]="soapForm"></app-ordenes-medicas>
+        </section>
+      }
+
+      @if (activePanel() === 'p10') {
+        <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div class="mb-5">
+            <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 10</span>
+            <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Interconsultas</h2>
+            <p class="text-slate-500 text-[13px] m-0">Gestione las interconsultas solicitadas a otras especialidades.</p>
+          </div>
+          <app-interconsultas></app-interconsultas>
         </section>
       }
 
@@ -366,9 +384,21 @@
                    style="background: repeating-linear-gradient(45deg, #E4F0EE 0 2px, transparent 2px 14px);">
                 Firma pendiente
               </div>
-              <button class="w-full bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold py-2.5 rounded-lg shadow-sm transition-colors text-[13.5px]" (click)="firmar()">
-                Firmar evolución
-              </button>
+              @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
+                <button class="w-full bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold py-2.5 rounded-lg shadow-sm transition-colors text-[13.5px]" (click)="firmar()">
+                  @if (isSaving()) {
+                    <span class="flex items-center justify-center gap-2">
+                      <svg class="animate-spin h-4 w-4 text-amber-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Procesando...
+                    </span>
+                  } @else {
+                    Firmar evolución
+                  }
+                </button>
+              }
             </div>
             <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
               <h3 class="text-sm font-semibold text-teal-950 mb-4">Registro de auditoría</h3>
@@ -398,3 +428,6 @@
     </div>
   </div>
 }
+
+
+

@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MaestrosApiService } from '../../../../../../compartido/api/maestros.api.service';
+import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 
 interface CatalogoItem {
   id: number;
@@ -16,6 +17,7 @@ interface CatalogoItem {
 })
 export class AdmisionesComponent implements OnInit {
   private readonly maestrosApi = inject(MaestrosApiService);
+  public readonly authService = inject(AuthService);
 
   fecha = new Date().toISOString().slice(0, 10);
   filtro = '';

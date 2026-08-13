@@ -5,26 +5,26 @@
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
       <div>
-        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">ID del paciente</label>
-        <input type="text" [(ngModel)]="agendarState.patientId" placeholder="uuid del paciente" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        <label for="citas-paciente" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">ID del paciente</label>
+        <input id="citas-paciente" type="text" [(ngModel)]="agendarState.patientId" placeholder="uuid del paciente" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
       </div>
       <div>
-        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">ID del médico</label>
-        <input type="text" [(ngModel)]="agendarState.doctorId" placeholder="uuid del médico" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        <label for="citas-medico" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">ID del médico</label>
+        <input id="citas-medico" type="text" [(ngModel)]="agendarState.doctorId" placeholder="uuid del médico" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
       </div>
       <div>
-        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Inicio</label>
-        <input type="datetime-local" [(ngModel)]="agendarState.startsAt" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        <label for="citas-inicio" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Inicio</label>
+        <input id="citas-inicio" type="datetime-local" [(ngModel)]="agendarState.startsAt" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
       </div>
       <div>
-        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Fin</label>
-        <input type="datetime-local" [(ngModel)]="agendarState.endsAt" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        <label for="citas-fin" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Fin</label>
+        <input id="citas-fin" type="datetime-local" [(ngModel)]="agendarState.endsAt" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
       </div>
     </div>
 
     <div style="margin-top: 14px;">
-      <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Motivo</label>
-      <textarea [(ngModel)]="agendarState.reason" placeholder="Motivo de la consulta" rows="2" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a; resize: vertical; font-family: inherit;"></textarea>
+      <label for="citas-motivo" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Motivo</label>
+      <textarea id="citas-motivo" [(ngModel)]="agendarState.reason" placeholder="Motivo de la consulta" rows="2" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a; resize: vertical; font-family: inherit;"></textarea>
     </div>
 
     @if (agendarState.error) {
@@ -40,14 +40,16 @@
       </div>
     }
 
-    <button
-      (click)="handleAgendarSubmit()"
-      [disabled]="agendarState.loading"
-      class="gp-primary-btn"
-      style="margin-top: 16px; padding: 11px 24px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer;"
-    >
-      {{ agendarState.loading ? 'Agendando…' : 'Agendar cita' }}
-    </button>
+    @if (authService.hasPermission('agregar')) {
+      <button
+        (click)="handleAgendarSubmit()"
+        [disabled]="agendarState.loading"
+        class="gp-primary-btn"
+        style="margin-top: 16px; padding: 11px 24px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer;"
+      >
+        {{ agendarState.loading ? 'Agendando…' : 'Agendar cita' }}
+      </button>
+    }
   </div>
 
   <!-- Buscar Cita -->
@@ -55,7 +57,9 @@
     <div style="font-size: 14px; font-weight: 600; color: #07153a; margin-bottom: 14px;">Buscar cita por ID</div>
 
     <div style="display: flex; gap: 10px;">
+      <label for="citas-buscar-id" class="sr-only" style="display: none;">Buscar cita por ID</label>
       <input
+        id="citas-buscar-id"
         [(ngModel)]="buscarState.id"
         (input)="buscarState.error = ''"
         (keydown.enter)="handleBuscar()"

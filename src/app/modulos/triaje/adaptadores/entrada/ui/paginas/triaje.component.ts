@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Etiqueta } from '../../../../../../compartido/ui/etiqueta/etiqueta';
+import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 
 interface PacienteTriaje {
   id: string;
@@ -12,7 +13,7 @@ interface PacienteTriaje {
   seguro: string | null;
   arrivalTs: number;
   estado: 'sin-triaje' | 'triado';
-  evaluacion: any | null;
+  evaluacion: unknown | null;
 }
 
 @Component({
@@ -22,6 +23,7 @@ interface PacienteTriaje {
   templateUrl: './triaje.component.html'
 })
 export class TriajeComponent implements OnInit {
+  public readonly authService = inject(AuthService);
   pacientes: PacienteTriaje[] = [];
 
   ngOnInit() {

@@ -6,7 +6,7 @@ import { IMenu, IMenuPermiso, IAuthMenus } from '../../../compartido/tipos/tipos
   providedIn: 'root'
 })
 export class AuthService {
-  private router = inject(Router);
+  private readonly router = inject(Router);
   private readonly TOKEN_KEY = 'galenos.accessToken';
   private readonly USERNAME_KEY = 'galenos.username';
   private readonly MENUS_KEY = 'galenos.menus';
@@ -68,5 +68,21 @@ export class AuthService {
   logout(): void {
     this.clearSession();
     this.router.navigate(['/login']);
+  }
+
+  /**
+   * Verifica si el usuario tiene un permiso específico en una ruta.
+   * Si no se proporciona la ruta, usa la ruta actual del router.
+   */
+  hasPermission(action: 'agregar' | 'modificar' | 'eliminar', path?: string): boolean {
+    const targetPath = path || this.router.url;
+    // Buscar el permiso que coincida con la ruta actual
+    const currentPermiso = this.permisos().find(p => targetPath.includes(p.claveWeb) && p.claveWeb !== '');
+    
+    if (!currentPermiso) {
+      return false; // Si no hay configuración de permisos para esta ruta, denegar por defecto
+    }
+
+    return currentPermiso[action] === true;
   }
 }
