@@ -8,6 +8,7 @@ import { MaestrosApiService } from '../../../../../../compartido/api/maestros.ap
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
 import { IFilaBackend, ICatalogoNombre } from '../../../../../../compartido/tipos/api-tipos';
 import { RegistroPacienteModal } from '../../../../../../compartido/ui/registro-paciente/registro-paciente-modal';
+import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 
 interface FormEvaluacion {
   motivo: string;
@@ -78,6 +79,7 @@ export class TriajeComponent implements OnInit {
   private triajeApi = inject(TriajeApiService);
   private maestrosApi = inject(MaestrosApiService);
   private cdr = inject(ChangeDetectorRef);
+  public readonly authService = inject(AuthService);
 
   pacientes: IFilaBackend[] = [];
   cargando = false;

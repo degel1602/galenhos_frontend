@@ -6,6 +6,7 @@ import { MaestrosApiService } from '../../../../../../compartido/api/maestros.ap
 import { TriajeApiService, CrearAdmisionPayload } from '../../../../../triaje/adaptadores/salida/http/triaje.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
 import { ICatalogoNombre, IFilaBackend } from '../../../../../../compartido/tipos/api-tipos';
+import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 
 interface FormAdmision {
   nombreAcompanante: string;
@@ -35,6 +36,7 @@ export class AdmisionesComponent implements OnInit {
   private readonly maestrosApi = inject(MaestrosApiService);
   private readonly triajeApi = inject(TriajeApiService);
   private readonly cdr = inject(ChangeDetectorRef);
+  public readonly authService = inject(AuthService);
 
   fecha = new Date().toISOString().slice(0, 10);
   filtro = '';

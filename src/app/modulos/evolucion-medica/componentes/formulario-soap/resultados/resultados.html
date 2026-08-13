@@ -15,12 +15,16 @@
         </tr>
       </thead>
       <tbody>
-        @for (item of laboratoriosEstaticos; track item.nombre) {
+        @for (item of laboratorios; track item.idResultado) {
           <tr class="hover:bg-slate-50">
-            <td class="p-2 border-b border-slate-100 align-top text-slate-800">{{ item.nombre }}</td>
-            <td class="p-2 border-b border-slate-100 align-top font-mono text-[11.5px] text-slate-600">{{ item.fecha }}</td>
-            <td class="p-2 border-b border-slate-100 align-top text-slate-700">{{ item.resultado }}</td>
+            <td class="p-2 border-b border-slate-100 align-top text-slate-800">{{ item.nombreExamen }}</td>
+            <td class="p-2 border-b border-slate-100 align-top font-mono text-[11.5px] text-slate-600">{{ item.fechaResultado | date:'dd/MM/yyyy' }}</td>
+            <td class="p-2 border-b border-slate-100 align-top text-slate-700">{{ item.valores || item.observaciones }}</td>
             <td class="p-2 border-b border-slate-100 align-top"><input type="checkbox" class="accent-teal-600 w-4 h-4 rounded cursor-pointer"></td>
+          </tr>
+        } @empty {
+          <tr class="hover:bg-slate-50">
+             <td colspan="4" class="p-4 border-b border-slate-100 align-top text-slate-500 text-center italic">No hay laboratorios registrados.</td>
           </tr>
         }
       </tbody>
@@ -45,12 +49,16 @@
         </tr>
       </thead>
       <tbody>
-        @for (item of imagenesEstaticas; track item.nombre) {
+        @for (item of imagenes; track item.idResultado) {
           <tr class="hover:bg-slate-50">
-            <td class="p-2 border-b border-slate-100 align-top text-slate-800">{{ item.nombre }}</td>
-            <td class="p-2 border-b border-slate-100 align-top font-mono text-[11.5px] text-slate-600">{{ item.fecha }}</td>
-            <td class="p-2 border-b border-slate-100 align-top text-slate-700">{{ item.resultado }}</td>
+            <td class="p-2 border-b border-slate-100 align-top text-slate-800">{{ item.nombreExamen }}</td>
+            <td class="p-2 border-b border-slate-100 align-top font-mono text-[11.5px] text-slate-600">{{ item.fechaResultado | date:'dd/MM/yyyy' }}</td>
+            <td class="p-2 border-b border-slate-100 align-top text-slate-700">{{ item.observaciones }}</td>
             <td class="p-2 border-b border-slate-100 align-top"><input type="checkbox" class="accent-teal-600 w-4 h-4 rounded cursor-pointer"></td>
+          </tr>
+        } @empty {
+          <tr class="hover:bg-slate-50">
+             <td colspan="4" class="p-4 border-b border-slate-100 align-top text-slate-500 text-center italic">No hay estudios de imagen registrados.</td>
           </tr>
         }
       </tbody>

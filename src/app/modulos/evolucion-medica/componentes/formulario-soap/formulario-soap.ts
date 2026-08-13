@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { EvolucionService } from '../../servicios/evolucion.service';
+import { AuthService } from '../../../auth/aplicacion/auth.service';
 import { SignosVitalesComponent } from './signos-vitales/signos-vitales';
 import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
 import { ExamenFisicoComponent } from './examen-fisico/examen-fisico';
@@ -10,6 +11,7 @@ import { PlanTratamientoComponent } from './plan-tratamiento/plan-tratamiento';
 import { OrdenesMedicasComponent } from './ordenes-medicas/ordenes-medicas';
 import { ProcedimientosCertificadosComponent } from './procedimientos-certificados/procedimientos-certificados';
 import { AdjuntosComponent } from './adjuntos/adjuntos';
+import { InterconsultasComponent } from './interconsultas/interconsultas';
 
 @Component({
   selector: 'app-formulario-soap',
@@ -24,18 +26,20 @@ import { AdjuntosComponent } from './adjuntos/adjuntos';
     PlanTratamientoComponent,
     OrdenesMedicasComponent,
     ProcedimientosCertificadosComponent,
-    AdjuntosComponent
+    AdjuntosComponent,
+    InterconsultasComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './formulario-soap.html'
 })
 export class FormularioSoapComponent {
-  public evolucionService = inject(EvolucionService);
-  private fb = inject(FormBuilder);
-  public activePanel = signal<string>('p1');
-  public isSaving = signal<boolean>(false);
+  public readonly evolucionService = inject(EvolucionService);
+  public readonly authService = inject(AuthService);
+  private readonly fb = inject(FormBuilder);
+  public readonly activePanel = signal<string>('p1');
+  public readonly isSaving = signal<boolean>(false);
 
-  public soapForm = this.fb.group({
+  public readonly soapForm = this.fb.group({
     motivo: this.fb.group({
       motivoConsulta: [false],
       seguimiento: [false],
@@ -175,7 +179,7 @@ export class FormularioSoapComponent {
     };
     
     // Codificar a base64 string
-    const dataB64 = btoa(unescape(encodeURIComponent(JSON.stringify(formData))));
+    const dataB64 = btoa(encodeURIComponent(JSON.stringify(formData)).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCodePoint(Number('0x' + p1))));
     
     const success = await this.evolucionService.guardarEvolucion(dataB64);
     this.isSaving.set(false);

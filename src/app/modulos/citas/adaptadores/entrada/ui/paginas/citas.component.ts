@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CitasApiService } from '../../../salida/http/citas.api.service';
+import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
 import { IAppointment } from '../../../../../../compartido/tipos/tipos';
 import { Etiqueta } from '../../../../../../compartido/ui/etiqueta/etiqueta';
@@ -26,7 +27,8 @@ function friendlyError(err: unknown, fallback: string): string {
   templateUrl: './citas.component.html'
 })
 export class CitasComponent {
-  private citasApi = inject(CitasApiService);
+  private readonly citasApi = inject(CitasApiService);
+  public readonly authService = inject(AuthService);
 
   agendarState = {
     patientId: '',

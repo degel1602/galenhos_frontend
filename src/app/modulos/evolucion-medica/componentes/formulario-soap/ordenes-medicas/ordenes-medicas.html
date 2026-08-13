@@ -23,6 +23,12 @@
       <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Detalle de la orden (servicio, cama, especialidad...)</label>
       <textarea rows="2" formControlName="detalle" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Detalles..."></textarea>
     </div>
+    
+    <div class="flex justify-end mt-2">
+      <button type="button" (click)="guardarOrden()" [disabled]="isSubmitting" class="bg-teal-600 hover:bg-teal-700 text-white font-medium py-1.5 px-4 rounded-md shadow-sm transition-colors text-[13px] disabled:opacity-50 disabled:cursor-not-allowed">
+        Guardar Orden y Receta
+      </button>
+    </div>
   </div>
 </div>
 
@@ -64,4 +70,52 @@
     <button class="mt-3 bg-teal-50 text-teal-700 border border-dashed border-teal-500 px-3 py-2 rounded-lg text-[12.6px] font-semibold hover:bg-teal-100 transition-colors"
       (click)="agregarPrescripcion()">+ Agregar prescripción</button>
   </div>
+</div>
+
+<!-- HISTORIAL DE ÓRDENES -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
+  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+    Historial de Órdenes y Recetas
+  </h3>
+
+  @if (isLoading) {
+    <div class="flex justify-center p-4">
+      <svg class="animate-spin h-5 w-5 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    </div>
+  } @else if (ordenesPrevias.length === 0) {
+    <p class="text-[13px] text-slate-500 italic text-center py-4">No hay órdenes o recetas previas para esta atención.</p>
+  } @else {
+    <div class="overflow-x-auto rounded-lg border border-slate-200">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-200">
+            <th class="p-2.5 font-medium">Fecha</th>
+            <th class="p-2.5 font-medium">Médico</th>
+            <th class="p-2.5 font-medium">Observación General</th>
+            <th class="p-2.5 font-medium">Items de Receta</th>
+          </tr>
+        </thead>
+        <tbody class="text-[12.5px] text-slate-700 divide-y divide-slate-100">
+          @for (orden of ordenesPrevias; track orden.idOrden) {
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="p-2.5">{{ orden.fechaOrden | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="p-2.5 font-medium">Dr. {{ orden.idMedico }}</td>
+              <td class="p-2.5">{{ orden.observaciones || '-' }}</td>
+              <td class="p-2.5">
+                <ul class="list-disc pl-4 text-[11px]">
+                  @for (det of orden.detalles; track det.idDetalleOrden) {
+                    <li>{{ det.indicaciones }} (Cant: {{ det.cantidad }})</li>
+                  }
+                </ul>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>
