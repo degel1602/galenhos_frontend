@@ -114,10 +114,7 @@
                 <td class="py-4 pr-6 text-slate-900 font-medium">
                   {{ p.paternalSurname }} {{ p.maternalSurname }}, {{ p.firstName }} {{ p.secondName }}
                 </td>
-<<<<<<< HEAD
                 <td class="py-4 text-slate-600">{{ (p.dateOfBirth || '').slice(0, 10) }}</td>
-=======
-                <td class="py-4 pr-6 text-slate-600">{{ p.dateOfBirth }}</td>
                 <td class="py-4 text-right">
                   <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     @if (authService.hasPermission('modificar')) {
@@ -136,7 +133,6 @@
                     }
                   </div>
                 </td>
->>>>>>> 60e7ae7e5bb96d44550103ba381b45f4dd32eccc
               </tr>
             }
           }

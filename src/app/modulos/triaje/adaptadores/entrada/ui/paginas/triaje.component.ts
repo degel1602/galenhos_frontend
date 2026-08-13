@@ -44,7 +44,9 @@ function campo(item: IFilaBackend | null | undefined, claves: string[]): string 
   if (!item) return '';
   for (const k of claves) {
     const v = item[k];
-    if (v !== undefined && v !== null && v !== '') return String(v);
+    if (v !== undefined && v !== null && v !== '') {
+      return typeof v === 'object' ? JSON.stringify(v) : String(v);
+    }
   }
   return '';
 }
@@ -99,9 +101,9 @@ export class TriajeComponent implements OnInit {
   errorEvaluacion = '';
   servicios: ICatalogoNombre[] = [];
 
-  prioridades = PRIORIDADES;
-  unidadesTiempo = UNIDADES_TIEMPO;
-  opcionesSiNo = SI_NO;
+  readonly prioridades = PRIORIDADES;
+  readonly unidadesTiempo = UNIDADES_TIEMPO;
+  readonly opcionesSiNo = SI_NO;
 
   ngOnInit() {
     this.cargarLista();
@@ -154,7 +156,7 @@ export class TriajeComponent implements OnInit {
 
   abrirEvaluacion(paciente: IFilaBackend) {
     const ev = (paciente['evaluacion'] ?? undefined) as Record<string, unknown> | undefined;
-    const texto = (v: unknown): string => (v === null || v === undefined ? '' : String(v));
+    const texto = (v: unknown): string => (v === null || v === undefined ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v)));
     this.pacienteEvaluar = paciente;
     this.formEvaluacion = ev
       ? {
@@ -270,7 +272,7 @@ export class TriajeComponent implements OnInit {
     const raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'FechaIngreso', 'fechaIngreso', 'Fecha', 'fecha', 'HoraRegistro']);
     if (!raw) return '—';
     const d = new Date(raw);
-    if (isNaN(d.getTime())) return raw;
+    if (Number.isNaN(d.getTime())) return raw;
     return d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
   }
 
@@ -288,7 +290,7 @@ export class TriajeComponent implements OnInit {
     const raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'FechaIngreso', 'fechaIngreso', 'Fecha', 'fecha', 'HoraRegistro']);
     if (!raw) return '—';
     const d = new Date(raw);
-    if (isNaN(d.getTime())) return '—';
+    if (Number.isNaN(d.getTime())) return '—';
     return `${Math.max(0, Math.floor((Date.now() - d.getTime()) / 60000))} min`;
   }
 }
