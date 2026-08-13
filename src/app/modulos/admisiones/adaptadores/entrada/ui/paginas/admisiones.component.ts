@@ -7,6 +7,7 @@ import { TriajeApiService, CrearAdmisionPayload } from '../../../../../triaje/ad
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
 import { ICatalogoNombre, IFilaBackend } from '../../../../../../compartido/tipos/api-tipos';
 import { AuthService } from '../../../../../auth/aplicacion/auth.service';
+import { VentanaModal } from '../../../../../../compartido/ui/ventana-modal/ventana-modal';
 
 interface FormAdmision {
   nombreAcompanante: string;
@@ -31,7 +32,7 @@ function campo(item: IFilaBackend | null | undefined, claves: string[]): string 
 @Component({
   selector: 'app-admisiones',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, VentanaModal],
   templateUrl: './admisiones.component.html'
 })
 export class AdmisionesComponent implements OnInit {
