@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, HostListener, ElementRef } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { HeaderActionsService } from '../../servicios/header-actions.service';
 @Component({
@@ -24,9 +24,35 @@ import { HeaderActionsService } from '../../servicios/header-actions.service';
       </div>
 
       <div class="flex items-center gap-[14px]">
-        <div class="flex items-center gap-[9px] bg-[#f3f5fb] border border-[#e6eaf5] px-3.5 py-[7px] rounded-xl">
-          <span class="w-2 h-2 rounded-full bg-[#059669]"></span>
-          <span class="text-[13px] font-semibold text-[#07153a]">{{ username || 'Operador' }}</span>
+        <div class="relative">
+          <!-- Trigger -->
+          <div (click)="toggleMenu()" class="flex items-center gap-[9px] bg-[#f3f5fb] border border-[#e6eaf5] px-3.5 py-[7px] rounded-xl cursor-pointer hover:bg-[#e9ecf5] transition-colors">
+            <span class="w-2 h-2 rounded-full bg-[#059669]"></span>
+            <span class="text-[13px] font-semibold text-[#07153a]">{{ username || 'Operador' }}</span>
+            <svg class="w-3.5 h-3.5 text-[#94a0bd] transition-transform" [class.rotate-180]="isMenuOpen()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+          
+          <!-- Dropdown Menu -->
+          <div class="absolute right-0 top-[calc(100%+8px)] w-48 bg-white border border-[#e3e8f2] rounded-xl shadow-[0_10px_30px_rgba(7,21,58,0.08)] transition-all duration-200 origin-top-right z-50 overflow-hidden"
+               [class.opacity-100]="isMenuOpen()" [class.visible]="isMenuOpen()" [class.opacity-0]="!isMenuOpen()" [class.invisible]="!isMenuOpen()"
+               [class.scale-100]="isMenuOpen()" [class.scale-95]="!isMenuOpen()">
+            <div class="px-4 py-3 border-b border-[#e3e8f2] bg-[#f8fafc]">
+              <p class="text-[11px] font-semibold text-[#94a0bd] uppercase tracking-wider mb-0.5">Operador clínico</p>
+              <p class="text-[13px] font-bold text-[#07153a] truncate">{{ username || 'Sesión Activa' }}</p>
+            </div>
+            <div class="p-1.5">
+              <button (click)="onLogout.emit(); isMenuOpen.set(false)" class="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] font-semibold text-[#ef4444] hover:bg-[#fef2f2] rounded-lg transition-colors cursor-pointer text-left">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Cerrar Sesión
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -35,8 +61,23 @@ import { HeaderActionsService } from '../../servicios/header-actions.service';
 })
 export class BarraSuperior {
   headerActions = inject(HeaderActionsService);
+  elementRef = inject(ElementRef);
 
   @Input() title: string = '';
   @Input() username: string | null = null;
   @Output() onToggleSidebar = new EventEmitter<void>();
+  @Output() onLogout = new EventEmitter<void>();
+
+  isMenuOpen = signal(false);
+
+  toggleMenu() {
+    this.isMenuOpen.update(v => !v);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: Event) {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.isMenuOpen.set(false);
+    }
+  }
 }
