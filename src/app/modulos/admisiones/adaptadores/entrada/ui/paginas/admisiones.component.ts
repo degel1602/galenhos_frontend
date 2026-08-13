@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { VentanaModal } from '../../../../../../compartido/ui/ventana-modal/ventana-modal';
+
 import { MaestrosApiService } from '../../../../../../compartido/api/maestros.api.service';
 import { TriajeApiService, CrearAdmisionPayload } from '../../../../../triaje/adaptadores/salida/http/triaje.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
@@ -21,7 +21,9 @@ function campo(item: IFilaBackend | null | undefined, claves: string[]): string 
   if (!item) return '';
   for (const k of claves) {
     const v = item[k];
-    if (v !== undefined && v !== null && v !== '') return String(v);
+    if (v !== undefined && v !== null && v !== '') {
+      return typeof v === 'object' ? JSON.stringify(v) : String(v);
+    }
   }
   return '';
 }
@@ -29,7 +31,7 @@ function campo(item: IFilaBackend | null | undefined, claves: string[]): string 
 @Component({
   selector: 'app-admisiones',
   standalone: true,
-  imports: [FormsModule, CommonModule, VentanaModal],
+  imports: [FormsModule, CommonModule],
   templateUrl: './admisiones.component.html'
 })
 export class AdmisionesComponent implements OnInit {
@@ -179,7 +181,7 @@ export class AdmisionesComponent implements OnInit {
     const raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'FechaIngreso', 'fechaIngreso', 'Fecha', 'fecha']);
     if (!raw) return '—';
     const d = new Date(raw);
-    if (isNaN(d.getTime())) return raw;
+    if (Number.isNaN(d.getTime())) return raw;
     return d.toLocaleString('es-PE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   }
 
