@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PacientesApiService } from '../../../salida/http/pacientes.api.service';
 import { VentanaModal } from '../../../../../../compartido/ui/ventana-modal/ventana-modal';
@@ -20,6 +20,7 @@ interface Filtros {
 })
 export class PacientesListaComponent implements OnInit {
   private pacientesApi = inject(PacientesApiService);
+  private cdr = inject(ChangeDetectorRef);
 
   filtros: Filtros = {
     documento: '',
@@ -63,11 +64,13 @@ export class PacientesListaComponent implements OnInit {
         if ((pat && pat.length < 3) || (mat && mat.length < 3) || (nom && nom.length < 3)) {
           this.error = 'Para búsquedas por nombre o apellido, ingrese al menos 3 caracteres.';
           this.cargando = false;
+          this.cdr.detectChanges();
           return;
         }
       } else if (doc && doc.length < 4) {
         this.error = 'El documento debe tener al menos 4 caracteres.';
         this.cargando = false;
+        this.cdr.detectChanges();
         return;
       }
     }
@@ -107,6 +110,7 @@ export class PacientesListaComponent implements OnInit {
       }
     } finally {
       this.cargando = false;
+      this.cdr.detectChanges();
     }
   }
 

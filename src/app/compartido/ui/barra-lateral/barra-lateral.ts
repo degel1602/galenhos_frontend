@@ -5,13 +5,12 @@ import { AuthService } from '../../../modulos/auth/aplicacion/auth.service';
 
 @Component({
   selector: 'barra-lateral',
-  imports: [RouterLink, RouterLinkActive, JsonPipe],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './barra-lateral.html'
 })
 export class BarraLateral {
   @Input() username: string | null = null;
   @Input() isCollapsed: boolean = false;
-  @Output() onLogout = new EventEmitter<void>();
 
   authService = inject(AuthService);
 
@@ -41,13 +40,5 @@ export class BarraLateral {
 
   isGroupExpanded(idListGrupo: number): boolean {
     return !!this.expandedGroups()[idListGrupo];
-  }
-
-  initials(): string {
-    return (this.username || 'GP').slice(0, 2).toUpperCase();
-  }
-
-  logout() {
-    this.onLogout.emit();
   }
 }
