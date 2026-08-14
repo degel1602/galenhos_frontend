@@ -1,6 +1,7 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder } from '@angular/forms';
+import { AuthService } from '../../../../auth/aplicacion/auth.service';
 
 @Component({
   selector: 'app-plan-tratamiento',
@@ -11,8 +12,9 @@ import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder } from '@angular
 })
 export class PlanTratamientoComponent {
   @Input({ required: true }) formGroup!: FormGroup;
+  public readonly authService = inject(AuthService);
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private readonly fb: FormBuilder) {}
 
   get farmacologicoArray(): FormArray {
     return this.formGroup.get('farmacologico') as FormArray;

@@ -23,7 +23,9 @@ function campo(item: IFilaBackend | null | undefined, claves: string[]): string 
   for (const k of claves) {
     const v = item[k];
     if (v !== undefined && v !== null && v !== '') {
-      return typeof v === 'object' ? JSON.stringify(v) : String(v);
+      if (typeof v === 'string') return v;
+      if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+      return JSON.stringify(v);
     }
   }
   return '';

@@ -4,18 +4,19 @@ import { ApiClientService } from '../../../compartido/api-client/api-client.serv
 export interface DetalleOrden {
   idDetalleOrden?: number;
   idOrden?: number;
-  idProcedimiento: number;
+  idServicio: number;
+  nombreServicio?: string;
   cantidad: number;
-  indicaciones: string;
+  indicaciones?: string; // Mantenemos temporalmente para UI si es necesario, aunque backend no lo guarde
 }
 
 export interface OrdenMedica {
   idOrden?: number;
-  idCuentaAtencion: number;
+  idRegAtencion: number;
   idMedico: number;
   fechaOrden?: string;
   estado?: string;
-  observaciones: string;
+  observacion: string;
   detalles: DetalleOrden[];
 }
 
@@ -23,7 +24,7 @@ export interface OrdenMedica {
   providedIn: 'root'
 })
 export class OrdenService {
-  private api = inject(ApiClientService);
+  private readonly api = inject(ApiClientService);
 
   async listarPorCuenta(idCuentaAtencion: number): Promise<OrdenMedica[]> {
     try {

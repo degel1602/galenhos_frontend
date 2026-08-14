@@ -12,13 +12,14 @@ import { OrdenesMedicasComponent } from './ordenes-medicas/ordenes-medicas';
 import { ProcedimientosCertificadosComponent } from './procedimientos-certificados/procedimientos-certificados';
 import { AdjuntosComponent } from './adjuntos/adjuntos';
 import { InterconsultasComponent } from './interconsultas/interconsultas';
+import { MotivoComponent } from './motivo/motivo';
 
 @Component({
   selector: 'app-formulario-soap',
   standalone: true,
   imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
+    CommonModule,
+    ReactiveFormsModule,
     SignosVitalesComponent,
     DiagnosticosComponent,
     ExamenFisicoComponent,
@@ -27,7 +28,8 @@ import { InterconsultasComponent } from './interconsultas/interconsultas';
     OrdenesMedicasComponent,
     ProcedimientosCertificadosComponent,
     AdjuntosComponent,
-    InterconsultasComponent
+    InterconsultasComponent,
+    MotivoComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './formulario-soap.html'

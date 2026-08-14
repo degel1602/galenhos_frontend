@@ -1,6 +1,6 @@
-import { Component, Input, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
+import { Component, Input, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormArray } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { ResultadoService, ResultadoInfo } from '../../../servicios/resultado.service';
 import { EvolucionService } from '../../../servicios/evolucion.service';
 
@@ -8,59 +8,58 @@ import { EvolucionService } from '../../../servicios/evolucion.service';
   selector: 'app-resultados',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './resultados.html',
-  // No usamos OnPush aquí porque actualizamos datos asíncronamente
+  templateUrl: './resultados.html'
 })
 export class ResultadosComponent implements OnInit {
   @Input({ required: true }) formGroup!: FormGroup;
-  private resultadoService = inject(ResultadoService);
-  private evolucionService = inject(EvolucionService);
 
-  public laboratorios: ResultadoInfo[] = [];
-  public imagenes: ResultadoInfo[] = [];
-  public isLoading = false;
+  private readonly resultadoService = inject(ResultadoService);
+  private readonly evolucionService = inject(EvolucionService);
 
-  get laboratorioArray(): FormArray {
-    return this.formGroup.get('laboratorio') as FormArray;
-  }
+  public readonly laboratorios = signal<ResultadoInfo[]>([]);
+  public readonly imagenes = signal<ResultadoInfo[]>([]);
+  public readonly isLoading = signal<boolean>(false);
+  public readonly errorMessage = signal<string>('');
 
-  get imagenesArray(): FormArray {
-    return this.formGroup.get('imagenes') as FormArray;
-  }
+  public readonly otrosEstaticos = [
+    { nombre: 'ECG', fecha: '—', resultado: 'No registrado', estado: 'Pendiente' },
+    { nombre: 'Anatomía patológica', fecha: '—', resultado: 'No solicitado', estado: 'Pendiente' },
+    { nombre: 'Endoscopía', fecha: '—', resultado: 'No solicitado', estado: 'Pendiente' }
+  ];
 
-  get otrosArray(): FormArray {
-    return this.formGroup.get('otros') as FormArray;
-  }
-
-  ngOnInit() {
+  ngOnInit(): void {
     this.cargarResultados();
   }
 
-  async cargarResultados() {
-    this.isLoading = true;
+  async cargarResultados(): Promise<void> {
     const paciente = this.evolucionService.activePatient();
-    
-    // Si no hay paciente seleccionado (ej. modo offline mockup), cargamos un array vacío
-    if (paciente && paciente.idPaciente) {
-      try {
-        const [labs, imgs] = await Promise.all([
-          this.resultadoService.listarLaboratorio(paciente.idPaciente),
-          this.resultadoService.listarImagenes(paciente.idPaciente)
-        ]);
-        this.laboratorios = labs;
-        this.imagenes = imgs;
-      } catch (error) {
-        console.error('Error al cargar resultados desde el backend:', error);
-      }
+    if (!paciente?.idPaciente) return;
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    try {
+      const [labs, imgs] = await Promise.all([
+        this.resultadoService.listarLaboratorio(paciente.idPaciente),
+        this.resultadoService.listarImagenes(paciente.idPaciente)
+      ]);
+      this.laboratorios.set(labs);
+      this.imagenes.set(imgs);
+    } catch {
+      this.errorMessage.set('No se pudieron cargar los resultados. Intente nuevamente.');
+    } finally {
+      this.isLoading.set(false);
     }
-    
-    this.isLoading = false;
   }
 
-  // Backup array for others (not yet in API)
-  otrosEstaticos = [
-    { nombre: 'ECG', fecha: '26/07/2026', resultado: 'Ritmo sinusal' },
-    { nombre: 'Anatomía patológica', fecha: '—', resultado: 'No solicitado' },
-    { nombre: 'Endoscopía', fecha: '—', resultado: 'No solicitado' }
-  ];
+  obtenerClaseEstado(estado: string): string {
+    const clases: Record<string, string> = {
+      Normal: 'bg-green-100 text-green-700',
+      Anormal: 'bg-red-100 text-red-700',
+      Crítico: 'bg-red-200 text-red-900 font-bold',
+      Pendiente: 'bg-slate-100 text-slate-500'
+    };
+    return clases[estado] ?? 'bg-slate-100 text-slate-500';
+  }
 }
+

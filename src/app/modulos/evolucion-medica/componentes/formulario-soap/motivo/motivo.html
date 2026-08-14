@@ -1,0 +1,127 @@
+<div class="space-y-5">
+
+  <!-- REGISTRAR NUEVO MOTIVO -->
+  <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+    <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+      <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+      Motivo de Atención
+    </h3>
+
+    <form [formGroup]="motivoForm" (ngSubmit)="registrarMotivo()" class="space-y-4">
+
+      <!-- Tipos de motivo como chips seleccionables -->
+      <div>
+        <label class="block text-[11.5px] font-semibold text-slate-500 mb-2">Tipo de motivo</label>
+        <div class="flex flex-wrap gap-2" role="group" aria-label="Seleccione el tipo de motivo">
+          @for (tipo of tiposMotivo; track tipo.valor) {
+            <button
+              type="button"
+              [id]="'motivo-tipo-' + tipo.valor"
+              (click)="motivoForm.get('tipo')?.setValue(tipo.valor)"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[12.5px] font-medium transition-all"
+              [class]="motivoForm.get('tipo')?.value === tipo.valor
+                ? 'bg-teal-600 text-white border-teal-600 shadow-sm scale-105'
+                : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-teal-400 hover:bg-teal-50'"
+              [attr.aria-pressed]="motivoForm.get('tipo')?.value === tipo.valor">
+              <span>{{ tipo.icono }}</span>
+              {{ tipo.etiqueta }}
+            </button>
+          }
+        </div>
+        @if (motivoForm.get('tipo')?.invalid && motivoForm.get('tipo')?.touched) {
+          <p class="text-red-500 text-[11.5px] mt-1">Seleccione un tipo de motivo.</p>
+        }
+      </div>
+
+      <!-- Descripción -->
+      <div class="flex flex-col">
+        <label for="motivo-descripcion" class="text-[11.5px] font-semibold text-slate-500 mb-1">
+          Descripción detallada del motivo
+        </label>
+        <textarea
+          id="motivo-descripcion"
+          formControlName="descripcion"
+          rows="3"
+          placeholder="Describa el motivo de la consulta con el mayor detalle clínico posible..."
+          class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none resize-y"
+          [class.border-red-300]="motivoForm.get('descripcion')?.invalid && motivoForm.get('descripcion')?.touched">
+        </textarea>
+        @if (motivoForm.get('descripcion')?.invalid && motivoForm.get('descripcion')?.touched) {
+          <p class="text-red-500 text-[11.5px] mt-1">La descripción debe tener al menos 5 caracteres.</p>
+        }
+      </div>
+
+      <!-- Error general -->
+      @if (errorMessage()) {
+        <div class="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-[12.5px] rounded-lg px-3 py-2">
+          <span>⚠️</span>
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <!-- Acciones -->
+      <div class="flex justify-end">
+        @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
+          <button
+            id="btn-registrar-motivo"
+            type="submit"
+            [disabled]="motivoForm.invalid || isSubmitting()"
+            class="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-1.5 px-5 rounded-md shadow-sm transition-all text-[13px] flex items-center gap-2">
+            @if (isSubmitting()) {
+              <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Guardando...
+            } @else {
+              Registrar Motivo
+            }
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+
+  <!-- HISTORIAL DE MOTIVOS -->
+  <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+    <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+      <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+      Motivos Registrados en esta Atención
+    </h3>
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center py-8 gap-3 text-slate-500">
+        <svg class="animate-spin h-5 w-5 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-[13px]">Cargando motivos...</span>
+      </div>
+    } @else if (motivos().length === 0) {
+      <div class="text-center py-8">
+        <p class="text-4xl mb-2">📋</p>
+        <p class="text-slate-500 text-[13px] italic">No hay motivos registrados aún para esta atención.</p>
+      </div>
+    } @else {
+      <div class="space-y-3">
+        @for (motivo of motivos(); track motivo.idMotivoAtencion) {
+          <div class="flex items-start gap-3 p-3 rounded-lg border border-slate-100 bg-slate-50">
+            <span class="px-2.5 py-1 rounded-full border text-[11.5px] font-semibold shrink-0"
+              [class]="obtenerColorTipo(motivo.tipo)">
+              {{ motivo.tipo }}
+            </span>
+            <div class="flex-1 min-w-0">
+              <p class="text-[13px] text-slate-700">{{ motivo.descripcion }}</p>
+              @if (motivo.fechaRegistro) {
+                <p class="text-[11px] text-slate-400 mt-0.5 font-mono">
+                  {{ motivo.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}
+                </p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+</div>

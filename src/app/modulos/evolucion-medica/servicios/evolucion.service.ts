@@ -1,6 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { ApiClientService } from '../../../compartido/api-client/api-client.service';
-import { firstValueFrom } from 'rxjs';
 
 export type ViewMode = 'tray' | 'form';
 
@@ -19,22 +18,22 @@ export interface PacienteItem {
   providedIn: 'root'
 })
 export class EvolucionService {
-  private api = inject(ApiClientService);
+  private readonly api = inject(ApiClientService);
 
   // Estado base con Signals
-  public viewMode = signal<ViewMode>('tray');
-  public patientSearch = signal<string>('');
-  public fechaDesde = signal<string>('');
-  public fechaHasta = signal<string>('');
+  public readonly viewMode = signal<ViewMode>('tray');
+  public readonly patientSearch = signal<string>('');
+  public readonly fechaDesde = signal<string>('');
+  public readonly fechaHasta = signal<string>('');
   
   // Datos reales para la bandeja
-  public pacientes = signal<PacienteItem[]>([]);
-  public isLoading = signal<boolean>(false);
+  public readonly pacientes = signal<PacienteItem[]>([]);
+  public readonly isLoading = signal<boolean>(false);
 
-  public activePatient = signal<PacienteItem | null>(null);
+  public readonly activePatient = signal<PacienteItem | null>(null);
 
   // Derivados (Computed)
-  public filteredPacientes = computed(() => {
+  public readonly filteredPacientes = computed(() => {
     const term = this.patientSearch().toLowerCase();
     if (!term) return this.pacientes();
     return this.pacientes().filter(p => 
@@ -50,8 +49,9 @@ export class EvolucionService {
       if (this.fechaDesde()) params.append('fini', this.fechaDesde());
       if (this.fechaHasta()) params.append('ffin', this.fechaHasta());
       const qs = params.toString();
+      const url = qs ? '/api/v1/evoluciones/pacientes?' + qs : '/api/v1/evoluciones/pacientes';
       const data = await this.api.request<PacienteItem[]>(
-        `/api/v1/evoluciones/pacientes${qs ? `?${qs}` : ''}`,
+        url,
         { method: 'GET' }
       );
       if (data) {

@@ -45,7 +45,9 @@ function campo(item: IFilaBackend | null | undefined, claves: string[]): string 
   for (const k of claves) {
     const v = item[k];
     if (v !== undefined && v !== null && v !== '') {
-      return typeof v === 'object' ? JSON.stringify(v) : String(v);
+      if (typeof v === 'string') return v;
+      if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+      return JSON.stringify(v);
     }
   }
   return '';
@@ -78,9 +80,9 @@ const SI_NO = [
   templateUrl: './triaje.component.html'
 })
 export class TriajeComponent implements OnInit {
-  private triajeApi = inject(TriajeApiService);
-  private maestrosApi = inject(MaestrosApiService);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly triajeApi = inject(TriajeApiService);
+  private readonly maestrosApi = inject(MaestrosApiService);
+  private readonly cdr = inject(ChangeDetectorRef);
   public readonly authService = inject(AuthService);
 
   pacientes: IFilaBackend[] = [];
@@ -246,7 +248,12 @@ export class TriajeComponent implements OnInit {
 
   abrirEvaluacion(paciente: IFilaBackend) {
     const ev = (paciente['evaluacion'] ?? undefined) as Record<string, unknown> | undefined;
-    const texto = (v: unknown): string => (v === null || v === undefined ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v)));
+    const texto = (v: unknown): string => {
+      if (v === null || v === undefined) return '';
+      if (typeof v === 'string') return v;
+      if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+      return JSON.stringify(v);
+    };
     this.pacienteEvaluar = paciente;
     this.formEvaluacion = ev
       ? {
@@ -285,35 +292,7 @@ export class TriajeComponent implements OnInit {
     }
     this.guardandoEvaluacion = true;
     this.errorEvaluacion = '';
-    const payload: RegistroTriajePayload = {
-      idTriaje,
-      motivo,
-      presionArterial
-    };
-    const fc = Number(f.frecCardiaca);
-    const fr = Number(f.frecRespiratoria);
-    const temp = Number(f.temperatura.replace(',', '.'));
-    const spo2 = Number(f.saturacion);
-    const peso = Number(f.peso.replace(',', '.'));
-    const talla = Number(f.talla.replace(',', '.'));
-    if (!Number.isNaN(fc)) payload.frecCardiaca = fc;
-    if (!Number.isNaN(fr)) payload.frecRespiratoria = fr;
-    if (!Number.isNaN(temp)) payload.temperatura = temp;
-    if (!Number.isNaN(spo2)) payload.saturacion = spo2;
-    if (f.fiO2) payload.fiO2 = Number(f.fiO2);
-    if (!Number.isNaN(peso) && peso > 0) payload.peso = peso;
-    if (!Number.isNaN(talla) && talla > 0) payload.talla = talla;
-    // IMC calculado: peso / (talla en metros)^2
-    if (!Number.isNaN(peso) && peso > 0 && !Number.isNaN(talla) && talla > 0) {
-      const imc = peso / Math.pow(talla / 100, 2);
-      payload.imc = Math.round(imc * 100) / 100;
-    }
-    if (f.escalaDolor) payload.escalaDolor = Number(f.escalaDolor);
-    if (f.escalaGlasgow) payload.escalaGlasgow = Number(f.escalaGlasgow);
-    if (f.tiempoEvolucionCantidad) payload.tiempoEvolucionCantidad = Number(f.tiempoEvolucionCantidad);
-    if (f.tiempoEvolucionCantidadUnidad) payload.tiempoEvolucionCantidadUnidad = f.tiempoEvolucionCantidadUnidad;
-    if (f.idServicio) payload.idServicio = Number(f.idServicio);
-    if (f.idTipoPrioridad) payload.idTipoPrioridad = Number(f.idTipoPrioridad);
+    const payload = this.construirPayloadEvaluacion(idTriaje, f, motivo, presionArterial);
 
     try {
       await this.triajeApi.registrar(payload);
@@ -327,6 +306,44 @@ export class TriajeComponent implements OnInit {
       this.guardandoEvaluacion = false;
       this.cdr.detectChanges();
     }
+  }
+
+  private asignarValoresNumericos(payload: any, f: FormEvaluacion) {
+    const parse = (v: string) => Number(v.replace(',', '.'));
+    const set = (key: string, v: string, minVal?: number) => {
+      const num = parse(v);
+      if (!Number.isNaN(num) && (minVal === undefined || num > minVal)) payload[key] = num;
+    };
+    
+    set('frecCardiaca', f.frecCardiaca);
+    set('frecRespiratoria', f.frecRespiratoria);
+    set('temperatura', f.temperatura);
+    set('saturacion', f.saturacion);
+    set('peso', f.peso, 0);
+    set('talla', f.talla, 0);
+    set('fiO2', f.fiO2);
+    set('escalaDolor', f.escalaDolor);
+    set('escalaGlasgow', f.escalaGlasgow);
+    set('tiempoEvolucionCantidad', f.tiempoEvolucionCantidad);
+    set('idServicio', f.idServicio);
+    set('idTipoPrioridad', f.idTipoPrioridad);
+  }
+
+  private construirPayloadEvaluacion(idTriaje: number, f: FormEvaluacion, motivo: string, presionArterial: string): RegistroTriajePayload {
+    const payload: RegistroTriajePayload = { idTriaje, motivo, presionArterial };
+    
+    this.asignarValoresNumericos(payload, f);
+
+    if (payload.peso && payload.talla) {
+      const imc = payload.peso / Math.pow(payload.talla / 100, 2);
+      payload.imc = Math.round(imc * 100) / 100;
+    }
+    
+    if (f.tiempoEvolucionCantidadUnidad) {
+      payload.tiempoEvolucionCantidadUnidad = f.tiempoEvolucionCantidadUnidad;
+    }
+    
+    return payload;
   }
 
   // --- Ayudantes de render ---
