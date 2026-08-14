@@ -5,3 +5,77 @@
     transform: rotate(360deg);
   }
 }
+
+/* ---------- Scrollbar global ---------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #b9c3d8 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #c3cbdc;
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #94a0bd;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Scrollbar de la barra lateral (fondo oscuro) */
+.sidebar-scrollbar {
+  scrollbar-color: #33415c transparent;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: #33415c;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background-clip: content-box;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #4a5b80;
+}
+
+/* ---------- Detalles globales ---------- */
+::selection {
+  background: rgba(38, 60, 122, 0.18);
+}
+
+/* Item de submenú activo: barra lateral izquierda */
+.active-subnav::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #2dd4bf, #06b6d4);
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}

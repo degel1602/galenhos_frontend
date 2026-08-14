@@ -69,6 +69,11 @@ export interface RespuestaSp {
   resultado: string;
 }
 
+export interface ReporteTriajeParams {
+  id?: number;
+  idPaciente?: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -120,5 +125,16 @@ export class TriajeApiService {
       method: 'POST',
       body: JSON.stringify(payload)
     });
+  }
+
+  obtenerReporte(params: ReporteTriajeParams): Promise<IFilaBackend[]> {
+    const query = new URLSearchParams();
+    if (params.id) query.append('id', String(params.id));
+    if (params.idPaciente) query.append('idPaciente', String(params.idPaciente));
+    return this.apiClient.request<IFilaBackend[]>(`/api/v1/triaje/reporte?${query.toString()}`);
+  }
+
+  obtenerFichaAdmision(idCuentaAtencion: number): Promise<IFilaBackend> {
+    return this.apiClient.request<IFilaBackend>(`/api/v1/triaje/ficha-admision?idCuentaAtencion=${idCuentaAtencion}`);
   }
 }

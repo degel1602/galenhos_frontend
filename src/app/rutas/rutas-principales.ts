@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { ContenedorPrincipal } from '../compartido/ui/contenedor-principal/contenedor-principal';
+import { PaginaConstruccionComponent } from '../compartido/ui/pagina-construccion/pagina-construccion';
 import { LoginComponent } from '../modulos/auth/adaptadores/entrada/ui/paginas/login.component';
 import { DashboardComponent } from '../modulos/dashboard/adaptadores/entrada/ui/paginas/dashboard.component';
 import { PacientesListaComponent } from '../modulos/pacientes/adaptadores/entrada/ui/paginas/pacientes-lista.component';
@@ -27,12 +28,14 @@ export const rutasPrincipales: Routes = [
       { path: 'triajes', component: TriajeComponent, data: { title: 'Triaje' } },
       { path: 'emergencia_triaje', component: TriajeComponent, data: { title: 'Triaje Emergencia' } },
       { path: 'admisionemergencia', component: AdmisionesComponent, data: { title: 'Admisiones' } },
+      { path: 'sis', loadComponent: () => import('../modulos/sis/adaptadores/entrada/ui/paginas/sis.component').then(m => m.SisComponent), data: { title: 'SIS' } },
       { path: 'configuracion', component: ConfiguracionComponent, data: { title: 'Configuración' } },
       { 
         path: 'hospitalizacion', 
         loadComponent: () => import('../modulos/evolucion-medica/componentes/evolucion-raiz/evolucion-raiz').then(m => m.EvolucionRaizComponent),
         data: { title: 'Evolución Médica' } 
-      }
+      },
+      { path: '**', component: PaginaConstruccionComponent, data: { title: 'Módulo en desarrollo' } }
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

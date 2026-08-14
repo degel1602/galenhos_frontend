@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { VentanaModal } from '../ventana-modal/ventana-modal';
 import { MaestrosApiService } from '../../api/maestros.api.service';
 import { ApiRequestError } from '../../api-client/api-client.service';
-import { PacientesApiService } from '../../../modulos/pacientes/adaptadores/salida/http/pacientes.api.service';
+import { PacientesApiService, ActualizarPacientePayload } from '../../../modulos/pacientes/adaptadores/salida/http/pacientes.api.service';
 import { TriajeApiService, RegistroTriajePayload } from '../../../modulos/triaje/adaptadores/salida/http/triaje.api.service';
 import {
   ICatalogoDescripcion,
@@ -90,10 +90,12 @@ function sanitizar(texto: string): string {
 export class RegistroPacienteModal implements OnChanges {
   @Input() abierto = false;
   @Input() modo: 'paciente' | 'triaje' = 'paciente';
+  @Input() pacienteId: number | string | null = null;
   @Input() titulo = 'Registrar Nuevo Paciente';
   @Input() subtitulo = 'Complete los datos del paciente';
   @Output() alCerrar = new EventEmitter<void>();
   @Output() registrado = new EventEmitter<string>();
+  @Output() actualizado = new EventEmitter<string>();
 
   private pacientesApi = inject(PacientesApiService);
   private triajeApi = inject(TriajeApiService);
@@ -103,9 +105,15 @@ export class RegistroPacienteModal implements OnChanges {
   form: FormRegistroPaciente = formVacio();
   guardando = false;
   consultandoReniec = false;
+  cargandoDetalle = false;
   error = '';
   aviso = '';
   catalogoCargado = false;
+
+  // Detalle original cargado en modo edición: los valores del PUT parten de
+  // aquí y se sobreescriben con lo que el usuario modifique, para no perder
+  // campos que el formulario no edita.
+  private detalleOriginal: Record<string, unknown> | null = null;
 
   tiposDocumento: ICatalogoDescripcion[] = [];
   tiposSexo: ICatalogoDescripcion[] = [];
@@ -163,7 +171,11 @@ export class RegistroPacienteModal implements OnChanges {
       this.provProcedencia = [];
       this.distritosProcedencia = [];
       this.comunidadesProcedencia = [];
+      this.detalleOriginal = null;
       this.cargarCatalogos();
+      if (this.pacienteId) {
+        this.cargarPaciente();
+      }
     }
   }
 
@@ -515,6 +527,55 @@ export class RegistroPacienteModal implements OnChanges {
     });
   }
 
+  // --- Carga en modo edición ---
+  private async cargarPaciente() {
+    if (!this.pacienteId) return;
+    this.cargandoDetalle = true;
+    this.error = '';
+    try {
+      const detalle = await this.pacientesApi.obtener(this.pacienteId);
+      const d = detalle as unknown as Record<string, unknown>;
+      this.detalleOriginal = d;
+      const texto = (v: unknown): string => (v === null || v === undefined ? '' : String(v));
+      this.form.idDocIdentidad = texto(d['docIdentityId']);
+      this.form.nroDocumento = texto(d['documentNumber']);
+      this.form.apellidoPaterno = texto(d['paternalSurname']);
+      this.form.apellidoMaterno = texto(d['maternalSurname']);
+      this.form.primerNombre = texto(d['firstName']);
+      this.form.segundoNombre = texto(d['secondName']);
+      this.form.tercerNombre = texto(d['thirdName']);
+      this.form.fechaNacimiento = texto(d['dateOfBirth']).slice(0, 10);
+      this.form.idTipoSexo = texto(d['sexTypeId']);
+      this.form.telefono = texto(d['phone']);
+      this.form.celular = texto(d['cellphone']);
+      this.form.email = texto(d['email']);
+      this.form.idPaisNacimiento = texto(d['birthCountryId']);
+      this.form.idDistritoNacimiento = texto(d['birthDistrictId']);
+      this.form.idCentroPobladoNacimiento = texto(d['birthCenterId']);
+      this.form.idPaisProcedencia = texto(d['originCountryId']);
+      this.form.idDistritoProcedencia = texto(d['originDistrictId']);
+      this.form.idCentroPobladoProcedencia = texto(d['originCenterId']);
+      this.form.idPaisDomicilio = texto(d['homeCountryId']);
+      this.form.idDistritoDomicilio = texto(d['homeDistrictId']);
+      this.form.idCentroPobladoDomicilio = texto(d['homeCenterId']);
+      this.form.direccionDomicilio = texto(d['homeAddress']);
+      this.form.idEstadoCivil = texto(d['maritalStatusId']);
+      this.form.idGradoInstruccion = texto(d['educationDegreeId']);
+      this.form.idTipoOcupacion = texto(d['occupationTypeId']);
+      this.form.nombrePadre = texto(d['fatherName']);
+      this.form.nombreMadre = texto(d['motherName']);
+      this.form.idEtnia = texto(d['ethnicityId']);
+      this.form.idIdioma = texto(d['languageId']);
+      this.form.discapacidad = texto(d['disabilityId']);
+      this.form.incapacidad = texto(d['incapacityId']);
+    } catch (err: unknown) {
+      this.error = err instanceof ApiRequestError ? err.message : 'No se pudieron cargar los datos del paciente.';
+    } finally {
+      this.cargandoDetalle = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   // --- Guardado ---
   async guardar() {
     const f = this.form;
@@ -552,6 +613,13 @@ export class RegistroPacienteModal implements OnChanges {
     this.error = '';
 
     try {
+      if (this.pacienteId) {
+        await this.actualizarPaciente(nroDocumento, apellidoPaterno, primerNombre, email, telefono, celular);
+        const nombre = `${apellidoPaterno} ${this.normalizarNombre(f.apellidoMaterno)}, ${primerNombre} ${this.normalizarNombre(f.segundoNombre)}`.trim();
+        this.actualizado.emit(nombre);
+        this.cerrar();
+        return;
+      }
       if (this.modo === 'triaje') {
         await this.guardarComoTriaje(nroDocumento, apellidoPaterno, primerNombre, email, telefono);
       } else {
@@ -636,5 +704,56 @@ export class RegistroPacienteModal implements OnChanges {
     if (f.discapacidad !== '') payload.discapacidad = Number(f.discapacidad);
     if (f.incapacidad !== '') payload.incapacidad = Number(f.incapacidad);
     await this.pacientesApi.registrar(payload);
+  }
+
+  private async actualizarPaciente(nroDocumento: string, apellidoPaterno: string, primerNombre: string, email: string, telefono: string, celular: string) {
+    if (!this.pacienteId) return;
+    const f = this.form;
+    const d = this.detalleOriginal ?? {};
+    const texto = (v: unknown): string => (v === null || v === undefined ? '' : String(v));
+    const numero = (v: unknown): number | undefined => {
+      if (v === '' || v === null || v === undefined) return undefined;
+      const n = Number(v);
+      return Number.isNaN(n) ? undefined : n;
+    };
+    const payload: ActualizarPacientePayload = {
+      birthCountryId: numero(f.idPaisNacimiento || texto(d['birthCountryId'])),
+      maternalSurname: this.normalizarNombre(f.apellidoMaterno) || texto(d['maternalSurname']) || undefined,
+      homeAddress: sanitizar(f.direccionDomicilio) || texto(d['homeAddress']) || undefined,
+      originCountryId: numero(f.idPaisProcedencia || texto(d['originCountryId'])),
+      paternalSurname: apellidoPaterno,
+      firstName: primerNombre,
+      secondName: this.normalizarNombre(f.segundoNombre) || texto(d['secondName']) || undefined,
+      thirdName: this.normalizarNombre(f.tercerNombre) || texto(d['thirdName']) || undefined,
+      dateOfBirth: f.fechaNacimiento ? new Date(`${f.fechaNacimiento}T00:00:00`).toISOString() : undefined,
+      documentNumber: nroDocumento,
+      phone: telefono || texto(d['phone']) || undefined,
+      cellphone: celular || texto(d['cellphone']) || undefined,
+      autoGenerated: texto(d['autoGenerated']) || undefined,
+      sexTypeId: numero(f.idTipoSexo || texto(d['sexTypeId'])),
+      originId: numero(texto(d['originId'])),
+      educationDegreeId: numero(f.idGradoInstruccion || texto(d['educationDegreeId'])),
+      maritalStatusId: numero(f.idEstadoCivil || texto(d['maritalStatusId'])),
+      docIdentityId: numero(f.idDocIdentidad || texto(d['docIdentityId'])),
+      occupationTypeId: numero(f.idTipoOcupacion || texto(d['occupationTypeId'])),
+      homeCenterId: numero(f.idCentroPobladoDomicilio || texto(d['homeCenterId'])),
+      fatherName: this.normalizarNombre(f.nombrePadre) || texto(d['fatherName']) || undefined,
+      motherName: this.normalizarNombre(f.nombreMadre) || texto(d['motherName']) || undefined,
+      homeCountryId: numero(f.idPaisDomicilio || texto(d['homeCountryId'])),
+      birthCenterId: numero(f.idCentroPobladoNacimiento || texto(d['birthCenterId'])),
+      originCenterId: numero(f.idCentroPobladoProcedencia || texto(d['originCenterId'])),
+      originDistrictId: numero(f.idDistritoProcedencia || texto(d['originDistrictId'])),
+      homeDistrictId: numero(f.idDistritoDomicilio || texto(d['homeDistrictId'])),
+      birthDistrictId: numero(f.idDistritoNacimiento || texto(d['birthDistrictId'])),
+      ethnicityId: f.idEtnia || texto(d['ethnicityId']) || undefined,
+      languageId: numero(f.idIdioma || texto(d['languageId'])),
+      email: email || texto(d['email']) || undefined,
+      disabilityId: f.discapacidad === '' ? numero(texto(d['disabilityId'])) : numero(f.discapacidad),
+      incapacityId: f.incapacidad === '' ? numero(texto(d['incapacityId'])) : numero(f.incapacidad)
+    };
+    // El backend modela NroHistoriaClinica como entero; solo se envía si es numérico.
+    const hc = Number(texto(d['historyNumber']));
+    if (!Number.isNaN(hc)) payload.historyNumber = hc;
+    await this.pacientesApi.actualizar(this.pacienteId, payload);
   }
 }

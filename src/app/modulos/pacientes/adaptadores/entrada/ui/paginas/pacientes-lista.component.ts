@@ -37,6 +37,7 @@ export class PacientesListaComponent implements OnInit {
   cargando = false;
   error = '';
   modalAbierto = false;
+  pacienteEditando: IPaciente | null = null;
   mensajeExito = '';
 
   // Paginación
@@ -161,16 +162,50 @@ export class PacientesListaComponent implements OnInit {
   }
 
   abrirNuevoPaciente() {
+    this.pacienteEditando = null;
+    this.modalAbierto = true;
+  }
+
+  abrirEdicion(paciente: IPaciente) {
+    this.pacienteEditando = paciente;
     this.modalAbierto = true;
   }
 
   cerrarModal() {
     this.modalAbierto = false;
+    this.pacienteEditando = null;
   }
 
   onPacienteRegistrado(nombre: string) {
     this.mensajeExito = `Paciente ${nombre} registrado correctamente.`;
     setTimeout(() => this.mensajeExito = '', 5000);
     this.buscarPacientes();
+  }
+
+  onPacienteActualizado(nombre: string) {
+    this.mensajeExito = `Paciente ${nombre} actualizado correctamente.`;
+    setTimeout(() => this.mensajeExito = '', 5000);
+    this.buscarPacientes();
+  }
+
+  async eliminarPaciente(paciente: IPaciente) {
+    const nombre = `${paciente.paternalSurname} ${paciente.maternalSurname}, ${paciente.firstName}`.trim();
+    const confirmar = window.confirm(`¿Eliminar al paciente ${nombre}?\nEsta acción no se puede deshacer.`);
+    if (!confirmar) return;
+    this.error = '';
+    try {
+      await this.pacientesApi.eliminar(paciente.patientId);
+      this.mensajeExito = `Paciente ${nombre} eliminado correctamente.`;
+      setTimeout(() => this.mensajeExito = '', 5000);
+      this.buscarPacientes();
+    } catch (err: unknown) {
+      if (err instanceof ApiRequestError) {
+        this.error = err.message;
+      } else {
+        this.error = 'No se pudo eliminar el paciente.';
+      }
+    } finally {
+      this.cdr.detectChanges();
+    }
   }
 }

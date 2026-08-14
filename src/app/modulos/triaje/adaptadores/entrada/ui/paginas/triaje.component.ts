@@ -94,6 +94,19 @@ export class TriajeComponent implements OnInit {
   // Modal de registro (componente global compartido con la página Pacientes)
   modalRegistro = false;
 
+  // Modal de reporte de triaje (GET /api/v1/triaje/reporte)
+  modalReporte = false;
+  reporte: IFilaBackend[] = [];
+  cargandoReporte = false;
+  errorReporte = '';
+
+  // Modal de ficha de admisión (GET /api/v1/triaje/ficha-admision)
+  modalFicha = false;
+  ficha: IFilaBackend | null = null;
+  filasFicha: { clave: string; valor: string }[] = [];
+  cargandoFicha = false;
+  errorFicha = '';
+
   // Modal de evaluación
   pacienteEvaluar: IFilaBackend | null = null;
   formEvaluacion: FormEvaluacion = formEvaluacionVacio();
@@ -131,6 +144,83 @@ export class TriajeComponent implements OnInit {
     } catch {
       // Catálogo auxiliar; el formulario de evaluación sigue usable sin él.
     }
+  }
+
+  // --- Reporte de triaje ---
+  abrirReporte() {
+    this.modalReporte = true;
+    this.errorReporte = '';
+    this.generarReporte();
+  }
+
+  cerrarReporte() {
+    this.modalReporte = false;
+    this.reporte = [];
+  }
+
+  async generarReporte() {
+    this.cargandoReporte = true;
+    this.errorReporte = '';
+    try {
+      const items = await this.triajeApi.obtenerReporte({});
+      this.reporte = Array.isArray(items) ? items : [];
+    } catch (err: unknown) {
+      this.errorReporte = err instanceof ApiRequestError ? err.message : 'No se pudo generar el reporte de triaje.';
+    } finally {
+      this.cargandoReporte = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  clavesReporte(): string[] {
+    if (this.reporte.length === 0) return [];
+    const claves = new Set<string>();
+    for (const fila of this.reporte) {
+      for (const k of Object.keys(fila)) claves.add(k);
+    }
+    return Array.from(claves);
+  }
+
+  valorCelda(fila: IFilaBackend, clave: string): string {
+    const v = fila[clave];
+    if (v === null || v === undefined) return '—';
+    return typeof v === 'object' ? JSON.stringify(v) : String(v);
+  }
+
+  // --- Ficha de admisión ---
+  idCuentaAtencion(item: IFilaBackend): number {
+    return Number(campo(item, ['IdCuentaAtencion', 'idCuentaAtencion', 'NroCuenta', 'nroCuenta', 'Cuenta', 'cuenta'])) || 0;
+  }
+
+  async abrirFicha(item: IFilaBackend) {
+    const id = this.idCuentaAtencion(item);
+    if (!id) {
+      this.error = 'El registro no tiene una cuenta de atención asociada.';
+      return;
+    }
+    this.modalFicha = true;
+    this.ficha = null;
+    this.filasFicha = [];
+    this.errorFicha = '';
+    this.cargandoFicha = true;
+    try {
+      const ficha = await this.triajeApi.obtenerFichaAdmision(id);
+      this.ficha = ficha;
+      this.filasFicha = Object.entries(ficha).map(([clave, valor]) => ({
+        clave,
+        valor: valor === null || valor === undefined ? '' : (typeof valor === 'object' ? JSON.stringify(valor) : String(valor))
+      }));
+    } catch (err: unknown) {
+      this.errorFicha = err instanceof ApiRequestError ? err.message : 'No se pudo obtener la ficha de admisión.';
+    } finally {
+      this.cargandoFicha = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  cerrarFicha() {
+    this.modalFicha = false;
+    this.ficha = null;
   }
 
   // La fuente financiamiento responde con idFuenteFinanciamiento (no "id").

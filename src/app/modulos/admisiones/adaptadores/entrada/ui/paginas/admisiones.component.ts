@@ -61,6 +61,12 @@ export class AdmisionesComponent implements OnInit {
   guardando = false;
   errorAdmision = '';
 
+  // Ficha de admisión (GET /api/v1/triaje/ficha-admision)
+  modalFicha = false;
+  filasFicha: { clave: string; valor: string }[] = [];
+  cargandoFicha = false;
+  errorFicha = '';
+
   ngOnInit() {
     this.cargarCatalogos();
   }
@@ -110,6 +116,38 @@ export class AdmisionesComponent implements OnInit {
 
   cerrarModalAdmision() {
     this.modalAdmision = null;
+  }
+
+  idCuentaAtencion(item: IFilaBackend): number {
+    return Number(campo(item, ['IdCuentaAtencion', 'idCuentaAtencion', 'NroCuenta', 'nroCuenta', 'Cuenta', 'cuenta'])) || 0;
+  }
+
+  async abrirFicha(item: IFilaBackend) {
+    const id = this.idCuentaAtencion(item);
+    if (!id) {
+      this.error = 'El registro no tiene una cuenta de atención asociada.';
+      return;
+    }
+    this.modalFicha = true;
+    this.filasFicha = [];
+    this.errorFicha = '';
+    this.cargandoFicha = true;
+    try {
+      const ficha = await this.triajeApi.obtenerFichaAdmision(id);
+      this.filasFicha = Object.entries(ficha).map(([clave, valor]) => ({
+        clave,
+        valor: valor === null || valor === undefined ? '' : (typeof valor === 'object' ? JSON.stringify(valor) : String(valor))
+      }));
+    } catch (err: unknown) {
+      this.errorFicha = err instanceof ApiRequestError ? err.message : 'No se pudo obtener la ficha de admisión.';
+    } finally {
+      this.cargandoFicha = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  cerrarFicha() {
+    this.modalFicha = false;
   }
 
   async admitir() {

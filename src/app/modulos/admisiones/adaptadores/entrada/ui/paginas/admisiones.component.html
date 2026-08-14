@@ -124,6 +124,9 @@
                   } @else {
                     <span style="font-size: 12px; color: #059669; font-weight: 600;">Admitido</span>
                   }
+                  @if (idCuentaAtencion(p) > 0) {
+                    <button (click)="abrirFicha(p)" class="gp-ghost-btn" style="margin-left: 6px; padding: 6px 14px; border: 1px solid #d5dceb; border-radius: 8px; background: #fff; font-size: 12px; font-weight: 600; color: #263c7a; cursor: pointer;">Ficha</button>
+                  }
                 </td>
               </tr>
             }
@@ -164,6 +167,33 @@
           <button (click)="admitir()" [disabled]="guardando" class="gp-primary-btn" style="padding: 10px 22px; background: #059669; color: #fff; border: none; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer;">
             {{ guardando ? 'Registrando…' : 'Registrar admisión' }}
           </button>
+        </div>
+      </div>
+    </ventana-modal>
+  }
+
+  @if (modalFicha) {
+    <ventana-modal [titulo]="'Ficha de admisión'" [ancho]="720" (alCerrar)="cerrarFicha()">
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        @if (errorFicha) {
+          <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">{{ errorFicha }}</div>
+        }
+        @if (cargandoFicha) {
+          <div style="padding: 24px; text-align: center; color: #7a86a1; font-size: 13px;">Cargando ficha…</div>
+        } @else if (filasFicha.length === 0) {
+          <div style="padding: 24px; text-align: center; color: #7a86a1; font-size: 13px;">La ficha no devolvió datos.</div>
+        } @else {
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid #e6eaf2; border-radius: 12px; overflow: hidden;">
+            @for (fila of filasFicha; track fila.clave) {
+              <div style="display: contents;">
+                <div style="padding: 10px 14px; background: #f8fafc; font-size: 12px; font-weight: 600; color: #54617f; border-bottom: 1px solid #e6eaf2;">{{ fila.clave }}</div>
+                <div style="padding: 10px 14px; font-size: 13px; color: #07153a; border-bottom: 1px solid #e6eaf2; word-break: break-word;">{{ fila.valor || '—' }}</div>
+              </div>
+            }
+          </div>
+        }
+        <div style="display: flex; justify-content: flex-end;">
+          <button (click)="cerrarFicha()" class="gp-ghost-btn" style="padding: 9px 18px; border: 1px solid #e0e6f1; border-radius: 11px; background: #fff; font-size: 13px; font-weight: 600; color: #54617f; cursor: pointer;">Cerrar</button>
         </div>
       </div>
     </ventana-modal>

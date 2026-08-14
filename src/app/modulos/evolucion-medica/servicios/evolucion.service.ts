@@ -24,6 +24,8 @@ export class EvolucionService {
   // Estado base con Signals
   public viewMode = signal<ViewMode>('tray');
   public patientSearch = signal<string>('');
+  public fechaDesde = signal<string>('');
+  public fechaHasta = signal<string>('');
   
   // Datos reales para la bandeja
   public pacientes = signal<PacienteItem[]>([]);
@@ -41,10 +43,17 @@ export class EvolucionService {
   });
 
   // Acciones
-  public  async cargarPacientes() {
+  public async cargarPacientes() {
     this.isLoading.set(true);
     try {
-      const data = await this.api.request<PacienteItem[]>('/api/v1/evoluciones/pacientes', { method: 'GET' });
+      const params = new URLSearchParams();
+      if (this.fechaDesde()) params.append('fini', this.fechaDesde());
+      if (this.fechaHasta()) params.append('ffin', this.fechaHasta());
+      const qs = params.toString();
+      const data = await this.api.request<PacienteItem[]>(
+        `/api/v1/evoluciones/pacientes${qs ? `?${qs}` : ''}`,
+        { method: 'GET' }
+      );
       if (data) {
         this.pacientes.set(data);
       }

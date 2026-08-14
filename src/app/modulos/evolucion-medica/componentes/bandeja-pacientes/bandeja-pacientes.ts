@@ -2,57 +2,52 @@ import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EvolucionService } from '../../servicios/evolucion.service';
+import { BuscadorRangoFechas, CriteriosBusqueda } from '../../../../compartido/ui/buscador-rango-fechas/buscador-rango-fechas';
 
 @Component({
   selector: 'app-bandeja-pacientes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BuscadorRangoFechas],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="grid grid-cols-1 md:grid-cols-[300px_1fr] min-h-[calc(100vh-62px)]">
-      <!-- Rail Lateral -->
-      <aside class="bg-white border-r border-slate-200 p-4 pb-10">
-        <input 
-          type="text" 
-          class="w-full border border-slate-200 rounded-lg py-2 px-3 text-sm mb-4 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all" 
+    <div class="flex flex-col min-h-[calc(100vh-62px)]">
+      <!-- Barra de búsqueda (sin caja) -->
+      <div class="px-4 py-3">
+        <buscador-rango-fechas
           placeholder="Buscar paciente o N.º HC..."
-          [ngModel]="evolucionService.patientSearch()"
-          (ngModelChange)="evolucionService.patientSearch.set($event)"
-        >
-        <div class="text-[10.5px] uppercase tracking-widest text-slate-500 px-1 pb-2">
-          Pacientes activos
-        </div>
-        <div class="flex flex-col gap-2">
-          @for (paciente of evolucionService.filteredPacientes(); track paciente.idRegAtencion) {
-            <div 
-              class="border rounded-xl p-3 cursor-pointer bg-white transition-colors duration-150 ease-in-out hover:border-teal-600"
-              [class.bg-teal-50]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
-              [class.border-teal-600]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
-              [class.border-slate-200]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
-              (click)="evolucionService.selectPatient(paciente)"
-            >
-              <div class="font-bold text-[13.5px] text-slate-900">{{ paciente.nombre }}</div>
-              <div class="font-mono text-[10.8px] text-slate-500 mt-1 flex justify-between">
-                <span>{{ paciente.historia }}</span>
-                <span>{{ paciente.edad }}</span>
+          [cargando]="evolucionService.isLoading()"
+          [filtroInicial]="evolucionService.patientSearch()"
+          [fechaDesdeInicial]="evolucionService.fechaDesde()"
+          [fechaHastaInicial]="evolucionService.fechaHasta()"
+          (buscar)="onBuscar($event)"
+          (limpiarFiltros)="onLimpiar()"
+        ></buscador-rango-fechas>
+      </div>
+
+<div class="grid grid-cols-1 md:grid-cols-[300px_1fr] flex-1">
+        <!-- Rail Lateral (sin caja) -->
+        <aside class="p-3">
+          <div class="text-[10.5px] uppercase tracking-widest text-slate-500 px-1 pb-2">
+            Pacientes activos
+          </div>
+          <div class="flex flex-col gap-0.5">
+            @for (paciente of evolucionService.filteredPacientes(); track paciente.idRegAtencion) {
+              <div 
+                class="px-3 py-2.5 rounded-lg cursor-pointer transition-colors duration-150 ease-in-out hover:bg-slate-100"
+                [class.bg-teal-50]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
+                (click)="evolucionService.selectPatient(paciente)"
+              >
+                <div class="font-semibold text-[13px] text-slate-900">{{ paciente.nombre }}</div>
+                <div class="font-mono text-[10.8px] text-slate-500 mt-0.5 flex justify-between">
+                  <span>{{ paciente.historia }}</span>
+                  <span>{{ paciente.edad }}</span>
+                </div>
               </div>
-              <div class="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
-                <span>{{ paciente.ubicacion }}</span>
-                <span 
-                  class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                  [ngClass]="{
-                    'bg-emerald-100 text-emerald-700': paciente.estado === 'Estable',
-                    'bg-amber-100 text-amber-700': paciente.estado === 'Delicado',
-                    'bg-rose-100 text-rose-700': paciente.estado === 'Crítico'
-                  }"
-                >{{ paciente.estado }}</span>
-              </div>
-            </div>
-          } @empty {
-            <div class="text-center text-sm text-slate-500 py-4">No se encontraron pacientes.</div>
-          }
-        </div>
-      </aside>
+            } @empty {
+              <div class="text-center text-sm text-slate-500 py-4">No se encontraron pacientes.</div>
+            }
+          </div>
+        </aside>
 
       <!-- Main Area -->
       <main class="p-6 md:p-8 pb-16">
@@ -116,9 +111,24 @@ import { EvolucionService } from '../../servicios/evolucion.service';
           </div>
         }
       </main>
+      </div>
     </div>
   `
 })
 export class BandejaPacientesComponent {
   public evolucionService = inject(EvolucionService);
+
+  onBuscar(criterios: CriteriosBusqueda) {
+    this.evolucionService.patientSearch.set(criterios.filtro);
+    this.evolucionService.fechaDesde.set(criterios.fechaDesde);
+    this.evolucionService.fechaHasta.set(criterios.fechaHasta);
+    this.evolucionService.cargarPacientes();
+  }
+
+  onLimpiar() {
+    this.evolucionService.patientSearch.set('');
+    this.evolucionService.fechaDesde.set('');
+    this.evolucionService.fechaHasta.set('');
+    this.evolucionService.cargarPacientes();
+  }
 }

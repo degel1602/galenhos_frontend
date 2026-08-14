@@ -9,9 +9,14 @@
       </p>
     </div>
     @if (authService.hasPermission('agregar')) {
-      <button (click)="abrirModalRegistro()" class="gp-primary-btn" style="padding: 10px 20px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 6px 16px rgba(38,60,122,.25);">
-        + Registrar paciente
-      </button>
+      <div style="display: flex; gap: 10px;">
+        <button (click)="abrirReporte()" class="gp-ghost-btn" style="padding: 10px 18px; border: 1px solid #d5dceb; border-radius: 11px; background: #fff; font-size: 13.5px; font-weight: 600; color: #263c7a; cursor: pointer; white-space: nowrap;">
+          Reporte
+        </button>
+        <button (click)="abrirModalRegistro()" class="gp-primary-btn" style="padding: 10px 20px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 6px 16px rgba(38,60,122,.25);">
+          + Registrar paciente
+        </button>
+      </div>
     }
   </div>
 
@@ -92,6 +97,9 @@
                     @if (authService.hasPermission('modificar')) {
                       <button (click)="abrirEvaluacion(p)" class="gp-ghost-btn" style="padding: 6px 12px; border: 1px solid #d5dceb; border-radius: 8px; background: #fff; font-size: 12px; font-weight: 600; color: #263c7a; cursor: pointer;">Evaluar</button>
                     }
+                  }
+                  @if (idCuentaAtencion(p) > 0) {
+                    <button (click)="abrirFicha(p)" class="gp-ghost-btn" style="margin-left: 6px; padding: 6px 12px; border: 1px solid #d5dceb; border-radius: 8px; background: #fff; font-size: 12px; font-weight: 600; color: #263c7a; cursor: pointer;">Ficha</button>
                   }
                 </td>
               </tr>
@@ -206,6 +214,77 @@
           <button (click)="guardarEvaluacion()" [disabled]="guardandoEvaluacion" class="gp-primary-btn" style="padding: 10px 22px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer;">
             {{ guardandoEvaluacion ? 'Guardando…' : 'Guardar evaluación' }}
           </button>
+        </div>
+      </div>
+    </ventana-modal>
+  }
+
+  @if (modalReporte) {
+    <ventana-modal [titulo]="'Reporte de triaje'" [ancho]="900" (alCerrar)="cerrarReporte()">
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        @if (errorReporte) {
+          <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">{{ errorReporte }}</div>
+        }
+        <div style="display: flex; justify-content: flex-end;">
+          <button (click)="generarReporte()" [disabled]="cargandoReporte" class="gp-ghost-btn" style="padding: 8px 16px; border: 1px solid #d5dceb; border-radius: 9px; background: #fff; font-size: 12.5px; font-weight: 600; color: #263c7a; cursor: pointer;">
+            {{ cargandoReporte ? 'Generando…' : 'Actualizar reporte' }}
+          </button>
+        </div>
+        @if (cargandoReporte) {
+          <div style="padding: 24px; text-align: center; color: #7a86a1; font-size: 13px;">Generando reporte…</div>
+        } @else if (reporte.length === 0) {
+          <div style="padding: 24px; text-align: center; color: #7a86a1; font-size: 13px;">El reporte no devolvió registros.</div>
+        } @else {
+          <div style="overflow-x: auto; border: 1px solid #e6eaf2; border-radius: 12px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
+              <thead>
+                <tr style="background: #f8fafc; border-bottom: 1px solid #e6eaf2;">
+                  @for (clave of clavesReporte(); track clave) {
+                    <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #54617f; white-space: nowrap;">{{ clave }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (fila of reporte; track $index) {
+                  <tr style="border-bottom: 1px solid #e6eaf2;">
+                    @for (clave of clavesReporte(); track clave) {
+                      <td style="padding: 10px 12px; color: #07153a; white-space: nowrap;">{{ valorCelda(fila, clave) }}</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        <div style="display: flex; justify-content: flex-end;">
+          <button (click)="cerrarReporte()" class="gp-ghost-btn" style="padding: 9px 18px; border: 1px solid #e0e6f1; border-radius: 11px; background: #fff; font-size: 13px; font-weight: 600; color: #54617f; cursor: pointer;">Cerrar</button>
+        </div>
+      </div>
+    </ventana-modal>
+  }
+
+  @if (modalFicha) {
+    <ventana-modal [titulo]="'Ficha de admisión'" [ancho]="720" (alCerrar)="cerrarFicha()">
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        @if (errorFicha) {
+          <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">{{ errorFicha }}</div>
+        }
+        @if (cargandoFicha) {
+          <div style="padding: 24px; text-align: center; color: #7a86a1; font-size: 13px;">Cargando ficha…</div>
+        } @else if (filasFicha.length === 0) {
+          <div style="padding: 24px; text-align: center; color: #7a86a1; font-size: 13px;">La ficha no devolvió datos.</div>
+        } @else {
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid #e6eaf2; border-radius: 12px; overflow: hidden;">
+            @for (fila of filasFicha; track fila.clave) {
+              <div style="display: contents;">
+                <div style="padding: 10px 14px; background: #f8fafc; font-size: 12px; font-weight: 600; color: #54617f; border-bottom: 1px solid #e6eaf2;">{{ fila.clave }}</div>
+                <div style="padding: 10px 14px; font-size: 13px; color: #07153a; border-bottom: 1px solid #e6eaf2; word-break: break-word;">{{ fila.valor || '—' }}</div>
+              </div>
+            }
+          </div>
+        }
+        <div style="display: flex; justify-content: flex-end;">
+          <button (click)="cerrarFicha()" class="gp-ghost-btn" style="padding: 9px 18px; border: 1px solid #e0e6f1; border-radius: 11px; background: #fff; font-size: 13px; font-weight: 600; color: #54617f; cursor: pointer;">Cerrar</button>
         </div>
       </div>
     </ventana-modal>
