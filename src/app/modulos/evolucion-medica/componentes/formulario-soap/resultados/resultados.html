@@ -1,97 +1,146 @@
-<!-- LABORATORIO -->
-<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
-    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
-    Laboratorio
-  </h3>
-  <div class="overflow-x-auto">
-    <table class="w-full text-left border-collapse text-[13px]">
-      <thead>
-        <tr>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Examen</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Fecha</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Resultado</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Revisado</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (item of laboratorios; track item.idResultado) {
-          <tr class="hover:bg-slate-50">
-            <td class="p-2 border-b border-slate-100 align-top text-slate-800">{{ item.nombreExamen }}</td>
-            <td class="p-2 border-b border-slate-100 align-top font-mono text-[11.5px] text-slate-600">{{ item.fechaResultado | date:'dd/MM/yyyy' }}</td>
-            <td class="p-2 border-b border-slate-100 align-top text-slate-700">{{ item.valores || item.observaciones }}</td>
-            <td class="p-2 border-b border-slate-100 align-top"><input type="checkbox" class="accent-teal-600 w-4 h-4 rounded cursor-pointer"></td>
-          </tr>
-        } @empty {
-          <tr class="hover:bg-slate-50">
-             <td colspan="4" class="p-4 border-b border-slate-100 align-top text-slate-500 text-center italic">No hay laboratorios registrados.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+@if (isLoading()) {
+  <div class="flex justify-center items-center py-12 gap-3 text-slate-500">
+    <svg class="animate-spin h-5 w-5 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    <span class="text-[13px]">Cargando resultados...</span>
   </div>
-</div>
+} @else {
 
-<!-- IMÁGENES -->
-<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
-    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
-    Imágenes
-  </h3>
-  <div class="overflow-x-auto">
-    <table class="w-full text-left border-collapse text-[13px]">
-      <thead>
-        <tr>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Estudio</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Fecha</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Informe</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Revisado</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (item of imagenes; track item.idResultado) {
-          <tr class="hover:bg-slate-50">
-            <td class="p-2 border-b border-slate-100 align-top text-slate-800">{{ item.nombreExamen }}</td>
-            <td class="p-2 border-b border-slate-100 align-top font-mono text-[11.5px] text-slate-600">{{ item.fechaResultado | date:'dd/MM/yyyy' }}</td>
-            <td class="p-2 border-b border-slate-100 align-top text-slate-700">{{ item.observaciones }}</td>
-            <td class="p-2 border-b border-slate-100 align-top"><input type="checkbox" class="accent-teal-600 w-4 h-4 rounded cursor-pointer"></td>
-          </tr>
-        } @empty {
-          <tr class="hover:bg-slate-50">
-             <td colspan="4" class="p-4 border-b border-slate-100 align-top text-slate-500 text-center italic">No hay estudios de imagen registrados.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-</div>
+  @if (errorMessage()) {
+    <div class="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-[12.5px] rounded-lg px-4 py-3 mb-4">
+      <span>⚠️</span>
+      {{ errorMessage() }}
+    </div>
+  }
 
-<!-- OTROS -->
-<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
-    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
-    Otros exámenes
-  </h3>
-  <div class="overflow-x-auto">
-    <table class="w-full text-left border-collapse text-[13px]">
-      <thead>
-        <tr>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Examen</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Fecha</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Resultado</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Revisado</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (item of otrosEstaticos; track item.nombre) {
-          <tr class="hover:bg-slate-50">
-            <td class="p-2 border-b border-slate-100 align-top text-slate-800">{{ item.nombre }}</td>
-            <td class="p-2 border-b border-slate-100 align-top font-mono text-[11.5px] text-slate-600">{{ item.fecha }}</td>
-            <td class="p-2 border-b border-slate-100 align-top text-slate-700">{{ item.resultado }}</td>
-            <td class="p-2 border-b border-slate-100 align-top"><input type="checkbox" class="accent-teal-600 w-4 h-4 rounded cursor-pointer"></td>
+  <!-- LABORATORIO -->
+  <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
+    <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+      <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+      Laboratorio
+    </h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-[13px]">
+        <thead>
+          <tr>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Examen</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Fecha</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Resultado / Detalle</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Estado</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Revisado</th>
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (item of laboratorios(); track item.idResultado) {
+            <tr class="hover:bg-slate-50">
+              <td class="p-2 border-b border-slate-100 align-top text-slate-800 font-medium">{{ item.nombreExamen }}</td>
+              <td class="p-2 border-b border-slate-100 align-top font-mono text-[11.5px] text-slate-600">{{ item.fechaResultado | date:'dd/MM/yyyy' }}</td>
+              <td class="p-2 border-b border-slate-100 align-top text-slate-700">{{ item.valores || item.observaciones || '—' }}</td>
+              <td class="p-2 border-b border-slate-100 align-top">
+                <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold" [class]="obtenerClaseEstado(item.estado)">
+                  {{ item.estado || 'Pendiente' }}
+                </span>
+              </td>
+              <td class="p-2 border-b border-slate-100 align-top">
+                <input type="checkbox" [id]="'lab-rev-' + item.idResultado" aria-label="Revisado" class="accent-teal-600 w-4 h-4 rounded cursor-pointer">
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="p-8 text-center">
+                <p class="text-2xl mb-1">🧪</p>
+                <p class="text-slate-400 text-[12.5px] italic">No hay resultados de laboratorio registrados.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
+
+  <!-- IMÁGENES -->
+  <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
+    <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+      <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+      Imágenes
+    </h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-[13px]">
+        <thead>
+          <tr>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Estudio</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Fecha</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Informe</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Estado</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Revisado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of imagenes(); track item.idResultado) {
+            <tr class="hover:bg-slate-50">
+              <td class="p-2 border-b border-slate-100 align-top text-slate-800 font-medium">{{ item.nombreExamen }}</td>
+              <td class="p-2 border-b border-slate-100 align-top font-mono text-[11.5px] text-slate-600">{{ item.fechaResultado | date:'dd/MM/yyyy' }}</td>
+              <td class="p-2 border-b border-slate-100 align-top text-slate-700">{{ item.observaciones || item.valores || '—' }}</td>
+              <td class="p-2 border-b border-slate-100 align-top">
+                <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold" [class]="obtenerClaseEstado(item.estado)">
+                  {{ item.estado || 'Pendiente' }}
+                </span>
+              </td>
+              <td class="p-2 border-b border-slate-100 align-top">
+                <input type="checkbox" [id]="'img-rev-' + item.idResultado" aria-label="Revisado" class="accent-teal-600 w-4 h-4 rounded cursor-pointer">
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="p-8 text-center">
+                <p class="text-2xl mb-1">🩻</p>
+                <p class="text-slate-400 text-[12.5px] italic">No hay estudios de imagen registrados.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- OTROS -->
+  <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
+    <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
+      <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+      Otros exámenes
+    </h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-[13px]">
+        <thead>
+          <tr>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Examen</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Fecha</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Resultado</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Estado</th>
+            <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Revisado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of otrosEstaticos; track item.nombre; let i = $index) {
+            <tr class="hover:bg-slate-50">
+              <td class="p-2 border-b border-slate-100 align-top text-slate-800">{{ item.nombre }}</td>
+              <td class="p-2 border-b border-slate-100 align-top font-mono text-[11.5px] text-slate-600">{{ item.fecha }}</td>
+              <td class="p-2 border-b border-slate-100 align-top text-slate-700">{{ item.resultado }}</td>
+              <td class="p-2 border-b border-slate-100 align-top">
+                <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold" [class]="obtenerClaseEstado(item.estado)">
+                  {{ item.estado }}
+                </span>
+              </td>
+              <td class="p-2 border-b border-slate-100 align-top">
+                <input type="checkbox" [id]="'otro-rev-' + i" aria-label="Revisado" class="accent-teal-600 w-4 h-4 rounded cursor-pointer">
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+}

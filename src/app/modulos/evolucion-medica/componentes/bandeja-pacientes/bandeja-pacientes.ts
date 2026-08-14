@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EvolucionService } from '../../servicios/evolucion.service';
 import { BuscadorRangoFechas, CriteriosBusqueda } from '../../../../compartido/ui/buscador-rango-fechas/buscador-rango-fechas';
+import { AuthService } from '../../../auth/aplicacion/auth.service';
 
 @Component({
   selector: 'app-bandeja-pacientes',
@@ -62,12 +63,14 @@ import { BuscadorRangoFechas, CriteriosBusqueda } from '../../../../compartido/u
                 <span><b>Sexo:</b> {{ paciente.sexo }}</span>
               </div>
             </div>
-            <button 
-              (click)="evolucionService.setViewMode('form')"
-              class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
-            >
-              Iniciar Evolución
-            </button>
+            @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
+              <button 
+                (click)="evolucionService.setViewMode('form')"
+                class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+              >
+                Iniciar Evolución
+              </button>
+            }
           </div>
 
           <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
@@ -88,7 +91,9 @@ import { BuscadorRangoFechas, CriteriosBusqueda } from '../../../../compartido/u
                   </td>
                   <td class="p-3 align-middle text-slate-600">Dr. Gómez</td>
                   <td class="p-3 align-middle text-right">
-                    <button class="text-teal-700 border border-teal-600 hover:bg-teal-50 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors">Ver</button>
+                    @if (authService.hasPermission('ver')) {
+                      <button class="text-teal-700 border border-teal-600 hover:bg-teal-50 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors">Ver</button>
+                    }
                   </td>
                 </tr>
                 <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
@@ -98,7 +103,9 @@ import { BuscadorRangoFechas, CriteriosBusqueda } from '../../../../compartido/u
                   </td>
                   <td class="p-3 align-middle text-slate-600">Dra. Ramírez</td>
                   <td class="p-3 align-middle text-right">
-                    <button class="text-teal-700 border border-teal-600 hover:bg-teal-50 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors">Ver</button>
+                    @if (authService.hasPermission('ver')) {
+                      <button class="text-teal-700 border border-teal-600 hover:bg-teal-50 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors">Ver</button>
+                    }
                   </td>
                 </tr>
               </tbody>
@@ -117,6 +124,7 @@ import { BuscadorRangoFechas, CriteriosBusqueda } from '../../../../compartido/u
 })
 export class BandejaPacientesComponent {
   public evolucionService = inject(EvolucionService);
+  public authService = inject(AuthService);
 
   onBuscar(criterios: CriteriosBusqueda) {
     this.evolucionService.patientSearch.set(criterios.filtro);

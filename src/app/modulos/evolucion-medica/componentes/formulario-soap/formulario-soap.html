@@ -152,47 +152,16 @@
       }
 
       @if (activePanel() === 'p2') {
-        <section class="animate-in fade-in slide-in-from-bottom-2 duration-300" formGroupName="motivo">
+        <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div class="mb-5">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 02</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Motivo de evolución</h2>
             <p class="text-slate-500 text-[13px] m-0">Seleccione el motivo que origina este registro.</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-            <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
-              <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
-              Motivo principal
-            </h3>
-            <div class="flex flex-wrap gap-3 mb-4">
-              <label for="motivo-consulta" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="motivo-consulta" type="checkbox" formControlName="motivoConsulta" class="accent-teal-600"> Motivo de consulta
-              </label>
-              <label for="motivo-seguimiento" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="motivo-seguimiento" type="checkbox" formControlName="seguimiento" class="accent-teal-600"> Seguimiento
-              </label>
-              <label for="motivo-control" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="motivo-control" type="checkbox" formControlName="control" class="accent-teal-600"> Control
-              </label>
-              <label for="motivo-reevaluacion" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="motivo-reevaluacion" type="checkbox" formControlName="reevaluacion" class="accent-teal-600"> Reevaluación
-              </label>
-              <label for="motivo-postoperatorio" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="motivo-postoperatorio" type="checkbox" formControlName="postoperatorio" class="accent-teal-600"> Postoperatorio
-              </label>
-              <label for="motivo-interconsulta" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="motivo-interconsulta" type="checkbox" formControlName="interconsulta" class="accent-teal-600"> Interconsulta
-              </label>
-              <label for="motivo-emergencia" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="motivo-emergencia" type="checkbox" formControlName="emergencia" class="accent-teal-600"> Emergencia
-              </label>
-            </div>
-            <div class="flex flex-col">
-              <label for="motivo-detalle" class="text-[11.5px] font-semibold text-slate-500 mb-1">Detalle del motivo</label>
-              <textarea id="motivo-detalle" rows="2" formControlName="detalle" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Especifique brevemente..."></textarea>
-            </div>
-          </div>
+          <app-motivo></app-motivo>
         </section>
       }
+
 
       @if (activePanel() === 'p3') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300" formGroupName="subjetivo">

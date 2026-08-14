@@ -4,6 +4,7 @@ import { EvolucionService } from '../../servicios/evolucion.service';
 import { BandejaPacientesComponent } from '../bandeja-pacientes/bandeja-pacientes';
 import { FormularioSoapComponent } from '../formulario-soap/formulario-soap';
 import { HeaderActionsService } from '../../../../compartido/servicios/header-actions.service';
+import { AuthService } from '../../../auth/aplicacion/auth.service';
 
 @Component({
   selector: 'app-evolucion-raiz',
@@ -31,12 +32,16 @@ import { HeaderActionsService } from '../../../../compartido/servicios/header-ac
               <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
               Nota en borrador
             </span>
-            <button class="font-semibold text-[13px] px-3.5 py-2 rounded-lg bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors shadow-sm ml-2">
-              Imprimir / PDF
-            </button>
-            <button class="font-semibold text-[13px] px-3.5 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-sm">
-              Guardar evolución
-            </button>
+            @if (authService.hasPermission('imprimir')) {
+              <button class="font-semibold text-[13px] px-3.5 py-2 rounded-lg bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors shadow-sm ml-2">
+                Imprimir / PDF
+              </button>
+            }
+            @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
+              <button class="font-semibold text-[13px] px-3.5 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-sm">
+                Guardar evolución
+              </button>
+            }
           }
         </div>
       </ng-template>
@@ -55,6 +60,7 @@ import { HeaderActionsService } from '../../../../compartido/servicios/header-ac
 export class EvolucionRaizComponent implements AfterViewInit, OnDestroy {
   evolucionService = inject(EvolucionService);
   headerActionsService = inject(HeaderActionsService);
+  authService = inject(AuthService);
   
   @ViewChild('headerActions') headerActionsTpl!: TemplateRef<unknown>;
 

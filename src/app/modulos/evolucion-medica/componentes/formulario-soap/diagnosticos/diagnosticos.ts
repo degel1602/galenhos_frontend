@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AuthService } from '../../../../auth/aplicacion/auth.service';
 
 export interface DxForm {
   cie10: FormControl<string | null>;
@@ -64,9 +65,11 @@ export interface DxForm {
                   </select>
                 </td>
                 <td class="p-1.5 align-middle text-center">
-                  <button (click)="removerDx($index)" class="text-slate-400 hover:text-rose-600 transition-colors opacity-0 group-hover:opacity-100" title="Eliminar fila">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-                  </button>
+                  @if (authService.hasPermission('modificar') || authService.hasPermission('eliminar')) {
+                    <button (click)="removerDx($index)" class="text-slate-400 hover:text-rose-600 transition-colors opacity-0 group-hover:opacity-100" title="Eliminar fila">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                    </button>
+                  }
                 </td>
               </tr>
             }
@@ -74,15 +77,18 @@ export interface DxForm {
         </table>
       </div>
       
-      <button (click)="agregarDx()" class="mt-3 bg-teal-50 text-teal-800 border border-dashed border-teal-600 hover:bg-teal-100 font-semibold py-1.5 px-4 rounded-md text-[12.6px] transition-colors">
-        + Agregar diagnóstico
-      </button>
+      @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
+        <button (click)="agregarDx()" class="mt-3 bg-teal-50 text-teal-800 border border-dashed border-teal-600 hover:bg-teal-100 font-semibold py-1.5 px-4 rounded-md text-[12.6px] transition-colors">
+          + Agregar diagnóstico
+        </button>
+      }
     </div>
   `
 })
 export class DiagnosticosComponent {
   @Input({required: true}) formArray!: FormArray<FormGroup<DxForm>>;
-  private fb = inject(FormBuilder);
+  private readonly fb = inject(FormBuilder);
+  public readonly authService = inject(AuthService);
 
   agregarDx() {
     this.formArray.push(this.fb.group({

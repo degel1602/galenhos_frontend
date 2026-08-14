@@ -15,7 +15,7 @@ export interface Interconsulta {
   providedIn: 'root'
 })
 export class InterconsultaService {
-  private api = inject(ApiClientService);
+  private readonly api = inject(ApiClientService);
 
   async obtenerPorId(id: number): Promise<Interconsulta | null> {
     try {
@@ -33,6 +33,16 @@ export class InterconsultaService {
       return data || [];
     } catch (error) {
       console.error('Error al listar interconsultas:', error);
+      return [];
+    }
+  }
+
+  async listarPorAtencion(idAtencion: number): Promise<Interconsulta[]> {
+    try {
+      const data = await this.api.request<Interconsulta[]>(`/api/v1/interconsultas/atencion/${idAtencion}`, { method: 'GET' });
+      return data || [];
+    } catch (error) {
+      console.error('Error al listar interconsultas por atenci\u00f3n:', error);
       return [];
     }
   }

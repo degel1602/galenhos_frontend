@@ -19,11 +19,11 @@
       <tbody>
         @for (ctrl of farmacologicoArray.controls; track ctrl; let i = $index) {
           <tr [formGroup]="getFormGroup(i)" class="border-b border-slate-100">
-            <td class="p-1.5"><input type="text" formControlName="medicamento" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Medicamento"></td>
-            <td class="p-1.5"><input type="text" formControlName="dosis" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. 500mg"></td>
-            <td class="p-1.5"><input type="text" formControlName="frecuencia" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. c/8h"></td>
+            <td class="p-1.5"><input type="text" [id]="'med_' + i" aria-label="Medicamento" formControlName="medicamento" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Medicamento"></td>
+            <td class="p-1.5"><input type="text" [id]="'dosis_' + i" aria-label="Dosis" formControlName="dosis" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. 500mg"></td>
+            <td class="p-1.5"><input type="text" [id]="'frec_' + i" aria-label="Frecuencia" formControlName="frecuencia" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. c/8h"></td>
             <td class="p-1.5">
-              <select formControlName="via" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800">
+              <select [id]="'via_' + i" aria-label="Vía" formControlName="via" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800">
                 <option>Oral</option>
                 <option>Endovenosa</option>
                 <option>Intramuscular</option>
@@ -32,16 +32,20 @@
                 <option>Inhalatoria</option>
               </select>
             </td>
-            <td class="p-1.5"><input type="text" formControlName="duracion" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. 7 días"></td>
+            <td class="p-1.5"><input type="text" [id]="'duracion_' + i" aria-label="Duración" formControlName="duracion" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. 7 días"></td>
             <td class="p-1.5 text-center">
-              <button class="text-red-600 hover:text-red-800 font-bold" (click)="removerMedicamento(i)">✕</button>
+              @if (authService.hasPermission('modificar') || authService.hasPermission('eliminar')) {
+                <button class="text-red-600 hover:text-red-800 font-bold" (click)="removerMedicamento(i)">✕</button>
+              }
             </td>
           </tr>
         }
       </tbody>
     </table>
-    <button class="mt-3 bg-teal-50 text-teal-700 border border-dashed border-teal-500 px-3 py-2 rounded-lg text-[12.6px] font-semibold hover:bg-teal-100 transition-colors"
-      (click)="agregarMedicamento()">+ Agregar medicamento</button>
+    @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
+      <button class="mt-3 bg-teal-50 text-teal-700 border border-dashed border-teal-500 px-3 py-2 rounded-lg text-[12.6px] font-semibold hover:bg-teal-100 transition-colors"
+        (click)="agregarMedicamento()">+ Agregar medicamento</button>
+    }
   </div>
 </div>
 
@@ -66,8 +70,8 @@
     </label>
   </div>
   <div class="flex flex-col">
-    <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Otro procedimiento</label>
-    <input type="text" formControlName="otro" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Especifique...">
+    <label for="otroProcedimiento" class="text-[11.5px] font-semibold text-slate-500 mb-1">Otro procedimiento</label>
+    <input type="text" id="otroProcedimiento" formControlName="otro" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Especifique...">
   </div>
 </div>
 
@@ -79,16 +83,16 @@
   </h3>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <div class="flex flex-col">
-      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Laboratorio</label>
-      <textarea rows="2" formControlName="laboratorio" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. Hemograma de control"></textarea>
+      <label for="laboratorioSolicitado" class="text-[11.5px] font-semibold text-slate-500 mb-1">Laboratorio</label>
+      <textarea id="laboratorioSolicitado" rows="2" formControlName="laboratorio" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. Hemograma de control"></textarea>
     </div>
     <div class="flex flex-col">
-      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Imágenes</label>
-      <textarea rows="2" formControlName="imagenes" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. TAC abdominal"></textarea>
+      <label for="imagenesSolicitadas" class="text-[11.5px] font-semibold text-slate-500 mb-1">Imágenes</label>
+      <textarea id="imagenesSolicitadas" rows="2" formControlName="imagenes" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. TAC abdominal"></textarea>
     </div>
     <div class="flex flex-col">
-      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Otros procedimientos</label>
-      <textarea rows="2" formControlName="otros" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. ECG de control"></textarea>
+      <label for="otrosProcedimientos" class="text-[11.5px] font-semibold text-slate-500 mb-1">Otros procedimientos</label>
+      <textarea id="otrosProcedimientos" rows="2" formControlName="otros" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. ECG de control"></textarea>
     </div>
   </div>
 </div>
@@ -114,8 +118,8 @@
     </label>
   </div>
   <div class="flex flex-col">
-    <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Otra especialidad</label>
-    <input type="text" formControlName="otra" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Especifique...">
+    <label for="otraEspecialidad" class="text-[11.5px] font-semibold text-slate-500 mb-1">Otra especialidad</label>
+    <input type="text" id="otraEspecialidad" formControlName="otra" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Especifique...">
   </div>
 </div>
 
@@ -127,24 +131,24 @@
   </h3>
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
     <div class="flex flex-col">
-      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Dieta</label>
-      <input type="text" formControlName="dieta" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. Blanda">
+      <label for="dietaInd" class="text-[11.5px] font-semibold text-slate-500 mb-1">Dieta</label>
+      <input type="text" id="dietaInd" formControlName="dieta" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. Blanda">
     </div>
     <div class="flex flex-col">
-      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Reposo</label>
-      <input type="text" formControlName="reposo" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. Relativo">
+      <label for="reposoInd" class="text-[11.5px] font-semibold text-slate-500 mb-1">Reposo</label>
+      <input type="text" id="reposoInd" formControlName="reposo" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. Relativo">
     </div>
     <div class="flex flex-col">
-      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Hidratación</label>
-      <input type="text" formControlName="hidratacion" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. VO libre demanda">
+      <label for="hidratacionInd" class="text-[11.5px] font-semibold text-slate-500 mb-1">Hidratación</label>
+      <input type="text" id="hidratacionInd" formControlName="hidratacion" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. VO libre demanda">
     </div>
     <div class="flex flex-col">
-      <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Oxígeno</label>
-      <input type="text" formControlName="oxigeno" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. Cánula 2L/min">
+      <label for="oxigenoInd" class="text-[11.5px] font-semibold text-slate-500 mb-1">Oxígeno</label>
+      <input type="text" id="oxigenoInd" formControlName="oxigeno" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Ej. Cánula 2L/min">
     </div>
   </div>
   <div class="flex flex-col">
-    <label class="text-[11.5px] font-semibold text-slate-500 mb-1">Restricciones</label>
-    <textarea rows="2" formControlName="restricciones" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. Restricción de sodio, no deambular sin apoyo..."></textarea>
+    <label for="restriccionesInd" class="text-[11.5px] font-semibold text-slate-500 mb-1">Restricciones</label>
+    <textarea id="restriccionesInd" rows="2" formControlName="restricciones" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. Restricción de sodio, no deambular sin apoyo..."></textarea>
   </div>
 </div>

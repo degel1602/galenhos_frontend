@@ -74,7 +74,7 @@ export class AuthService {
    * Verifica si el usuario tiene un permiso específico en una ruta.
    * Si no se proporciona la ruta, usa la ruta actual del router.
    */
-  hasPermission(action: 'agregar' | 'modificar' | 'eliminar', path?: string): boolean {
+  hasPermission(action: 'agregar' | 'modificar' | 'eliminar' | 'ver' | 'imprimir', path?: string): boolean {
     const targetPath = path || this.router.url;
     // Buscar el permiso que coincida con la ruta actual
     const currentPermiso = this.permisos().find(p => targetPath.includes(p.claveWeb) && p.claveWeb !== '');
@@ -83,6 +83,10 @@ export class AuthService {
       return false; // Si no hay configuración de permisos para esta ruta, denegar por defecto
     }
 
-    return currentPermiso[action] === true;
+    if (action === 'ver' || action === 'imprimir') {
+      return (currentPermiso as any)[action] === true || currentPermiso.agregar || currentPermiso.modificar || currentPermiso.eliminar;
+    }
+
+    return (currentPermiso as any)[action] === true;
   }
 }

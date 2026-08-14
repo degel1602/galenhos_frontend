@@ -71,19 +71,7 @@ export class PacientesListaComponent implements OnInit {
 
     try {
       if (hasFiltros) {
-        // Modo búsqueda (limitado a 100 resultados por seguridad)
-        const query = new URLSearchParams();
-        if (doc) query.append('documento', doc);
-        if (hc) query.append('hc', hc);
-        if (pat) query.append('paterno', pat);
-        if (mat) query.append('materno', mat);
-        if (nom) query.append('nombres', nom);
-
-        const res = await this.pacientesApi.buscar(query.toString());
-        this.pacientes = res || [];
-        this.paginaActual = 1;
-        this.totalPaginas = 1;
-        this.totalRegistros = this.pacientes.length;
+        await this.realizarBusquedaAvanzada(doc, hc, pat, mat, nom);
       } else {
         await this.cargarListadoPaginado();
       }
