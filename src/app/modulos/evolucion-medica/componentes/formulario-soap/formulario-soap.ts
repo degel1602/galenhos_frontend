@@ -15,6 +15,8 @@ import { ProcedimientosCertificadosComponent } from './procedimientos-certificad
 import { AdjuntosComponent } from './adjuntos/adjuntos';
 import { InterconsultasComponent } from './interconsultas/interconsultas';
 import { MotivoComponent } from './motivo/motivo';
+import { FirmaDigitalComponent } from './firma-digital/firma-digital';
+import { ModalGlobalService } from '../../../../compartido/ui/modal-global/modal-global.service';
 
 @Component({
   selector: 'app-formulario-soap',
@@ -32,7 +34,8 @@ import { MotivoComponent } from './motivo/motivo';
     ProcedimientosCertificadosComponent,
     AdjuntosComponent,
     InterconsultasComponent,
-    MotivoComponent
+    MotivoComponent,
+    FirmaDigitalComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './formulario-soap.html'
@@ -40,11 +43,28 @@ import { MotivoComponent } from './motivo/motivo';
 export class FormularioSoapComponent implements OnInit {
   public readonly evolucionService = inject(EvolucionService);
   public readonly authService = inject(AuthService);
+  private readonly modalGlobal = inject(ModalGlobalService);
   private readonly sintomaService = inject(SintomaService);
   private readonly fb = inject(FormBuilder);
   public readonly activePanel = signal<string>('p1');
   public readonly openGroup = signal<string>('encuentro');
   public readonly isSaving = signal<boolean>(false);
+
+  // Franja superior: datos de cabecera de la evolución (editables)
+  public fechaEvolucion = new Date().toISOString().slice(0, 10);
+  public horaEvolucion = new Date().toTimeString().slice(0, 5);
+  public tipoAtencion = 'Emergencia';
+  public estadoAtencion = 'Pendiente';
+
+  // Registro de auditoría real tras firmar
+  public readonly auditoria = signal<{ fecha: string; hora: string; usuario: string; ip: string } | null>(null);
+
+  // Firma digital (dibujada en canvas o imagen subida, en base64)
+  public readonly firmaDigital = signal<string | null>(null);
+
+  onFirmaCambio(dataUrl: string | null): void {
+    this.firmaDigital.set(dataUrl);
+  }
 
   // Síntomas referidos (catálogo + selección)
   public readonly sintomasCatalogo = signal<SintomaCatalogo[]>([]);
@@ -83,6 +103,10 @@ export class FormularioSoapComponent implements OnInit {
   readonly totalSintomasSeleccionados = computed(() => this.sintomasSeleccionados().size);
 
   ngOnInit() {
+    const paciente = this.evolucionService.activePatient();
+    if (paciente?.estado) {
+      this.estadoAtencion = paciente.estado;
+    }
     this.cargarSintomas();
   }
 
@@ -137,10 +161,32 @@ export class FormularioSoapComponent implements OnInit {
     p15: 'cierre'
   };
 
+  private static readonly ORDEN_PANELES = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10', 'p11', 'p14', 'p15'];
+
   activarPanel(panel: string) {
     this.activePanel.set(panel);
     const grupo = FormularioSoapComponent.GRUPO_DE_PANEL[panel];
     if (grupo) this.openGroup.set(grupo);
+  }
+
+  irAnterior() {
+    const idx = FormularioSoapComponent.ORDEN_PANELES.indexOf(this.activePanel());
+    if (idx > 0) this.activarPanel(FormularioSoapComponent.ORDEN_PANELES[idx - 1]);
+  }
+
+  irSiguiente() {
+    const idx = FormularioSoapComponent.ORDEN_PANELES.indexOf(this.activePanel());
+    if (idx < FormularioSoapComponent.ORDEN_PANELES.length - 1) {
+      this.activarPanel(FormularioSoapComponent.ORDEN_PANELES[idx + 1]);
+    }
+  }
+
+  get esPrimerPanel(): boolean {
+    return FormularioSoapComponent.ORDEN_PANELES.indexOf(this.activePanel()) === 0;
+  }
+
+  get esUltimoPanel(): boolean {
+    return FormularioSoapComponent.ORDEN_PANELES.indexOf(this.activePanel()) === FormularioSoapComponent.ORDEN_PANELES.length - 1;
   }
 
   toggleGroup(grupo: string) {
@@ -181,11 +227,12 @@ export class FormularioSoapComponent implements OnInit {
       glucemia: [null]
     }),
     examenFisico: this.fb.array([
-      // Se inicializan los sistemas
-      ...['Estado general','Piel','Cabeza','Cuello','Ojos','Oídos','Nariz','Boca','Tórax','Pulmones','Corazón','Abdomen','Genitourinario','Extremidades','Neurológico','Osteomuscular','Estado mental'].map(sys => 
+      // Sistemas agrupados según el diseño del examen físico por sistemas.
+      ...['Estado general','Piel','Cabeza y cuello','Tórax y pulmones','Corazón','Abdomen','Genitourinario','Extremidades y osteomuscular','Neurológico y estado mental'].map(sys =>
         this.fb.group({
           sistema: [sys],
-          hallazgos: ['']
+          normal: [true],
+          hallazgo: ['']
         })
       )
     ]),
@@ -255,7 +302,8 @@ export class FormularioSoapComponent implements OnInit {
       epicrisis: [false],
       constancias: [false],
       observaciones: ['']
-    })
+    }),
+    adjuntos: this.fb.array([])
   });
 
   get signosVitalesForm(): FormGroup {
@@ -278,8 +326,25 @@ export class FormularioSoapComponent implements OnInit {
     return this.soapForm.get('plan') as FormGroup;
   }
 
+  get adjuntosArray(): FormArray {
+    return this.soapForm.get('adjuntos') as FormArray;
+  }
+
 
   async firmar() {
+    const firma = this.firmaDigital();
+    if (!firma) {
+      this.modalGlobal.error('Debe dibujar su firma en el recuadro o subir una imagen de firma antes de firmar la evolución.', 'Firma requerida');
+      return;
+    }
+
+    const confirmado = await this.modalGlobal.confirmar(
+      'Se guardará la evolución completa con su firma. ¿Desea continuar?',
+      'Firmar evolución',
+      'Firmar'
+    );
+    if (!confirmado) return;
+
     this.isSaving.set(true);
     const paciente = this.evolucionService.activePatient();
     const catalogo = this.sintomasCatalogo();
@@ -294,21 +359,42 @@ export class FormularioSoapComponent implements OnInit {
 
     const formData = {
       timestamp: new Date().toISOString(),
+      cabecera: {
+        numeroEvolucion: this.numeroEvolucion(),
+        fecha: this.fechaEvolucion,
+        hora: this.horaEvolucion,
+        medicoTratante: this.authService.username() ?? '',
+        tipoAtencion: this.tipoAtencion,
+        estado: this.estadoAtencion
+      },
+      firmaDigital: firma,
       sintomas: sintomas.map(s => s.sintoma),
       ...this.soapForm.value
     };
-    
+
     // Codificar a base64 string
     const dataB64 = btoa(encodeURIComponent(JSON.stringify(formData)).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCodePoint(Number('0x' + p1))));
-    
-    const success = await this.evolucionService.guardarEvolucion(dataB64);
+
+    const respuesta = await this.evolucionService.guardarEvolucion(dataB64);
     this.isSaving.set(false);
-    
-    if (success) {
-      alert('Evolución firmada y guardada correctamente.');
+
+    if (respuesta) {
+      this.auditoria.set({
+        fecha: respuesta.fecha,
+        hora: respuesta.hora,
+        usuario: this.authService.username() ?? '',
+        ip: respuesta.ipCliente
+      });
+      this.modalGlobal.exito('La evolución fue firmada y guardada correctamente.', 'Evolución guardada');
       this.evolucionService.clearSelection();
     } else {
-      alert('Error al intentar guardar la evolución.');
+      this.modalGlobal.error('No se pudo guardar la evolución. Verifique la conexión e intente de nuevo.', 'Error al guardar');
     }
+  }
+
+  numeroEvolucion(): string {
+    const paciente = this.evolucionService.activePatient();
+    if (!paciente) return '—';
+    return `EV-${paciente.idRegAtencion}`;
   }
 }

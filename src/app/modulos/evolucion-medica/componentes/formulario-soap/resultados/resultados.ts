@@ -21,12 +21,6 @@ export class ResultadosComponent implements OnInit {
   public readonly isLoading = signal<boolean>(false);
   public readonly errorMessage = signal<string>('');
 
-  public readonly otrosEstaticos = [
-    { nombre: 'ECG', fecha: '—', resultado: 'No registrado', estado: 'Pendiente' },
-    { nombre: 'Anatomía patológica', fecha: '—', resultado: 'No solicitado', estado: 'Pendiente' },
-    { nombre: 'Endoscopía', fecha: '—', resultado: 'No solicitado', estado: 'Pendiente' }
-  ];
-
   ngOnInit(): void {
     this.cargarResultados();
   }

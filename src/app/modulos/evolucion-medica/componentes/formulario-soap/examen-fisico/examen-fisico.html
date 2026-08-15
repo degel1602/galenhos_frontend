@@ -1,23 +1,48 @@
-<h3 class="flex items-center gap-2 text-[13px] font-semibold text-teal-950 mb-5 pb-2 border-b border-slate-200">
-  <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-  </svg>
-  Examen físico por sistemas
-</h3>
+<div class="border border-slate-200 rounded-xl overflow-hidden bg-white">
+  <div class="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-200">
+    <div class="flex items-center gap-2.5">
+      <span class="w-1 h-4 rounded bg-amber-600"></span>
+      <h3 class="text-[14px] font-semibold text-teal-950 m-0">Examen físico por sistemas</h3>
+    </div>
+    <button type="button" (click)="marcarTodoNormal()"
+            class="text-[11.5px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3.5 py-1.5 cursor-pointer hover:brightness-95 transition whitespace-nowrap">
+      Marcar todo normal
+    </button>
+  </div>
 
-<div class="grid grid-cols-[140px_1fr] md:grid-cols-[170px_1fr] gap-x-3.5 gap-y-2.5 items-start">
-  @for (control of formArray.controls; track i; let i = $index) {
-    <ng-container [formGroup]="getFormGroup(i)">
-      <div class="text-[12.6px] font-semibold pt-2 text-slate-800"
-           [class.border-t]="i > 0" [class.border-dashed]="i > 0" [class.border-slate-200]="i > 0"
-           [class.pt-2.5]="i > 0" [class.mt-0.5]="i > 0">
-        {{ control.get('sistema')?.value }}
+  @for (sistema of sistemas; track $index) {
+    <div class="border-b border-dashed border-slate-200 last:border-b-0 px-4">
+      <div class="flex items-start gap-4 py-3">
+        <div class="w-[150px] md:w-[180px] shrink-0 pt-1">
+          <span class="block text-[13px] font-bold text-teal-950 leading-tight">{{ sistema.nombre }}</span>
+          @if (sistema.sub) {
+            <span class="block text-[11px] text-slate-400 mt-0.5 leading-snug break-words">{{ sistema.sub }}</span>
+          }
+        </div>
+        <div class="flex-1 flex flex-col gap-2" [formGroup]="getFormGroup($index)">
+          <div class="flex gap-2">
+            <button type="button" (click)="marcarNormal($index)"
+                    [class]="esNormal($index)
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-bold'
+                      : 'bg-white border-slate-200 text-slate-500'"
+                    class="text-[12px] rounded-full px-3.5 py-1.5 cursor-pointer border transition-all">
+              Normal
+            </button>
+            <button type="button" (click)="marcarAnormal($index)"
+                    [class]="!esNormal($index)
+                      ? 'bg-orange-50 border-orange-300 text-orange-700 font-bold'
+                      : 'bg-white border-slate-200 text-slate-500'"
+                    class="text-[12px] rounded-full px-3.5 py-1.5 cursor-pointer border transition-all">
+              Hallazgo
+            </button>
+          </div>
+          @if (!esNormal($index)) {
+            <textarea #hallazgoInput formControlName="hallazgo" rows="2"
+                      class="w-full border border-orange-200 rounded-lg p-2.5 text-[13px] bg-orange-50 text-slate-800 focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none transition-all resize-y"
+                      placeholder="Describir hallazgo de {{ sistema.nombre | lowercase }}..."></textarea>
+          }
+        </div>
       </div>
-      <textarea formControlName="hallazgos" rows="1"
-                class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none transition-all resize-y"
-                [class.border-t]="i > 0" [class.border-dashed]="i > 0" [class.border-slate-200]="i > 0"
-                [class.pt-2.5]="i > 0" [class.mt-0.5]="i > 0"
-                placeholder="Hallazgos normales / anormales de {{ control.get('sistema')?.value | lowercase }}..."></textarea>
-    </ng-container>
+    </div>
   }
 </div>

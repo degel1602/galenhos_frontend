@@ -22,6 +22,15 @@ export interface PaginaResponse<T> {
   totalItems: number;
 }
 
+export interface EvolucionFirma {
+  idRegAtencion: number;
+  idFirma: number;
+  nombreDocumento: string;
+  dataB64: string;
+  idEmpleadoRegistra: number;
+  fechaRegistro: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -40,7 +49,7 @@ export class EvolucionService {
   public readonly page = signal<number>(1);
   public readonly totalPages = signal<number>(1);
   public readonly totalItems = signal<number>(0);
-  public readonly pageSize = signal<number>(10);
+  public readonly pageSize = signal<number>(7);
 
   public readonly activePatient = signal<PacienteItem | null>(null);
 
@@ -99,22 +108,51 @@ export class EvolucionService {
     this.cargarPacientes(false);
   }
 
-  async guardarEvolucion(dataB64: string): Promise<boolean> {
+  async guardarEvolucion(dataB64: string): Promise<{ ipCliente: string; fecha: string; hora: string } | null> {
     const paciente = this.activePatient();
-    if (!paciente) return false;
+    if (!paciente) return null;
 
     try {
-      await this.api.request('/api/v1/evoluciones', {
+      const data = await this.api.request<{ ipCliente?: string; fecha?: string; hora?: string }>('/api/v1/evoluciones', {
         method: 'POST',
         body: JSON.stringify({
           idRegAtencion: paciente.idRegAtencion,
           dataB64: dataB64
         })
       });
-      return true;
+      return {
+        ipCliente: data?.ipCliente ?? '',
+        fecha: data?.fecha ?? '',
+        hora: data?.hora ?? ''
+      };
     } catch (error) {
       console.error('Error guardando evolución:', error);
-      return false;
+      return null;
+    }
+  }
+
+  async listarEvoluciones(idRegAtencion: number): Promise<EvolucionFirma[]> {
+    try {
+      const data = await this.api.request<EvolucionFirma[]>(`/api/v1/evoluciones/paciente/${idRegAtencion}`, { method: 'GET' });
+      return data ?? [];
+    } catch (error) {
+      console.error('Error listando evoluciones del paciente:', error);
+      return [];
+    }
+  }
+
+  decodificarEvolucion(dataB64: string): any | null {
+    try {
+      const binario = atob(dataB64);
+      let texto = '';
+      for (let i = 0; i < binario.length; i++) {
+        const code = binario.charCodeAt(i);
+        texto += code > 127 ? `%${code.toString(16).padStart(2, '0')}` : binario[i];
+      }
+      return JSON.parse(decodeURIComponent(texto));
+    } catch (error) {
+      console.error('Error decodificando evolución:', error);
+      return null;
     }
   }
 

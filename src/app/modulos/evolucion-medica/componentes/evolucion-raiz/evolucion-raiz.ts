@@ -12,8 +12,10 @@ import { AuthService } from '../../../auth/aplicacion/auth.service';
   imports: [CommonModule, BandejaPacientesComponent, FormularioSoapComponent],
   providers: [EvolucionService],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'block' },
+  styles: [':host { display: block; }'],
   template: `
-    <div class="min-h-screen bg-slate-50 text-slate-800 font-sans">
+    <div class="min-h-full bg-slate-50 text-slate-800 font-sans">
       <ng-template #headerActions>
         <div class="flex gap-2.5 items-center">
           @if (evolucionService.viewMode() === 'tray') {

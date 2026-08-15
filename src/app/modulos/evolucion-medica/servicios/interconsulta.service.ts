@@ -85,4 +85,37 @@ export class InterconsultaService {
       return false;
     }
   }
+
+  async listarEspecialidades(): Promise<EspecialidadInterconsulta[]> {
+    try {
+      const data = await this.api.request<EspecialidadInterconsulta[]>('/api/v1/interconsultas/especialidades', { method: 'GET' });
+      return data || [];
+    } catch (error) {
+      console.error('Error al listar especialidades de interconsulta:', error);
+      return [];
+    }
+  }
+
+  async listarMedicosPorEspecialidad(idEspecialidad: number): Promise<MedicoInterconsulta[]> {
+    try {
+      const data = await this.api.request<MedicoInterconsulta[]>(`/api/v1/interconsultas/medicos/${idEspecialidad}`, { method: 'GET' });
+      return data || [];
+    } catch (error) {
+      console.error('Error al listar m\u00e9dicos por especialidad:', error);
+      return [];
+    }
+  }
+}
+
+export interface EspecialidadInterconsulta {
+  idEspecialidad: number;
+  nombre?: string | null;
+  descripcionLarga?: string | null;
+}
+
+export interface MedicoInterconsulta {
+  idMedico: number;
+  idEmpleado: number;
+  codigoPlanilla?: string | null;
+  medico?: string | null;
 }

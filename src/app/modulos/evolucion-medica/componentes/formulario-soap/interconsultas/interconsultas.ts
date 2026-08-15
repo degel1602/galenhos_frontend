@@ -1,14 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { InterconsultaService, Interconsulta } from '../../../servicios/interconsulta.service';
+import { InterconsultaService, Interconsulta, EspecialidadInterconsulta, MedicoInterconsulta } from '../../../servicios/interconsulta.service';
 import { EvolucionService } from '../../../servicios/evolucion.service';
 import { AuthService } from '../../../../auth/aplicacion/auth.service';
-
-interface EspecialidadOpcion {
-  readonly id: number;
-  readonly nombre: string;
-}
 
 @Component({
   selector: 'app-interconsultas',
@@ -33,19 +28,35 @@ export class InterconsultasComponent implements OnInit {
   public readonly isSubmitting = signal<boolean>(false);
   public readonly errorMessage = signal<string>('');
 
-  public readonly especialidades: readonly EspecialidadOpcion[] = [
-    { id: 5, nombre: 'Cardiología' },
-    { id: 10, nombre: 'Neurología' },
-    { id: 15, nombre: 'Cirugía General' },
-    { id: 20, nombre: 'Nutrición' },
-    { id: 25, nombre: 'Psicología' },
-    { id: 30, nombre: 'Traumatología' },
-    { id: 35, nombre: 'Dermatología' },
-    { id: 40, nombre: 'Ginecología' }
-  ];
+  public readonly especialidades = signal<EspecialidadInterconsulta[]>([]);
+  public readonly medicos = signal<MedicoInterconsulta[]>([]);
+  public readonly medicosCargando = signal<boolean>(false);
 
   ngOnInit(): void {
     this.cargarHistorial();
+    this.cargarEspecialidades();
+  }
+
+  async cargarEspecialidades(): Promise<void> {
+    const lista = await this.interconsultaService.listarEspecialidades();
+    this.especialidades.set(lista);
+  }
+
+  async cambiarEspecialidad(idEspecialidad: number): Promise<void> {
+    this.interconsultaForm.patchValue({ idMedicoDestino: '' });
+    this.medicos.set([]);
+
+    if (!idEspecialidad) return;
+
+    this.medicosCargando.set(true);
+    const lista = await this.interconsultaService.listarMedicosPorEspecialidad(idEspecialidad);
+    this.medicos.set(lista);
+    this.medicosCargando.set(false);
+  }
+
+  onEspecialidadChange(event: Event): void {
+    const valor = (event.target as HTMLSelectElement).value;
+    this.cambiarEspecialidad(valor ? Number(valor) : 0);
   }
 
   async cargarHistorial(): Promise<void> {
@@ -86,6 +97,7 @@ export class InterconsultasComponent implements OnInit {
 
     if (exito) {
       this.interconsultaForm.reset({ idEspecialidad: '', idMedicoDestino: '', motivo: '' });
+      this.medicos.set([]);
       await this.cargarHistorial();
     } else {
       this.errorMessage.set('Error al solicitar la interconsulta. Inténtalo de nuevo.');
@@ -100,7 +112,7 @@ export class InterconsultasComponent implements OnInit {
   }
 
   obtenerNombreEspecialidad(idEspecialidad: number): string {
-    const especialidad = this.especialidades.find(e => e.id === idEspecialidad);
+    const especialidad = this.especialidades().find(e => e.idEspecialidad === idEspecialidad);
     return especialidad?.nombre ?? `Esp. #${idEspecialidad}`;
   }
 }

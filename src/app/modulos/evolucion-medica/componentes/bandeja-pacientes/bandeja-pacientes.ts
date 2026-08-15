@@ -1,17 +1,18 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, effect, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EvolucionService } from '../../servicios/evolucion.service';
+import { EvolucionService, EvolucionFirma } from '../../servicios/evolucion.service';
 import { BuscadorRangoFechas, CriteriosBusqueda } from '../../../../compartido/ui/buscador-rango-fechas/buscador-rango-fechas';
 import { PaginacionComponent } from '../../../../compartido/ui/paginacion/paginacion';
+import { VerEvolucionComponent } from './ver-evolucion/ver-evolucion';
 
 @Component({
   selector: 'app-bandeja-pacientes',
   standalone: true,
-  imports: [CommonModule, FormsModule, BuscadorRangoFechas, PaginacionComponent],
+  imports: [CommonModule, FormsModule, BuscadorRangoFechas, PaginacionComponent, VerEvolucionComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex flex-col min-h-[calc(100vh-62px)] -mt-4 md:-mt-6 lg:-mt-8 -mx-4 md:-mx-6 lg:-mx-8">
+    <div class="flex flex-col min-h-[calc(100vh-98px)] md:min-h-[calc(100vh-114px)] lg:min-h-[calc(100vh-130px)] -mt-4 md:-mt-6 lg:-mt-8 -mx-4 md:-mx-6 lg:-mx-8">
       <!-- Barra de búsqueda (franja blanca pegada al header) -->
       <div class="bg-white border-b border-slate-200 px-4 md:px-6 lg:px-8 py-3">
         <buscador-rango-fechas
@@ -28,22 +29,22 @@ import { PaginacionComponent } from '../../../../compartido/ui/paginacion/pagina
 <div class="grid grid-cols-1 md:grid-cols-[300px_1fr] flex-1">
         <!-- Rail Lateral (sin caja) -->
         <aside class="p-3 md:px-6 lg:px-8">
-          <div class="text-[10.5px] uppercase tracking-widest text-slate-500 px-1 pb-2">
+          <div class="text-[10.5px] uppercase tracking-widest text-slate-500 px-1 pb-1.5">
             Pacientes activos
           </div>
           <div class="flex flex-col gap-0.5">
             @for (paciente of evolucionService.filteredPacientes(); track paciente.idRegAtencion) {
               <div 
-                class="px-3 py-2.5 rounded-lg cursor-pointer transition-colors duration-150 ease-in-out hover:bg-slate-100 w-full"
+                class="px-3 py-2 rounded-lg cursor-pointer transition-colors duration-150 ease-in-out hover:bg-slate-100 w-full"
                 [class.bg-teal-50]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
                 (click)="evolucionService.selectPatient(paciente)"
               >
-                <div class="font-semibold text-[13px] text-slate-900 break-words">{{ paciente.nombre }}</div>
-                <div class="font-mono text-[10.8px] text-slate-500 mt-0.5 flex justify-between gap-2">
+                <div class="font-semibold text-[13px] text-slate-900 break-words leading-snug">{{ paciente.nombre }}</div>
+                <div class="font-mono text-[10.8px] text-slate-500 mt-0.5 flex justify-between gap-2 leading-none">
                   <span class="break-words"><b>HC:</b> {{ paciente.historia }}</span>
                   <span class="shrink-0">{{ evolucionService.normalizarEdad(paciente.edad) }}</span>
                 </div>
-                <div class="text-[10.5px] text-slate-400 mt-0.5 flex justify-between gap-2">
+                <div class="text-[10.5px] text-slate-400 mt-0.5 flex justify-between gap-2 leading-none">
                   <span class="break-words">{{ paciente.ubicacion }}</span>
                   <span class="shrink-0">Cama: {{ paciente.cama }}</span>
                 </div>
@@ -89,14 +90,84 @@ import { PaginacionComponent } from '../../../../compartido/ui/paginacion/pagina
               <h3 class="text-[13px] font-semibold text-slate-700">Bandeja de evoluciones</h3>
               <span class="text-[11.5px] text-slate-500">Paciente: {{ paciente.nombre }}</span>
             </div>
-            <div class="text-center py-14 text-slate-400">
-              <svg class="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"></path>
-              </svg>
-              <p>Este paciente aún no tiene evoluciones registradas en el sistema.</p>
-              <p class="text-[12.5px] mt-1">Use "Iniciar Evolución" para crear la primera nota.</p>
-            </div>
+
+            @if (evolucionesCargando()) {
+              <div class="flex justify-center items-center py-14 gap-3 text-slate-500">
+                <svg class="animate-spin h-5 w-5 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-[13px]">Cargando evoluciones...</span>
+              </div>
+            } @else if (evolucionesPaciente().length === 0) {
+              <div class="text-center py-14 text-slate-400">
+                <svg class="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"></path>
+                </svg>
+                <p>Este paciente aún no tiene evoluciones registradas en el sistema.</p>
+                <p class="text-[12.5px] mt-1">Use "Nueva Evolución" para crear la primera nota.</p>
+              </div>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="text-[11px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200">
+                      <th class="p-2.5 font-semibold">N.º</th>
+                      <th class="p-2.5 font-semibold">Fecha de firma</th>
+                      <th class="p-2.5 font-semibold">Médico</th>
+                      <th class="p-2.5 font-semibold">Estado</th>
+                      <th class="p-2.5 font-semibold">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-[12.5px] text-slate-700">
+                    @for (evolucion of evolucionesPaciente(); track evolucion.idFirma; let i = $index) {
+                      <tr class="hover:bg-slate-100/60 border-b border-slate-100">
+                        <td class="p-2.5 font-mono text-[11.5px] text-slate-500">{{ i + 1 }}</td>
+                        <td class="p-2.5 font-mono text-[11.5px] text-slate-600">{{ evolucion.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}</td>
+                        <td class="p-2.5 font-medium text-slate-800">{{ obtenerMedico(evolucion) }}</td>
+                        <td class="p-2.5">
+                          <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-green-100 text-green-700 border border-green-200">Firmada</span>
+                        </td>
+                        <td class="p-2.5">
+                          <button
+                            type="button"
+                            (click)="verEvolucion(evolucion)"
+                            class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-teal-600 hover:text-teal-800 hover:underline transition-colors cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                              <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            Ver
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
           </div>
+
+          @if (evolucionDetalle(); as detalle) {
+            <div class="fixed inset-0 bg-[#07153a]/45 flex items-center justify-center p-6 z-[110]" (click)="cerrarDetalle()">
+              <div (click)="$event.stopPropagation()" class="w-full max-w-3xl max-h-[85vh] overflow-hidden bg-white rounded-2xl shadow-[0_20px_60px_rgba(7,21,58,0.3)] flex flex-col">
+                <div class="flex items-start justify-between px-6 py-4 border-b border-slate-200 shrink-0">
+                  <div class="min-w-0">
+                    <div class="text-base font-bold text-[#07153a]">Evolución N.º {{ detalle.idFirma }}</div>
+                    <div class="text-[12.5px] text-[#7a86a1] mt-0.5">Firmada el {{ detalle.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}</div>
+                  </div>
+                  <button (click)="cerrarDetalle()" class="w-8 h-8 rounded-lg border border-slate-200 bg-white cursor-pointer flex items-center justify-center text-slate-500 shrink-0 transition-colors hover:bg-slate-50 ml-3" aria-label="Cerrar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+                <div class="p-6 overflow-y-auto min-w-0">
+                  <app-ver-evolucion [detalle]="detalle"></app-ver-evolucion>
+                </div>
+              </div>
+            </div>
+          }
         } @else {
           <div class="text-center py-20 text-slate-400">
             <svg class="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -115,6 +186,47 @@ import { PaginacionComponent } from '../../../../compartido/ui/paginacion/pagina
 })
 export class BandejaPacientesComponent {
   public evolucionService = inject(EvolucionService);
+
+  public readonly evolucionesPaciente = signal<EvolucionFirma[]>([]);
+  public readonly evolucionesCargando = signal<boolean>(false);
+  public readonly evolucionDetalle = signal<any | null>(null);
+
+  constructor() {
+    effect(() => {
+      const paciente = this.evolucionService.activePatient();
+      if (paciente) {
+        this.cargarEvoluciones();
+      }
+    });
+  }
+
+  async cargarEvoluciones(): Promise<void> {
+    const paciente = this.evolucionService.activePatient();
+    if (!paciente?.idRegAtencion) return;
+
+    this.evolucionesCargando.set(true);
+    try {
+      const evoluciones = await this.evolucionService.listarEvoluciones(paciente.idRegAtencion);
+      this.evolucionesPaciente.set(evoluciones);
+    } finally {
+      this.evolucionesCargando.set(false);
+    }
+  }
+
+  verEvolucion(evolucion: EvolucionFirma): void {
+    const decodificada = this.evolucionService.decodificarEvolucion(evolucion.dataB64);
+    if (!decodificada) return;
+    this.evolucionDetalle.set(decodificada);
+  }
+
+  cerrarDetalle(): void {
+    this.evolucionDetalle.set(null);
+  }
+
+  obtenerMedico(evolucion: EvolucionFirma): string {
+    const decodificada = this.evolucionService.decodificarEvolucion(evolucion.dataB64);
+    return decodificada?.cabecera?.medicoTratante || `Empleado #${evolucion.idEmpleadoRegistra}`;
+  }
 
   onBuscar(criterios: CriteriosBusqueda) {
     this.evolucionService.patientSearch.set(criterios.filtro);

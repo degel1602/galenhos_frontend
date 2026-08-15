@@ -14,11 +14,12 @@
       <div class="flex flex-col">
         <label for="ic-especialidad" class="text-[11.5px] font-semibold text-slate-500 mb-1">Especialidad Destino</label>
         <select id="ic-especialidad" formControlName="idEspecialidad"
+          (change)="onEspecialidadChange($event)"
           class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none"
           [class.border-red-300]="interconsultaForm.get('idEspecialidad')?.invalid && interconsultaForm.get('idEspecialidad')?.touched">
           <option value="">Seleccione una especialidad...</option>
-          @for (esp of especialidades; track esp.id) {
-            <option [value]="esp.id">{{ esp.nombre }}</option>
+          @for (esp of especialidades(); track esp.idEspecialidad) {
+            <option [value]="esp.idEspecialidad">{{ esp.nombre }}</option>
           }
         </select>
         @if (interconsultaForm.get('idEspecialidad')?.invalid && interconsultaForm.get('idEspecialidad')?.touched) {
@@ -29,12 +30,16 @@
       <div class="flex flex-col">
         <label for="ic-medico" class="text-[11.5px] font-semibold text-slate-500 mb-1">Médico Destino <span class="font-normal text-slate-400">(Opcional)</span></label>
         <select id="ic-medico" formControlName="idMedicoDestino"
-          class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+          class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none"
+          [disabled]="!interconsultaForm.get('idEspecialidad')?.value || medicosCargando()">
           <option value="">Cualquiera disponible...</option>
-          <option [value]="10">Dr. Juan Pérez</option>
-          <option [value]="12">Dra. Ana Gómez</option>
-          <option [value]="15">Dr. Carlos López</option>
+          @for (med of medicos(); track med.idMedico) {
+            <option [value]="med.idMedico">{{ med.medico }}</option>
+          }
         </select>
+        @if (interconsultaForm.get('idEspecialidad')?.value && !medicosCargando() && medicos().length === 0) {
+          <p class="text-slate-400 text-[11px] mt-0.5">Sin médicos registrados para esta especialidad.</p>
+        }
       </div>
 
       <div class="flex flex-col md:col-span-2">

@@ -3,23 +3,23 @@
   <div class="bg-white border-b border-slate-200 -mt-4 md:-mt-6 lg:-mt-8 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 py-3 md:py-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
     <div class="flex flex-col">
       <label for="soap-num-evolucion" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">N.º de evolución</label>
-      <input id="soap-num-evolucion" type="text" value="EV-2026-000482" readonly class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800">
+      <input id="soap-num-evolucion" type="text" [value]="numeroEvolucion()" readonly class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800">
     </div>
     <div class="flex flex-col">
       <label for="soap-fecha" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Fecha</label>
-      <input id="soap-fecha" type="date" value="2026-08-11" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+      <input id="soap-fecha" type="date" [(ngModel)]="fechaEvolucion" name="fechaEvolucion" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
     </div>
     <div class="flex flex-col">
       <label for="soap-hora" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Hora</label>
-      <input id="soap-hora" type="time" value="09:15" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+      <input id="soap-hora" type="time" [(ngModel)]="horaEvolucion" name="horaEvolucion" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
     </div>
     <div class="flex flex-col">
       <label for="soap-medico" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Médico tratante</label>
-      <input id="soap-medico" type="text" placeholder="Dr(a). Nombre Apellido" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+      <input id="soap-medico" type="text" [value]="authService.username() ?? '—'" readonly class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800">
     </div>
     <div class="flex flex-col">
       <label for="soap-tipo-atencion" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Tipo de atención</label>
-      <select id="soap-tipo-atencion" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+      <select id="soap-tipo-atencion" [(ngModel)]="tipoAtencion" name="tipoAtencion" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
         <option>Consulta externa</option>
         <option>Emergencia</option>
         <option>Hospitalización</option>
@@ -27,7 +27,8 @@
     </div>
     <div class="flex flex-col">
       <label for="soap-estado" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">Estado</label>
-      <select id="soap-estado" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+      <select id="soap-estado" [(ngModel)]="estadoAtencion" name="estadoAtencion" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+        <option>Pendiente</option>
         <option>Estable</option>
         <option>Delicado</option>
         <option>Crítico</option>
@@ -204,14 +205,40 @@
           <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 01</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Información general</h2>
-            <p class="text-slate-500 text-[13px] m-0">Estos datos ya están capturados en la franja superior y se aplican a toda la nota de evolución.</p>
+            <p class="text-slate-500 text-[13px] m-0">Datos del paciente vinculados a esta atención; se aplican a toda la nota de evolución.</p>
           </div>
-          <div class="flex items-center gap-3 mb-4">
+          <div class="flex items-center gap-3 mb-5">
             <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
             <h3 class="text-sm font-semibold text-teal-950">Paciente: {{ paciente.nombre }}</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mb-6">
+            <div class="flex flex-col">
+              <span class="text-[10.5px] uppercase tracking-widest text-slate-400 mb-0.5">Historia clínica</span>
+              <span class="text-[13px] font-mono text-slate-800 break-words">{{ paciente.historia || '—' }}</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[10.5px] uppercase tracking-widest text-slate-400 mb-0.5">Edad</span>
+              <span class="text-[13px] font-mono text-slate-800 break-words">{{ paciente.edad || '—' }}</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[10.5px] uppercase tracking-widest text-slate-400 mb-0.5">Sexo</span>
+              <span class="text-[13px] font-mono text-slate-800">{{ paciente.sexo || '—' }}</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[10.5px] uppercase tracking-widest text-slate-400 mb-0.5">Ubicación</span>
+              <span class="text-[13px] font-mono text-slate-800 break-words">{{ paciente.ubicacion || '—' }}</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[10.5px] uppercase tracking-widest text-slate-400 mb-0.5">Cama</span>
+              <span class="text-[13px] font-mono text-slate-800">{{ paciente.cama || '—' }}</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[10.5px] uppercase tracking-widest text-slate-400 mb-0.5">Atención</span>
+              <span class="text-[13px] font-mono text-slate-800">{{ numeroEvolucion() }}</span>
+            </div>
           </div>
           <p class="text-slate-500 text-[13px] max-w-2xl">Verifique en el panel superior que el estado de atención y el médico tratante sean correctos antes de continuar con la evolución del paciente.</p>
         </section>
@@ -230,7 +257,7 @@
 
 
       @if (activePanel() === 'p3') {
-        <section class="animate-in fade-in slide-in-from-bottom-2 duration-300" formGroupName="subjetivo">
+        <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 03 · Método SOAP</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Subjetivo (S)</h2>
@@ -312,12 +339,14 @@
               <input
                 type="text"
                 [(ngModel)]="nuevoSintomaTexto"
+                [ngModelOptions]="{standalone: true}"
                 (keydown.enter)="agregarSintomaNuevo()"
                 placeholder="Escribir síntoma nuevo..."
                 class="flex-1 min-w-[160px] border border-slate-200 rounded-md px-3 py-2 text-[13px] text-slate-800 bg-white focus:outline-none focus:ring-1 focus:ring-teal-600 focus:border-transparent"
               >
               <select
                 [(ngModel)]="nuevoSintomaSistema"
+                [ngModelOptions]="{standalone: true}"
                 class="border border-slate-200 rounded-md px-2.5 py-2 text-[13px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-600 focus:border-transparent cursor-pointer"
               >
                 @for (grupo of sintomasPorSistema(); track grupo.clave) {
@@ -334,7 +363,7 @@
             </div>
           }
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div formGroupName="subjetivo" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="flex flex-col">
               <label for="subjetivo-evolucion" class="text-[11.5px] font-semibold text-slate-500 mb-1">Evolución de síntomas</label>
               <textarea id="subjetivo-evolucion" rows="3" formControlName="evolucionSintomas" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Describa cómo han evolucionado los síntomas..."></textarea>
@@ -465,7 +494,7 @@
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 14</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Adjuntos</h2>
           </div>
-          <app-adjuntos></app-adjuntos>
+          <app-adjuntos [formArray]="adjuntosArray"></app-adjuntos>
         </section>
       }
 
@@ -486,24 +515,20 @@
                 </svg>
                 Firma digital
               </h3>
-              <div class="border-b border-dashed border-slate-300 h-36 flex items-center justify-center text-slate-400 font-serif italic mb-5">
-                Firma pendiente
-              </div>
-              @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
-                <button class="w-full bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold py-2.5 rounded-lg shadow-sm transition-colors text-[13.5px]" (click)="firmar()">
-                  @if (isSaving()) {
-                    <span class="flex items-center justify-center gap-2">
-                      <svg class="animate-spin h-4 w-4 text-amber-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Procesando...
-                    </span>
-                  } @else {
-                    Firmar evolución
-                  }
-                </button>
-              }
+              <app-firma-digital (firmaCambio)="onFirmaCambio($event)"></app-firma-digital>
+              <button class="w-full bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold py-2.5 rounded-lg shadow-sm transition-colors text-[13.5px] mt-5" (click)="firmar()">
+                @if (isSaving()) {
+                  <span class="flex items-center justify-center gap-2">
+                    <svg class="animate-spin h-4 w-4 text-amber-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Procesando...
+                  </span>
+                } @else {
+                  Firmar evolución
+                }
+              </button>
             </div>
 
             <div>
@@ -516,25 +541,50 @@
               <ul class="text-[12.5px] font-mono text-slate-500 flex flex-col">
                 <li class="flex justify-between py-2.5 border-b border-slate-200">
                   <span>Fecha</span>
-                  <span class="text-slate-800">2026-08-11</span>
+                  <span class="text-slate-800">{{ auditoria()?.fecha ?? '—' }}</span>
                 </li>
                 <li class="flex justify-between py-2.5 border-b border-slate-200">
                   <span>Hora</span>
-                  <span class="text-slate-800">09:15</span>
+                  <span class="text-slate-800">{{ auditoria()?.hora ?? '—' }}</span>
                 </li>
                 <li class="flex justify-between py-2.5 border-b border-slate-200">
                   <span>Usuario</span>
-                  <span class="text-slate-800">Dr(a). Nombre Apellido</span>
+                  <span class="text-slate-800">{{ auditoria()?.usuario ?? (authService.username() ?? '—') }}</span>
                 </li>
                 <li class="flex justify-between py-2.5">
                   <span>IP del equipo</span>
-                  <span class="text-slate-800">192.168.1.45</span>
+                  <span class="text-slate-800">{{ auditoria()?.ip ?? '—' }}</span>
                 </li>
               </ul>
             </div>
           </div>
         </section>
       }
+
+      <div class="flex items-center justify-between mt-8 pt-5 border-t border-slate-200">
+        <button
+          type="button"
+          (click)="irAnterior()"
+          [disabled]="esPrimerPanel"
+          class="inline-flex items-center gap-2 text-[13px] font-semibold text-slate-600 hover:text-teal-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-600 cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Anterior
+        </button>
+        <button
+          type="button"
+          (click)="irSiguiente()"
+          [disabled]="esUltimoPanel"
+          class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-semibold px-5 py-2 rounded-lg text-[13px] transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-amber-500 cursor-pointer"
+        >
+          Siguiente
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
 
     </div>
   </div>
