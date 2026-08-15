@@ -140,26 +140,13 @@
       </table>
     </div>
 
-    <!-- Paginación Simple -->
-    @if (totalPaginas > 1) {
-      <div class="py-4 mt-2 flex items-center justify-between text-sm">
-        <div class="text-slate-500">
-          Página <strong class="text-slate-800">{{ paginaActual }}</strong> de <strong class="text-slate-800">{{ totalPaginas }}</strong>
-          (Total: {{ totalRegistros }})
-        </div>
-        <div class="flex gap-2">
-          <button [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)"
-                  class="text-slate-600 hover:text-slate-900 font-medium disabled:opacity-30 disabled:cursor-not-allowed">
-            &larr; Anterior
-          </button>
-          <span class="text-slate-300">|</span>
-          <button [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)"
-                  class="text-slate-600 hover:text-slate-900 font-medium disabled:opacity-30 disabled:cursor-not-allowed">
-            Siguiente &rarr;
-          </button>
-        </div>
-      </div>
-    }
+    <!-- Paginación -->
+    <app-paginacion
+      [page]="paginaActual"
+      [totalPages]="totalPaginas"
+      [totalItems]="totalRegistros"
+      (pageChange)="cambiarPagina($event)"
+    />
   </div>
 
   <!-- Modal global de registro/edición de paciente -->

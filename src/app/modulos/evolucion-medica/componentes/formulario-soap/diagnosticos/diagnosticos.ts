@@ -17,17 +17,19 @@ export interface DxForm {
   imports: [CommonModule, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-      <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-2">
-        <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+    <div class="mb-8">
+      <h3 class="flex items-center gap-2 text-[13px] font-semibold text-teal-950 mb-2">
+        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2s7 4 7 10v6l-7 4-7-4v-6c0-6 7-10 7-10z"></path>
+        </svg>
         Diagnósticos
       </h3>
       <p class="text-slate-500 text-[12.5px] mb-4">Incluya diagnóstico principal, secundarios, nuevos y descartados. Cada uno con código CIE-10, tipo, condición y estado.</p>
       
-      <div class="overflow-x-auto border border-slate-200 rounded-lg">
+      <div class="overflow-x-auto">
         <table class="w-full text-[13px] text-left border-collapse min-w-[700px]">
           <thead>
-            <tr class="bg-slate-50 border-b-2 border-slate-200">
+            <tr class="border-b-2 border-slate-200">
               <th class="w-[100px] text-[10.8px] uppercase tracking-wider text-slate-500 p-2 font-semibold">CIE-10</th>
               <th class="text-[10.8px] uppercase tracking-wider text-slate-500 p-2 font-semibold">Descripción</th>
               <th class="text-[10.8px] uppercase tracking-wider text-slate-500 p-2 font-semibold">Tipo</th>

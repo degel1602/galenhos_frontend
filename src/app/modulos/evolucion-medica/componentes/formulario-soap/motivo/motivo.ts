@@ -34,13 +34,13 @@ export class MotivoComponent implements OnInit {
   public readonly errorMessage = signal<string>('');
 
   public readonly tiposMotivo: readonly TipoMotivo[] = [
-    { valor: 'Consulta', etiqueta: 'Consulta general', icono: '🩺' },
-    { valor: 'Seguimiento', etiqueta: 'Seguimiento', icono: '📋' },
-    { valor: 'Control', etiqueta: 'Control', icono: '✅' },
-    { valor: 'Reevaluación', etiqueta: 'Reevaluación', icono: '🔄' },
-    { valor: 'Postoperatorio', etiqueta: 'Postoperatorio', icono: '🏥' },
-    { valor: 'Interconsulta', etiqueta: 'Interconsulta', icono: '🔗' },
-    { valor: 'Emergencia', etiqueta: 'Emergencia', icono: '🚨' }
+    { valor: 'Consulta', etiqueta: 'Consulta general', icono: 'usuario' },
+    { valor: 'Seguimiento', etiqueta: 'Seguimiento', icono: 'pulso' },
+    { valor: 'Control', etiqueta: 'Control', icono: 'check' },
+    { valor: 'Reevaluación', etiqueta: 'Reevaluación', icono: 'refresh' },
+    { valor: 'Postoperatorio', etiqueta: 'Postoperatorio', icono: 'cruz' },
+    { valor: 'Interconsulta', etiqueta: 'Interconsulta', icono: 'mensaje' },
+    { valor: 'Emergencia', etiqueta: 'Emergencia', icono: 'campana' }
   ];
 
   ngOnInit(): void {

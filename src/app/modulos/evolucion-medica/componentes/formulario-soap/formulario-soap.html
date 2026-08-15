@@ -1,6 +1,6 @@
 @if (evolucionService.activePatient(); as paciente) {
-  <!-- 1. INFORMACIÓN GENERAL (franja fija) -->
-  <div class="bg-white border-b border-slate-200 p-3 md:p-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
+  <!-- 1. INFORMACIÓN GENERAL (franja fija, sangrada para pegarse al header) -->
+  <div class="bg-white border-b border-slate-200 -mt-4 md:-mt-6 lg:-mt-8 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 py-3 md:py-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
     <div class="flex flex-col">
       <label for="soap-num-evolucion" class="text-[10.5px] uppercase tracking-widest text-slate-500 mb-1">N.º de evolución</label>
       <input id="soap-num-evolucion" type="text" value="EV-2026-000482" readonly class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800">
@@ -34,126 +34,192 @@
       </select>
     </div>
   </div>
+  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] min-h-[calc(100vh-170px)] -mx-4 md:-mx-6 lg:-mx-8">
 
-  <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] min-h-[calc(100vh-160px)]">
-    <!-- NAV -->
-    <nav class="bg-white border-r border-slate-200 p-4 pb-12 flex flex-col gap-1 overflow-y-auto">
-      <div class="text-[10.5px] uppercase tracking-widest text-slate-500 p-3 pb-1">Encuentro</div>
-      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
-           [class.bg-teal-700]="activePanel() === 'p1'" [class.text-white]="activePanel() === 'p1'"
-           [class.hover:bg-teal-50]="activePanel() !== 'p1'" [class.text-slate-800]="activePanel() !== 'p1'"
-           (keydown.enter)="activePanel.set('p1')"
-           (click)="activePanel.set('p1')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p1'" [class.text-slate-400]="activePanel() !== 'p1'">01</span> Info. general</button>
-      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
-           [class.bg-teal-700]="activePanel() === 'p2'" [class.text-white]="activePanel() === 'p2'"
-           [class.hover:bg-teal-50]="activePanel() !== 'p2'" [class.text-slate-800]="activePanel() !== 'p2'"
-           (keydown.enter)="activePanel.set('p2')"
-           (click)="activePanel.set('p2')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p2'" [class.text-slate-400]="activePanel() !== 'p2'">02</span> Motivo</button>
+    <!-- NAV (acordeón) -->
+    <nav class="bg-white border-r border-slate-200 p-3 pb-12 flex flex-col gap-0.5 overflow-y-auto">
+      <!-- ENCUENTRO -->
+      <button type="button"
+        (click)="toggleGroup('encuentro')"
+        class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer font-semibold text-[11.5px] uppercase tracking-widest transition-colors"
+        [class.text-teal-700]="openGroup() === 'encuentro'" [class.bg-teal-50]="openGroup() === 'encuentro'"
+        [class.text-slate-600]="openGroup() !== 'encuentro'" [class.hover:bg-slate-50]="openGroup() !== 'encuentro'">
+        <span>Encuentro</span>
+        <svg class="w-3.5 h-3.5 transition-transform duration-200" [class.rotate-180]="openGroup() === 'encuentro'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      @if (openGroup() === 'encuentro') {
+        <div class="flex flex-col gap-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p1'" [class.text-white]="activePanel() === 'p1'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p1'" [class.text-slate-800]="activePanel() !== 'p1'"
+               (keydown.enter)="activarPanel('p1')"
+               (click)="activarPanel('p1')">
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p1'" [class.text-slate-400]="activePanel() !== 'p1'">01</span> Info. general</button>
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p2'" [class.text-white]="activePanel() === 'p2'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p2'" [class.text-slate-800]="activePanel() !== 'p2'"
+               (keydown.enter)="activarPanel('p2')"
+               (click)="activarPanel('p2')">
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p2'" [class.text-slate-400]="activePanel() !== 'p2'">02</span> Motivo</button>
+        </div>
+      }
 
-      <div class="text-[10.5px] uppercase tracking-widest text-slate-500 p-3 pt-4 mt-2">Método SOAP</div>
-      <div class="border-l-2 border-amber-200 ml-1.5 pl-2">
-        <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
-             [class.bg-teal-700]="activePanel() === 'p3'" [class.text-white]="activePanel() === 'p3'"
-             [class.hover:bg-teal-50]="activePanel() !== 'p3'" [class.text-slate-800]="activePanel() !== 'p3'"
-             (keydown.enter)="activePanel.set('p3')"
-             (click)="activePanel.set('p3')">
-          <span class="absolute -left-2.5 w-4 h-4 rounded-full bg-amber-500 text-amber-950 font-mono text-[9.5px] font-bold flex items-center justify-center">S</span>
-          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p3'" [class.text-slate-400]="activePanel() !== 'p3'">03</span> Subjetivo</button>
-        <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
-             [class.bg-teal-700]="activePanel() === 'p4'" [class.text-white]="activePanel() === 'p4'"
-             [class.hover:bg-teal-50]="activePanel() !== 'p4'" [class.text-slate-800]="activePanel() !== 'p4'"
-             (keydown.enter)="activePanel.set('p4')"
-             (click)="activePanel.set('p4')">
-          <span class="absolute -left-2.5 w-4 h-4 rounded-full bg-amber-500 text-amber-950 font-mono text-[9.5px] font-bold flex items-center justify-center">O</span>
-          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p4'" [class.text-slate-400]="activePanel() !== 'p4'">04</span> Objetivo</button>
-        <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
-             [class.bg-teal-700]="activePanel() === 'p5'" [class.text-white]="activePanel() === 'p5'"
-             [class.hover:bg-teal-50]="activePanel() !== 'p5'" [class.text-slate-800]="activePanel() !== 'p5'"
-             (keydown.enter)="activePanel.set('p5')"
-             (click)="activePanel.set('p5')">
-          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p5'" [class.text-slate-400]="activePanel() !== 'p5'">05</span> Resultados</button>
-        <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
-             [class.bg-teal-700]="activePanel() === 'p6'" [class.text-white]="activePanel() === 'p6'"
-             [class.hover:bg-teal-50]="activePanel() !== 'p6'" [class.text-slate-800]="activePanel() !== 'p6'"
-             (keydown.enter)="activePanel.set('p6')"
-             (click)="activePanel.set('p6')">
-          <span class="absolute -left-2.5 w-4 h-4 rounded-full bg-amber-500 text-amber-950 font-mono text-[9.5px] font-bold flex items-center justify-center">A</span>
-          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p6'" [class.text-slate-400]="activePanel() !== 'p6'">06</span> Evaluación</button>
-        <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors relative -ml-3.5 pl-6"
-             [class.bg-teal-700]="activePanel() === 'p7'" [class.text-white]="activePanel() === 'p7'"
-             [class.hover:bg-teal-50]="activePanel() !== 'p7'" [class.text-slate-800]="activePanel() !== 'p7'"
-             (keydown.enter)="activePanel.set('p7')"
-             (click)="activePanel.set('p7')">
-          <span class="absolute -left-2.5 w-4 h-4 rounded-full bg-amber-500 text-amber-950 font-mono text-[9.5px] font-bold flex items-center justify-center">P</span>
-          <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p7'" [class.text-slate-400]="activePanel() !== 'p7'">07</span> Plan</button>
-      </div>
+      <!-- MÉTODO SOAP -->
+      <button type="button"
+        (click)="toggleGroup('soap')"
+        class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer font-semibold text-[11.5px] uppercase tracking-widest transition-colors mt-1"
+        [class.text-teal-700]="openGroup() === 'soap'" [class.bg-teal-50]="openGroup() === 'soap'"
+        [class.text-slate-600]="openGroup() !== 'soap'" [class.hover:bg-slate-50]="openGroup() !== 'soap'">
+        <span>Método SOAP</span>
+        <svg class="w-3.5 h-3.5 transition-transform duration-200" [class.rotate-180]="openGroup() === 'soap'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      @if (openGroup() === 'soap') {
+        <div class="flex flex-col gap-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p3'" [class.text-white]="activePanel() === 'p3'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p3'" [class.text-slate-800]="activePanel() !== 'p3'"
+               (keydown.enter)="activarPanel('p3')"
+               (click)="activarPanel('p3')">
+            <span class="w-4 h-4 rounded-full flex items-center justify-center font-mono text-[9.5px] font-bold shrink-0"
+              [class.bg-amber-500]="activePanel() !== 'p3'" [class.text-amber-950]="activePanel() !== 'p3'"
+              [class.bg-teal-200]="activePanel() === 'p3'" [class.text-teal-900]="activePanel() === 'p3'">S</span>
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p3'" [class.text-slate-400]="activePanel() !== 'p3'">03</span> Subjetivo</button>
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p4'" [class.text-white]="activePanel() === 'p4'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p4'" [class.text-slate-800]="activePanel() !== 'p4'"
+               (keydown.enter)="activarPanel('p4')"
+               (click)="activarPanel('p4')">
+            <span class="w-4 h-4 rounded-full flex items-center justify-center font-mono text-[9.5px] font-bold shrink-0"
+              [class.bg-amber-500]="activePanel() !== 'p4'" [class.text-amber-950]="activePanel() !== 'p4'"
+              [class.bg-teal-200]="activePanel() === 'p4'" [class.text-teal-900]="activePanel() === 'p4'">O</span>
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p4'" [class.text-slate-400]="activePanel() !== 'p4'">04</span> Objetivo</button>
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p5'" [class.text-white]="activePanel() === 'p5'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p5'" [class.text-slate-800]="activePanel() !== 'p5'"
+               (keydown.enter)="activarPanel('p5')"
+               (click)="activarPanel('p5')">
+            <span class="w-4 h-4 rounded-full flex items-center justify-center font-mono text-[9.5px] font-bold shrink-0"
+              [class.bg-amber-500]="activePanel() !== 'p5'" [class.text-amber-950]="activePanel() !== 'p5'"
+              [class.bg-teal-200]="activePanel() === 'p5'" [class.text-teal-900]="activePanel() === 'p5'">R</span>
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p5'" [class.text-slate-400]="activePanel() !== 'p5'">05</span> Resultados</button>
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p6'" [class.text-white]="activePanel() === 'p6'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p6'" [class.text-slate-800]="activePanel() !== 'p6'"
+               (keydown.enter)="activarPanel('p6')"
+               (click)="activarPanel('p6')">
+            <span class="w-4 h-4 rounded-full flex items-center justify-center font-mono text-[9.5px] font-bold shrink-0"
+              [class.bg-amber-500]="activePanel() !== 'p6'" [class.text-amber-950]="activePanel() !== 'p6'"
+              [class.bg-teal-200]="activePanel() === 'p6'" [class.text-teal-900]="activePanel() === 'p6'">A</span>
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p6'" [class.text-slate-400]="activePanel() !== 'p6'">06</span> Evaluación</button>
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p7'" [class.text-white]="activePanel() === 'p7'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p7'" [class.text-slate-800]="activePanel() !== 'p7'"
+               (keydown.enter)="activarPanel('p7')"
+               (click)="activarPanel('p7')">
+            <span class="w-4 h-4 rounded-full flex items-center justify-center font-mono text-[9.5px] font-bold shrink-0"
+              [class.bg-amber-500]="activePanel() !== 'p7'" [class.text-amber-950]="activePanel() !== 'p7'"
+              [class.bg-teal-200]="activePanel() === 'p7'" [class.text-teal-900]="activePanel() === 'p7'">P</span>
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p7'" [class.text-slate-400]="activePanel() !== 'p7'">07</span> Plan</button>
+        </div>
+      }
 
-      <div class="text-[10.5px] uppercase tracking-widest text-slate-500 p-3 pt-4 mt-2">Documentación</div>
-      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
-           [class.bg-teal-700]="activePanel() === 'p8'" [class.text-white]="activePanel() === 'p8'"
-           [class.hover:bg-teal-50]="activePanel() !== 'p8'" [class.text-slate-800]="activePanel() !== 'p8'"
-           (keydown.enter)="activePanel.set('p8')"
-           (click)="activePanel.set('p8')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p8'" [class.text-slate-400]="activePanel() !== 'p8'">08</span> Evolución libre</button>
-      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
-           [class.bg-teal-700]="activePanel() === 'p9'" [class.text-white]="activePanel() === 'p9'"
-           [class.hover:bg-teal-50]="activePanel() !== 'p9'" [class.text-slate-800]="activePanel() !== 'p9'"
-           (keydown.enter)="activePanel.set('p9')"
-           (click)="activePanel.set('p9')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p9'" [class.text-slate-400]="activePanel() !== 'p9'">09</span> Órdenes médicas</button>
-      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
-           [class.bg-teal-700]="activePanel() === 'p11'" [class.text-white]="activePanel() === 'p11'"
-           [class.hover:bg-teal-50]="activePanel() !== 'p11'" [class.text-slate-800]="activePanel() !== 'p11'"
-           (keydown.enter)="activePanel.set('p11')"
-           (click)="activePanel.set('p11')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p11'" [class.text-slate-400]="activePanel() !== 'p11'">11</span> Proced. y Certif.</button>
-      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
-           [class.bg-teal-700]="activePanel() === 'p10'" [class.text-white]="activePanel() === 'p10'"
-           [class.hover:bg-teal-50]="activePanel() !== 'p10'" [class.text-slate-800]="activePanel() !== 'p10'"
-           (keydown.enter)="activePanel.set('p10')"
-           (click)="activePanel.set('p10')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p10'" [class.text-slate-400]="activePanel() !== 'p10'">10</span> Interconsultas</button>
-      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
-           [class.bg-teal-700]="activePanel() === 'p14'" [class.text-white]="activePanel() === 'p14'"
-           [class.hover:bg-teal-50]="activePanel() !== 'p14'" [class.text-slate-800]="activePanel() !== 'p14'"
-           (keydown.enter)="activePanel.set('p14')"
-           (click)="activePanel.set('p14')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p14'" [class.text-slate-400]="activePanel() !== 'p14'">14</span> Adjuntos</button>
+      <!-- DOCUMENTACIÓN -->
+      <button type="button"
+        (click)="toggleGroup('doc')"
+        class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer font-semibold text-[11.5px] uppercase tracking-widest transition-colors mt-1"
+        [class.text-teal-700]="openGroup() === 'doc'" [class.bg-teal-50]="openGroup() === 'doc'"
+        [class.text-slate-600]="openGroup() !== 'doc'" [class.hover:bg-slate-50]="openGroup() !== 'doc'">
+        <span>Documentación</span>
+        <svg class="w-3.5 h-3.5 transition-transform duration-200" [class.rotate-180]="openGroup() === 'doc'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      @if (openGroup() === 'doc') {
+        <div class="flex flex-col gap-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p8'" [class.text-white]="activePanel() === 'p8'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p8'" [class.text-slate-800]="activePanel() !== 'p8'"
+               (keydown.enter)="activarPanel('p8')"
+               (click)="activarPanel('p8')">
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p8'" [class.text-slate-400]="activePanel() !== 'p8'">08</span> Evolución libre</button>
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p9'" [class.text-white]="activePanel() === 'p9'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p9'" [class.text-slate-800]="activePanel() !== 'p9'"
+               (keydown.enter)="activarPanel('p9')"
+               (click)="activarPanel('p9')">
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p9'" [class.text-slate-400]="activePanel() !== 'p9'">09</span> Órdenes médicas</button>
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p10'" [class.text-white]="activePanel() === 'p10'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p10'" [class.text-slate-800]="activePanel() !== 'p10'"
+               (keydown.enter)="activarPanel('p10')"
+               (click)="activarPanel('p10')">
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p10'" [class.text-slate-400]="activePanel() !== 'p10'">10</span> Interconsultas</button>
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p11'" [class.text-white]="activePanel() === 'p11'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p11'" [class.text-slate-800]="activePanel() !== 'p11'"
+               (keydown.enter)="activarPanel('p11')"
+               (click)="activarPanel('p11')">
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p11'" [class.text-slate-400]="activePanel() !== 'p11'">11</span> Proced. y Certif.</button>
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p14'" [class.text-white]="activePanel() === 'p14'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p14'" [class.text-slate-800]="activePanel() !== 'p14'"
+               (keydown.enter)="activarPanel('p14')"
+               (click)="activarPanel('p14')">
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p14'" [class.text-slate-400]="activePanel() !== 'p14'">14</span> Adjuntos</button>
+        </div>
+      }
 
-      <div class="text-[10.5px] uppercase tracking-widest text-slate-500 p-3 pt-4 mt-2">Cierre</div>
-      <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
-           [class.bg-teal-700]="activePanel() === 'p15'" [class.text-white]="activePanel() === 'p15'"
-           [class.hover:bg-teal-50]="activePanel() !== 'p15'" [class.text-slate-800]="activePanel() !== 'p15'"
-           (keydown.enter)="activePanel.set('p15')"
-           (click)="activePanel.set('p15')">
-        <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p15'" [class.text-slate-400]="activePanel() !== 'p15'">15</span> Firma y auditoría</button>
+      <!-- CIERRE -->
+      <button type="button"
+        (click)="toggleGroup('cierre')"
+        class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer font-semibold text-[11.5px] uppercase tracking-widest transition-colors mt-1"
+        [class.text-teal-700]="openGroup() === 'cierre'" [class.bg-teal-50]="openGroup() === 'cierre'"
+        [class.text-slate-600]="openGroup() !== 'cierre'" [class.hover:bg-slate-50]="openGroup() !== 'cierre'">
+        <span>Cierre</span>
+        <svg class="w-3.5 h-3.5 transition-transform duration-200" [class.rotate-180]="openGroup() === 'cierre'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      @if (openGroup() === 'cierre') {
+        <div class="flex flex-col gap-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
+          <button type="button" class="nav-item w-full text-left flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium text-[13.2px] transition-colors"
+               [class.bg-teal-700]="activePanel() === 'p15'" [class.text-white]="activePanel() === 'p15'"
+               [class.hover:bg-teal-50]="activePanel() !== 'p15'" [class.text-slate-800]="activePanel() !== 'p15'"
+               (keydown.enter)="activarPanel('p15')"
+               (click)="activarPanel('p15')">
+            <span class="font-mono text-[11px]" [class.text-teal-200]="activePanel() === 'p15'" [class.text-slate-400]="activePanel() !== 'p15'">15</span> Firma y auditoría</button>
+        </div>
+      }
     </nav>
 
     <!-- CONTENT -->
     <div class="p-6 md:p-8 pb-16 bg-slate-50" [formGroup]="soapForm">
-      
+
       @if (activePanel() === 'p1') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 01</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Información general</h2>
             <p class="text-slate-500 text-[13px] m-0">Estos datos ya están capturados en la franja superior y se aplican a toda la nota de evolución.</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-            <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-3">
-              <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
-              Paciente: {{ paciente.nombre }}
-            </h3>
-            <p class="text-slate-500 text-[13px]">Verifique en el panel superior que el estado de atención y el médico tratante sean correctos antes de continuar con la evolución del paciente.</p>
+          <div class="flex items-center gap-3 mb-4">
+            <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <h3 class="text-sm font-semibold text-teal-950">Paciente: {{ paciente.nombre }}</h3>
           </div>
+          <p class="text-slate-500 text-[13px] max-w-2xl">Verifique en el panel superior que el estado de atención y el médico tratante sean correctos antes de continuar con la evolución del paciente.</p>
         </section>
       }
 
       @if (activePanel() === 'p2') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 02</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Motivo de evolución</h2>
             <p class="text-slate-500 text-[13px] m-0">Seleccione el motivo que origina este registro.</p>
@@ -165,50 +231,117 @@
 
       @if (activePanel() === 'p3') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300" formGroupName="subjetivo">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 03 · Método SOAP</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Subjetivo (S)</h2>
             <p class="text-slate-500 text-[13px] m-0">Lo que refiere el paciente.</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-            <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
-              <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
-              Síntomas referidos
-            </h3>
-            <div class="flex flex-wrap gap-3 mb-4">
-              <label for="subjetivo-dolor" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="subjetivo-dolor" type="checkbox" formControlName="dolor" class="accent-teal-600"> Dolor
-              </label>
-              <label for="subjetivo-fiebre" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="subjetivo-fiebre" type="checkbox" formControlName="fiebre" class="accent-teal-600"> Fiebre
-              </label>
-              <label for="subjetivo-tos" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="subjetivo-tos" type="checkbox" formControlName="tos" class="accent-teal-600"> Tos
-              </label>
-              <label for="subjetivo-nauseas" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="subjetivo-nauseas" type="checkbox" formControlName="nauseas" class="accent-teal-600"> Náuseas
-              </label>
-              <label for="subjetivo-vomitos" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="subjetivo-vomitos" type="checkbox" formControlName="vomitos" class="accent-teal-600"> Vómitos
-              </label>
-              <label for="subjetivo-mareos" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="subjetivo-mareos" type="checkbox" formControlName="mareos" class="accent-teal-600"> Mareos
-              </label>
-              <label for="subjetivo-disnea" class="flex items-center gap-1.5 text-[13px] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
-                <input id="subjetivo-disnea" type="checkbox" formControlName="disnea" class="accent-teal-600"> Disnea
-              </label>
+
+          <h3 class="flex items-center gap-2 text-[13px] font-semibold text-teal-950 mb-4 pb-2 border-b border-slate-200">
+            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            Síntomas referidos
+            @if (totalSintomasSeleccionados() > 0) {
+              <span class="ml-auto text-[11px] font-mono text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5">
+                {{ totalSintomasSeleccionados() }} seleccionado{{ totalSintomasSeleccionados() === 1 ? '' : 's' }}
+              </span>
+            }
+          </h3>
+
+          @if (sintomasCargando()) {
+            <div class="text-center text-[13px] text-slate-500 py-6">
+              <svg class="w-5 h-5 text-teal-600 mx-auto mb-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+              </svg>
+              Cargando catálogo de síntomas...
             </div>
-          </div>
-          <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="flex flex-col">
-                <label for="subjetivo-evolucion" class="text-[11.5px] font-semibold text-slate-500 mb-1">Evolución de síntomas</label>
-                <textarea id="subjetivo-evolucion" rows="3" formControlName="evolucionSintomas" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Describa cómo han evolucionado los síntomas..."></textarea>
-              </div>
-              <div class="flex flex-col">
-                <label for="subjetivo-escala-dolor" class="text-[11.5px] font-semibold text-slate-500 mb-1">Escala del dolor (EVA 0–10)</label>
-                <input id="subjetivo-escala-dolor" type="number" min="0" max="10" formControlName="escalaDolor" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="0">
-              </div>
+          } @else {
+            <div class="border border-slate-200 rounded-lg overflow-hidden mb-5">
+              @for (grupo of sintomasPorSistema(); track grupo.clave) {
+                <div class="border-b border-slate-100 last:border-b-0">
+                  <button
+                    type="button"
+                    (click)="toggleGrupoSintomas(grupo.clave)"
+                    class="w-full flex items-center gap-3 px-5 py-3.5 text-left bg-transparent hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    <span class="w-1 h-4 bg-amber-500 rounded-sm shrink-0"></span>
+                    <span class="font-semibold text-[13.5px] text-teal-950 flex-1">{{ grupo.etiqueta }}</span>
+                    <span class="text-[11.5px] text-slate-500">
+                      {{ contarSintomasSistema(grupo.clave) }} seleccionado{{ contarSintomasSistema(grupo.clave) === 1 ? '' : 's' }}
+                    </span>
+                    <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-150"
+                         [class.rotate-180]="grupoSintomasAbierto() === grupo.clave"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                  @if (grupoSintomasAbierto() === grupo.clave) {
+                    <div class="px-5 pb-4 flex flex-wrap gap-2.5">
+                      @for (sintoma of grupo.sintomas; track sintoma.idSintoma) {
+                        <label
+                          class="inline-flex items-center gap-2 px-3.5 py-1.5 border rounded-full text-[13px] cursor-pointer select-none transition-colors"
+                          [class.bg-amber-50]="sintomasSeleccionados().has(sintoma.idSintoma)"
+                          [class.border-amber-400]="sintomasSeleccionados().has(sintoma.idSintoma)"
+                          [class.text-teal-950]="sintomasSeleccionados().has(sintoma.idSintoma)"
+                          [class.font-semibold]="sintomasSeleccionados().has(sintoma.idSintoma)"
+                          [class.bg-slate-50]="!sintomasSeleccionados().has(sintoma.idSintoma)"
+                          [class.border-slate-200]="!sintomasSeleccionados().has(sintoma.idSintoma)"
+                          [class.text-teal-900]="!sintomasSeleccionados().has(sintoma.idSintoma)"
+                        >
+                          <input
+                            type="checkbox"
+                            class="accent-amber-600 w-3.5 h-3.5 m-0"
+                            [checked]="sintomasSeleccionados().has(sintoma.idSintoma)"
+                            (change)="toggleSintoma(sintoma.idSintoma)"
+                          >
+                          <span>{{ sintoma.sintoma }}</span>
+                        </label>
+                      } @empty {
+                        <span class="text-[12.5px] text-slate-400 italic py-1">Sin síntomas registrados en este sistema.</span>
+                      }
+                    </div>
+                  }
+                </div>
+              } @empty {
+                <div class="text-center text-[13px] text-slate-500 py-6">No hay síntomas disponibles en el catálogo.</div>
+              }
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5 px-4 py-3 bg-slate-50 border border-dashed border-slate-300 rounded-lg mb-6">
+              <input
+                type="text"
+                [(ngModel)]="nuevoSintomaTexto"
+                (keydown.enter)="agregarSintomaNuevo()"
+                placeholder="Escribir síntoma nuevo..."
+                class="flex-1 min-w-[160px] border border-slate-200 rounded-md px-3 py-2 text-[13px] text-slate-800 bg-white focus:outline-none focus:ring-1 focus:ring-teal-600 focus:border-transparent"
+              >
+              <select
+                [(ngModel)]="nuevoSintomaSistema"
+                class="border border-slate-200 rounded-md px-2.5 py-2 text-[13px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-600 focus:border-transparent cursor-pointer"
+              >
+                @for (grupo of sintomasPorSistema(); track grupo.clave) {
+                  <option [value]="grupo.clave">{{ grupo.etiqueta }}</option>
+                }
+              </select>
+              <button
+                type="button"
+                (click)="agregarSintomaNuevo()"
+                class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-semibold px-4 py-2 rounded-md text-[13px] transition-colors cursor-pointer whitespace-nowrap"
+              >
+                + Agregar
+              </button>
+            </div>
+          }
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col">
+              <label for="subjetivo-evolucion" class="text-[11.5px] font-semibold text-slate-500 mb-1">Evolución de síntomas</label>
+              <textarea id="subjetivo-evolucion" rows="3" formControlName="evolucionSintomas" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Describa cómo han evolucionado los síntomas..."></textarea>
+            </div>
+            <div class="flex flex-col">
+              <label for="subjetivo-escala-dolor" class="text-[11.5px] font-semibold text-slate-500 mb-1">Escala del dolor (EVA 0–10)</label>
+              <input id="subjetivo-escala-dolor" type="number" min="0" max="10" formControlName="escalaDolor" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="0">
             </div>
           </div>
         </section>
@@ -216,7 +349,7 @@
 
       @if (activePanel() === 'p4') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 04 · Método SOAP</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Objetivo (O)</h2>
             <p class="text-slate-500 text-[13px] m-0">Signos vitales y hallazgos del examen físico.</p>
@@ -228,7 +361,7 @@
 
       @if (activePanel() === 'p5') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 05</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Resultados revisados</h2>
             <p class="text-slate-500 text-[13px] m-0">Resultados de exámenes disponibles en el expediente.</p>
@@ -239,30 +372,29 @@
 
       @if (activePanel() === 'p6') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 06 · Método SOAP</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Evaluación (A)</h2>
             <p class="text-slate-500 text-[13px] m-0">Interpretación clínica de la evolución y diagnósticos.</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm" formGroupName="evaluacion">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="flex flex-col">
-                <label for="evaluacion-estado-clinico" class="text-[11.5px] font-semibold text-slate-500 mb-1">Estado clínico</label>
-                <select id="evaluacion-estado-clinico" formControlName="estadoClinico" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
-                  <option>Mejoría</option>
-                  <option>Estacionario</option>
-                  <option>Empeoramiento</option>
-                  <option>Resuelto</option>
-                </select>
-              </div>
-              <div class="flex flex-col">
-                <label for="evaluacion-pronostico" class="text-[11.5px] font-semibold text-slate-500 mb-1">Pronóstico</label>
-                <select id="evaluacion-pronostico" formControlName="pronostico" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
-                  <option>Bueno</option>
-                  <option>Reservado</option>
-                  <option>Malo</option>
-                </select>
-              </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" formGroupName="evaluacion">
+            <div class="flex flex-col">
+              <label for="evaluacion-estado-clinico" class="text-[11.5px] font-semibold text-slate-500 mb-1">Estado clínico</label>
+              <select id="evaluacion-estado-clinico" formControlName="estadoClinico" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                <option>Mejoría</option>
+                <option>Estacionario</option>
+                <option>Empeoramiento</option>
+                <option>Resuelto</option>
+              </select>
+            </div>
+            <div class="flex flex-col">
+              <label for="evaluacion-pronostico" class="text-[11.5px] font-semibold text-slate-500 mb-1">Pronóstico</label>
+              <select id="evaluacion-pronostico" formControlName="pronostico" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                <option>Bueno</option>
+                <option>Reservado</option>
+                <option>Malo</option>
+              </select>
             </div>
           </div>
           <app-diagnosticos [formArray]="diagnosticosArray"></app-diagnosticos>
@@ -271,7 +403,7 @@
 
       @if (activePanel() === 'p7') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 07 · Método SOAP</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Plan (P)</h2>
             <p class="text-slate-500 text-[13px] m-0">Tratamiento, procedimientos, exámenes, interconsultas e indicaciones.</p>
@@ -282,24 +414,22 @@
 
       @if (activePanel() === 'p8') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 08</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Evolución clínica</h2>
             <p class="text-slate-500 text-[13px] m-0">Campo libre para la redacción narrativa del médico.</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-            <label for="evolucion-libre" class="sr-only">Evolución libre</label>
-            <textarea id="evolucion-libre" formControlName="evolucionLibre" rows="8" class="w-full border border-slate-200 rounded-md p-3 text-[14.5px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y leading-relaxed" placeholder="Redacte la evolución clínica libremente..."></textarea>
-            <div class="text-right text-[11px] text-slate-500 mt-2">
-              {{ soapForm.get('evolucionLibre')?.value?.length || 0 }} caracteres
-            </div>
+          <label for="evolucion-libre" class="sr-only">Evolución libre</label>
+          <textarea id="evolucion-libre" formControlName="evolucionLibre" rows="8" class="w-full border border-slate-200 rounded-md p-3 text-[14.5px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y leading-relaxed" placeholder="Redacte la evolución clínica libremente..."></textarea>
+          <div class="text-right text-[11px] text-slate-500 mt-2">
+            {{ soapForm.get('evolucionLibre')?.value?.length || 0 }} caracteres
           </div>
         </section>
       }
 
       @if (activePanel() === 'p9') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 09 y 10</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Órdenes médicas y Prescripción</h2>
             <p class="text-slate-500 text-[13px] m-0">Integrada con farmacia.</p>
@@ -310,7 +440,7 @@
 
       @if (activePanel() === 'p10') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 10</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Interconsultas</h2>
             <p class="text-slate-500 text-[13px] m-0">Gestione las interconsultas solicitadas a otras especialidades.</p>
@@ -321,7 +451,7 @@
 
       @if (activePanel() === 'p11') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 11, 12 y 13</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Procedimientos y Certificados</h2>
           </div>
@@ -331,7 +461,7 @@
 
       @if (activePanel() === 'p14') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 14</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Adjuntos</h2>
           </div>
@@ -341,16 +471,22 @@
 
       @if (activePanel() === 'p15') {
         <section class="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="mb-5">
+          <div class="mb-6">
             <span class="font-mono text-[11px] text-amber-600 uppercase tracking-widest">Sección 15</span>
             <h2 class="font-serif font-semibold text-2xl mt-1 mb-1 text-teal-950">Firma y auditoría</h2>
             <p class="text-slate-500 text-[13px] m-0">Al firmar, la evolución queda bloqueada para edición.</p>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-              <h3 class="text-sm font-semibold text-teal-950 mb-4">Firma digital</h3>
-              <div class="border-2 border-teal-600 rounded-lg h-36 flex items-center justify-center text-slate-400 font-serif italic mb-4"
-                   style="background: repeating-linear-gradient(45deg, #E4F0EE 0 2px, transparent 2px 14px);">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <div>
+              <h3 class="flex items-center gap-2 text-[13px] font-semibold text-teal-950 mb-4 pb-2 border-b border-slate-200">
+                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Firma digital
+              </h3>
+              <div class="border-b border-dashed border-slate-300 h-36 flex items-center justify-center text-slate-400 font-serif italic mb-5">
                 Firma pendiente
               </div>
               @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
@@ -369,22 +505,28 @@
                 </button>
               }
             </div>
-            <div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-              <h3 class="text-sm font-semibold text-teal-950 mb-4">Registro de auditoría</h3>
-              <ul class="text-[11.8px] font-mono text-slate-500 flex flex-col gap-3">
-                <li class="flex justify-between border-b border-slate-100 pb-2">
+
+            <div>
+              <h3 class="flex items-center gap-2 text-[13px] font-semibold text-teal-950 mb-4 pb-2 border-b border-slate-200">
+                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                Registro de auditoría
+              </h3>
+              <ul class="text-[12.5px] font-mono text-slate-500 flex flex-col">
+                <li class="flex justify-between py-2.5 border-b border-slate-200">
                   <span>Fecha</span>
                   <span class="text-slate-800">2026-08-11</span>
                 </li>
-                <li class="flex justify-between border-b border-slate-100 pb-2">
+                <li class="flex justify-between py-2.5 border-b border-slate-200">
                   <span>Hora</span>
                   <span class="text-slate-800">09:15</span>
                 </li>
-                <li class="flex justify-between border-b border-slate-100 pb-2">
+                <li class="flex justify-between py-2.5 border-b border-slate-200">
                   <span>Usuario</span>
                   <span class="text-slate-800">Dr(a). Nombre Apellido</span>
                 </li>
-                <li class="flex justify-between">
+                <li class="flex justify-between py-2.5">
                   <span>IP del equipo</span>
                   <span class="text-slate-800">192.168.1.45</span>
                 </li>
@@ -397,6 +539,5 @@
     </div>
   </div>
 }
-
 
 

@@ -1,42 +1,54 @@
 <!-- MENSAJES DE ESTADO -->
 @if (errorMessage()) {
-  <div class="mb-4 flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-[12.5px] rounded-lg px-4 py-3 shadow-sm">
-    <span>⚠️</span> {{ errorMessage() }}
+  <div class="mb-5 flex items-center gap-2 bg-red-50 text-red-700 text-[12.5px] rounded-lg px-4 py-3">
+    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+      <line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>
+    </svg>
+    {{ errorMessage() }}
   </div>
 }
 @if (successMessage()) {
-  <div class="mb-4 flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 text-[12.5px] rounded-lg px-4 py-3 shadow-sm transition-all animate-in fade-in">
-    <span>✅</span> {{ successMessage() }}
+  <div class="mb-5 flex items-center gap-2 bg-teal-50 text-teal-700 text-[12.5px] rounded-lg px-4 py-3 transition-all animate-in fade-in">
+    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>
+    {{ successMessage() }}
   </div>
 }
 
 <!-- ÓRDENES MÉDICAS -->
-<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm" [formGroup]="ordenesGroup">
-  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
-    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+<div class="mb-8" [formGroup]="ordenesGroup">
+  <h3 class="flex items-center gap-2 text-[13px] font-semibold text-teal-950 mb-4 pb-2 border-b border-slate-200">
+    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+      <rect x="8" y="2" width="8" height="4" rx="1"></rect>
+      <path d="M9 12h6"></path>
+      <path d="M9 16h6"></path>
+    </svg>
     Órdenes médicas
   </h3>
-  <div class="flex flex-col gap-3">
-    <div class="flex flex-wrap gap-4">
-      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer">
-        <input type="radio" formControlName="orden" value="alta" class="accent-teal-600"> Alta médica
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-wrap gap-x-5 gap-y-2.5">
+      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer hover:text-teal-700 transition-colors">
+        <input type="radio" formControlName="orden" value="alta" class="accent-teal-600 w-4 h-4"> Alta médica
       </label>
-      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer">
-        <input type="radio" formControlName="orden" value="hospitalizacion" class="accent-teal-600"> Ingreso hospitalario
+      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer hover:text-teal-700 transition-colors">
+        <input type="radio" formControlName="orden" value="hospitalizacion" class="accent-teal-600 w-4 h-4"> Ingreso hospitalario
       </label>
-      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer">
-        <input type="radio" formControlName="orden" value="observacion" class="accent-teal-600"> Observación
+      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer hover:text-teal-700 transition-colors">
+        <input type="radio" formControlName="orden" value="observacion" class="accent-teal-600 w-4 h-4"> Observación
       </label>
-      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer">
-        <input type="radio" formControlName="orden" value="traslado" class="accent-teal-600"> Traslado
+      <label class="flex items-center gap-1.5 text-[13.3px] text-slate-700 cursor-pointer hover:text-teal-700 transition-colors">
+        <input type="radio" formControlName="orden" value="traslado" class="accent-teal-600 w-4 h-4"> Traslado
       </label>
     </div>
     <div class="flex flex-col">
       <label for="detalleOrden" class="text-[11.5px] font-semibold text-slate-500 mb-1">Detalle de la orden (servicio, cama, especialidad...)</label>
       <textarea id="detalleOrden" rows="2" formControlName="detalle" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Detalles..."></textarea>
     </div>
-    
-    <div class="flex justify-end mt-2">
+
+    <div class="flex justify-end mt-1">
       @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
         <button type="button" (click)="guardarOrden()" [disabled]="isSubmitting()" class="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-medium py-1.5 px-4 rounded-md shadow-sm transition-colors text-[13px] disabled:opacity-50 disabled:cursor-not-allowed">
           @if (isSubmitting()) {
@@ -55,15 +67,22 @@
 </div>
 
 <!-- PRESCRIPCIÓN MÉDICA Y RECETA -->
-<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-  <div class="flex justify-between items-center mb-4">
-    <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2">
-      <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+<div class="mb-8">
+  <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-200">
+    <h3 class="flex items-center gap-2 text-[13px] font-semibold text-teal-950">
+      <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+        <path d="m8.5 8.5 7 7"></path>
+      </svg>
       Prescripción médica (Receta)
     </h3>
     @if (authService.hasPermission('imprimir') || authService.hasPermission('agregar')) {
       <button class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded text-[12.6px] font-semibold shadow-sm transition-colors flex items-center gap-1.5">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
         Imprimir Receta
       </button>
     }
@@ -86,7 +105,9 @@
             <td class="p-1.5"><input type="text" id="indicaciones_{{i}}" aria-label="Indicaciones" formControlName="indicaciones" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Tomar 1 tableta cada 8h por 3 días"></td>
             <td class="p-1.5 text-center">
               @if (authService.hasPermission('modificar') || authService.hasPermission('eliminar')) {
-                <button class="text-red-600 hover:text-red-800 font-bold" (click)="removerPrescripcion(i)">✕</button>
+                <button class="text-slate-400 hover:text-rose-600 transition-colors" (click)="removerPrescripcion(i)" title="Eliminar fila">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                </button>
               }
             </td>
           </tr>
@@ -101,9 +122,14 @@
 </div>
 
 <!-- HISTORIAL DE ÓRDENES -->
-<div class="bg-white border border-slate-200 rounded-xl p-5 mb-4 shadow-sm">
-  <h3 class="text-sm font-semibold text-teal-950 flex items-center gap-2 mb-4">
-    <span class="w-1 h-3.5 bg-amber-500 rounded-sm inline-block"></span>
+<div class="mb-8">
+  <h3 class="flex items-center gap-2 text-[13px] font-semibold text-teal-950 mb-4 pb-2 border-b border-slate-200">
+    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+      <rect x="8" y="2" width="8" height="4" rx="1"></rect>
+      <path d="M9 12h6"></path>
+      <path d="M9 16h6"></path>
+    </svg>
     Historial de Órdenes y Recetas
   </h3>
 
@@ -116,24 +142,29 @@
       <span class="text-[13px]">Cargando órdenes...</span>
     </div>
   } @else if (ordenesPrevias().length === 0) {
-    <div class="text-center py-8">
-      <p class="text-4xl mb-2">📋</p>
+    <div class="flex flex-col items-center gap-3 py-8">
+      <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+        <rect x="8" y="2" width="8" height="4" rx="1"></rect>
+        <path d="M9 12h6"></path>
+        <path d="M9 16h6"></path>
+      </svg>
       <p class="text-slate-500 text-[13px] italic">No hay órdenes o recetas previas para esta atención.</p>
     </div>
   } @else {
-    <div class="overflow-x-auto rounded-lg border border-slate-200">
+    <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
         <thead>
-          <tr class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-200">
-            <th class="p-2.5 font-medium">Fecha</th>
-            <th class="p-2.5 font-medium">Médico</th>
-            <th class="p-2.5 font-medium">Observación General</th>
-            <th class="p-2.5 font-medium">Items de Receta</th>
+          <tr class="text-[11px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200">
+            <th class="p-2.5 font-semibold">Fecha</th>
+            <th class="p-2.5 font-semibold">Médico</th>
+            <th class="p-2.5 font-semibold">Observación General</th>
+            <th class="p-2.5 font-semibold">Items de Receta</th>
           </tr>
         </thead>
-        <tbody class="text-[12.5px] text-slate-700 divide-y divide-slate-100">
+        <tbody class="text-[12.5px] text-slate-700">
           @for (orden of ordenesPrevias(); track orden.idOrden) {
-            <tr class="hover:bg-slate-50 transition-colors">
+            <tr class="hover:bg-slate-100/60 border-b border-slate-100">
               <td class="p-2.5 font-mono text-[11.5px] text-slate-500">{{ orden.fechaOrden | date:'dd/MM/yyyy HH:mm' }}</td>
               <td class="p-2.5 font-medium">Dr. {{ orden.idMedico }}</td>
               <td class="p-2.5 text-slate-600">{{ orden.observacion || '-' }}</td>

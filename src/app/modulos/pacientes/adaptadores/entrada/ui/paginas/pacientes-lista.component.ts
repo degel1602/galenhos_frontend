@@ -4,6 +4,7 @@ import { PacientesApiService } from '../../../salida/http/pacientes.api.service'
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
 import { IPaciente } from '../../../../../../compartido/tipos/api-tipos';
 import { RegistroPacienteModal } from '../../../../../../compartido/ui/registro-paciente/registro-paciente-modal';
+import { PaginacionComponent } from '../../../../../../compartido/ui/paginacion/paginacion';
 import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 
 interface Filtros {
@@ -17,7 +18,7 @@ interface Filtros {
 @Component({
   selector: 'app-pacientes-lista',
   standalone: true,
-  imports: [FormsModule, RegistroPacienteModal],
+  imports: [FormsModule, RegistroPacienteModal, PaginacionComponent],
   templateUrl: './pacientes-lista.component.html'
 })
 export class PacientesListaComponent implements OnInit {
