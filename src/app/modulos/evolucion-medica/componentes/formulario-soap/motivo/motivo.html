@@ -15,9 +15,9 @@
     <form [formGroup]="motivoForm" (ngSubmit)="registrarMotivo()" class="space-y-5">
 
       <!-- Tipos de motivo como chips seleccionables -->
-      <div>
-        <label class="block text-[11.5px] font-semibold text-slate-500 mb-2.5">Tipo de motivo</label>
-        <div class="flex flex-wrap gap-2" role="group" aria-label="Seleccione el tipo de motivo">
+      <fieldset>
+        <legend class="block text-[11.5px] font-semibold text-slate-500 mb-2.5">Tipo de motivo</legend>
+        <div class="flex flex-wrap gap-2">
           @for (tipo of tiposMotivo; track tipo.valor) {
             <button
               type="button"
@@ -73,7 +73,7 @@
         @if (motivoForm.get('tipo')?.invalid && motivoForm.get('tipo')?.touched) {
           <p class="text-red-500 text-[11.5px] mt-1">Seleccione un tipo de motivo.</p>
         }
-      </div>
+      </fieldset>
 
       <!-- Descripción -->
       <div class="flex flex-col">

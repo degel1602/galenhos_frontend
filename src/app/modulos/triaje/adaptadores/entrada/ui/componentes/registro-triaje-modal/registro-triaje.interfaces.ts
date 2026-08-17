@@ -1,0 +1,37 @@
+export interface FormRegistroTriaje {
+  idDocIdentidad: string;
+  nroDocumento: string;
+  pacienteNn: boolean;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  primerNombre: string;
+  segundoNombre: string;
+  fechaNacimiento: string;
+  idTipoSexo: string;
+  idEstadoCivil: string;
+  telefono: string;
+  idDepartamentoDomicilio: string;
+  idProvinciaDomicilio: string;
+  idDistritoDomicilio: string;
+  idCentroPobladoDomicilio: string;
+  direccionDomicilio: string;
+  idPaciente?: number;
+  esAccidenteTransito: boolean;
+  idFuenteFinanciamiento: string;
+  idEstadoLlego: string;
+  motivo: string;
+  presionArterial: string;
+  frecCardiaca: string;
+  frecRespiratoria: string;
+  temperatura: string;
+  saturacion: string;
+  fiO2: string;
+  peso: string;
+  talla: string;
+  escalaDolor: string;
+  escalaGlasgow: string;
+  tiempoEvolucionCantidad: string;
+  tiempoEvolucionCantidadUnidad: string;
+  idServicio: string;
+  idTipoPrioridad: string;
+}

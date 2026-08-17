@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, FormBuilder, FormGroup, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { EvolucionService } from '../../servicios/evolucion.service';
 import { AuthService } from '../../../auth/aplicacion/auth.service';
 import { SintomaService, SintomaCatalogo, SintomaSeleccionado } from '../../servicios/sintoma.service';
@@ -49,6 +48,7 @@ export class FormularioSoapComponent implements OnInit {
   public readonly activePanel = signal<string>('p1');
   public readonly openGroup = signal<string>('encuentro');
   public readonly isSaving = signal<boolean>(false);
+
 
   // Franja superior: datos de cabecera de la evolución (editables)
   public fechaEvolucion = new Date().toISOString().slice(0, 10);
