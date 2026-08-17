@@ -136,10 +136,17 @@ export class AdmisionesComponent implements OnInit {
     this.cargandoFicha = true;
     try {
       const ficha = await this.triajeApi.obtenerFichaAdmision(id);
-      this.filasFicha = Object.entries(ficha).map(([clave, valor]) => ({
-        clave,
-        valor: valor === null || valor === undefined ? '' : (typeof valor === 'object' ? JSON.stringify(valor) : String(valor))
-      }));
+      this.filasFicha = Object.entries(ficha).map(([clave, valor]) => {
+        let strValor = '';
+        if (valor !== null && valor !== undefined) {
+          if (typeof valor === 'object') {
+            strValor = JSON.stringify(valor);
+          } else {
+            strValor = String(valor);
+          }
+        }
+        return { clave, valor: strValor };
+      });
     } catch (err: unknown) {
       this.errorFicha = err instanceof ApiRequestError ? err.message : 'No se pudo obtener la ficha de admisión.';
     } finally {

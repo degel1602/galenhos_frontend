@@ -7,7 +7,7 @@ import { TriajeApiService, RegistroTriajePayload } from '../../../salida/http/tr
 import { MaestrosApiService } from '../../../../../../compartido/api/maestros.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
 import { IFilaBackend, ICatalogoNombre } from '../../../../../../compartido/tipos/api-tipos';
-import { RegistroPacienteModal } from '../../../../../../compartido/ui/registro-paciente/registro-paciente-modal';
+import { RegistroTriajeModal } from '../componentes/registro-triaje-modal/registro-triaje-modal';
 import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 
 interface FormEvaluacion {
@@ -76,7 +76,7 @@ const SI_NO = [
 @Component({
   selector: 'app-triaje',
   standalone: true,
-  imports: [FormsModule, CommonModule, Etiqueta, VentanaModal, RegistroPacienteModal],
+  imports: [FormsModule, CommonModule, Etiqueta, VentanaModal, RegistroTriajeModal],
   templateUrl: './triaje.component.html'
 })
 export class TriajeComponent implements OnInit {
@@ -186,7 +186,10 @@ export class TriajeComponent implements OnInit {
   valorCelda(fila: IFilaBackend, clave: string): string {
     const v = fila[clave];
     if (v === null || v === undefined) return '—';
-    return typeof v === 'object' ? JSON.stringify(v) : String(v);
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+    if (typeof v === 'object') return JSON.stringify(v);
+    return '—';
   }
 
   // --- Ficha de admisión ---
@@ -208,10 +211,15 @@ export class TriajeComponent implements OnInit {
     try {
       const ficha = await this.triajeApi.obtenerFichaAdmision(id);
       this.ficha = ficha;
-      this.filasFicha = Object.entries(ficha).map(([clave, valor]) => ({
-        clave,
-        valor: valor === null || valor === undefined ? '' : (typeof valor === 'object' ? JSON.stringify(valor) : String(valor))
-      }));
+      this.filasFicha = Object.entries(ficha).map(([clave, valor]) => {
+        let strValor = '';
+        if (valor !== null && valor !== undefined) {
+          if (typeof valor === 'string') strValor = valor;
+          else if (typeof valor === 'number' || typeof valor === 'boolean') strValor = String(valor);
+          else if (typeof valor === 'object') strValor = JSON.stringify(valor);
+        }
+        return { clave, valor: strValor };
+      });
     } catch (err: unknown) {
       this.errorFicha = err instanceof ApiRequestError ? err.message : 'No se pudo obtener la ficha de admisión.';
     } finally {

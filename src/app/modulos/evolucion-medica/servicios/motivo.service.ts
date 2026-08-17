@@ -48,7 +48,8 @@ export class MotivoService {
     idRegAtencion: number,
     index: number
   ): MotivoAtencion {
-    const coincidencia = item.motivo.match(/^\[(.+?)\]\s*(.*)$/s);
+    const regex = /^\[([^\]]+)\]\s*([\s\S]*)$/;
+    const coincidencia = regex.exec(item.motivo);
     return {
       idMotivoAtencion: index + 1,
       idRegAtencion,
