@@ -59,6 +59,7 @@ export interface PendientesAdmisionParams {
 export interface CrearAdmisionPayload {
   idTriaje: number;
   idPacienteTriaje: number;
+  idEmpleado?: number;
   nombreAcompanante?: string;
   telefonoAcompanante?: string;
   direccionPaciente?: string;
@@ -102,9 +103,8 @@ export class TriajeApiService {
     });
   }
 
-  listar(fini: string, ffin: string, filtro = ''): Promise<IFilaBackend[]> {
-    const query = new URLSearchParams({ fini, ffin });
-    if (filtro) query.append('filtro', filtro);
+  listar(fini: string, ffin: string, derivadoAServicio = '-100', idEstado = '-100'): Promise<IFilaBackend[]> {
+    const query = new URLSearchParams({ fini, ffin, derivadoAServicio, idEstado });
     return this.apiClient.request<IFilaBackend[]>(`/api/v1/triaje?${query.toString()}`);
   }
 
@@ -136,5 +136,44 @@ export class TriajeApiService {
 
   obtenerFichaAdmision(idCuentaAtencion: number): Promise<IFilaBackend> {
     return this.apiClient.request<IFilaBackend>(`/api/v1/triaje/ficha-admision?idCuentaAtencion=${idCuentaAtencion}`);
+  }
+
+  obtenerDatosInstitucion(): Promise<IFilaBackend> {
+    return this.apiClient.request<IFilaBackend>('/api/v1/datos-institucion');
+  }
+
+  async agregarFua(idCuentaAtencion: number): Promise<void> {
+    try {
+      await this.apiClient.request<unknown>('/api/v1/sis/fua/agregar', {
+        method: 'POST',
+        body: JSON.stringify({ idCuentaAtencion, idEmpleado: 2937, nombrePc: '' })
+      });
+    } catch {
+      // El endpoint puede fallar silenciosamente; continuamos con la impresión.
+    }
+  }
+
+  imprimirFua(idCuentaAtencion: number): Promise<IFilaBackend> {
+    return this.apiClient.request<IFilaBackend>(`/api/v1/sis/fua/imprimir?idCuentaAtencion=${idCuentaAtencion}`);
+  }
+
+  diagnosticosFua(idCuentaAtencion: number): Promise<IFilaBackend[]> {
+    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/diagnosticos?idAtencion=${idCuentaAtencion}`);
+  }
+
+  medicamentosFua(idCuentaAtencion: number): Promise<IFilaBackend[]> {
+    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/medicamentos?idCuentaAtencion=${idCuentaAtencion}`);
+  }
+
+  procedimientosFua(idCuentaAtencion: number): Promise<IFilaBackend[]> {
+    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/procedimientos?idCuentaAtencion=${idCuentaAtencion}`);
+  }
+
+  consumoFua(idCuentaAtencion: number): Promise<IFilaBackend[]> {
+    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/consumo?idCuentaAtencion=${idCuentaAtencion}`);
+  }
+
+  medicosPorEspecialidad(idEspecialidad: number): Promise<IFilaBackend[]> {
+    return this.apiClient.request<IFilaBackend[]>(`/api/v1/triaje/medicos/${idEspecialidad}`);
   }
 }

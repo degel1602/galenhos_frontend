@@ -2,470 +2,411 @@
 <ventana-modal 
   [titulo]="'Registrar Triaje'"
   [subtitulo]="'Identificación por documento para la bandeja de triaje.'" 
-  [ancho]="900"
+  [ancho]="1100"
   (alCerrar)="cerrar()">
-  
-  <div class="flex flex-col bg-slate-50">
-    <!-- Top Search Area -->
-    <div class="px-8 py-6 bg-white border-b border-slate-200">
-      <div class="flex flex-col md:flex-row gap-5 items-end">
-        <div class="w-full md:w-1/3">
-          <label for="triaje-tipo-doc" class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Tipo de documento</label>
-          <select id="triaje-tipo-doc" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-3 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" 
-                  [(ngModel)]="srv.formulario.idDocIdentidad">
-            @for (tipo of srv.tiposDocumentos; track tipo.id) {
-              <option [value]="tipo.id">{{ tipo.descripcion }}</option>
-            }
-          </select>
-        </div>
-        
-        <div class="w-full md:w-1/3">
-          <label for="triaje-nro-doc" class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Número de documento</label>
-          <input id="triaje-nro-doc" type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-3 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder:text-slate-400" 
-                 placeholder="Ej: 45220357" 
-                 [(ngModel)]="srv.formulario.nroDocumento"
-                 [disabled]="srv.formulario.pacienteNn">
-        </div>
-        
-        <div class="flex items-center pb-3">
-          <label for="triaje-nn" class="flex items-center cursor-pointer group">
-            <div class="relative flex items-center justify-center">
-              <input id="triaje-nn" type="checkbox" class="sr-only" [(ngModel)]="srv.formulario.pacienteNn">
-              <div class="block w-11 h-6 rounded-full transition-colors duration-300" 
-                   [ngClass]="srv.formulario.pacienteNn ? 'bg-indigo-600' : 'bg-slate-300'"></div>
-              <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm" 
-                   [ngClass]="{'transform translate-x-5': srv.formulario.pacienteNn}"></div>
-            </div>
-            <div class="ml-3 text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">Paciente NN</div>
-          </label>
-        </div>
-        
-        <div class="ml-auto">
-          <button class="bg-indigo-600 text-white font-medium px-6 py-3 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-100 transition-all flex items-center justify-center gap-2 shadow-sm"
-                  (click)="buscarPaciente()" [disabled]="srv.buscando">
-            @if (srv.buscando) {
-              <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            } @else {
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-              </svg>
-            }
-            <span>{{ srv.buscando ? 'Verificando...' : 'Buscar' }}</span>
-          </button>
-        </div>
-      </div>
 
-      <div class="mt-4 flex flex-col gap-2 min-h-[24px]">
-        @if (srv.mensajeError) {
-          <div class="flex items-center text-sm font-medium text-rose-600 animate-fadeIn">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-            {{ srv.mensajeError }}
-          </div>
-        } @else {
-          <div class="text-xs text-slate-500 flex items-center">
-            El sistema verifica automáticamente si el documento corresponde a un paciente ya registrado (SÍ) o a uno nuevo (NO). Si no existe, consulta a la RENIEC.
-          </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 10px; align-items: end;">
+    <div>
+      <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Tipo de documento</label>
+      <select style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;"
+              [(ngModel)]="srv.formulario.idDocIdentidad" [disabled]="srv.formulario.pacienteNn">
+        @for (tipo of srv.tiposDocumentos; track tipo.id) {
+          <option [value]="tipo.id">{{ tipo.descripcion }}</option>
         }
-
-        @if (srv.sisConsultado && srv.sisActivo) {
-          <div class="flex items-center gap-2 p-2 bg-emerald-50 text-emerald-800 rounded text-sm font-semibold border border-emerald-100 animate-fadeIn">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-            </svg>
-            Afiliado a SIS (ACTIVO) · {{ srv.sisDescripcion }}
-          </div>
-          @if (srv.sisGuardado) {
-            <div class="flex items-center gap-2 p-2 bg-emerald-50 text-emerald-800 rounded text-sm font-semibold border border-emerald-100 animate-fadeIn">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-              </svg>
-              Afiliación SIS guardada correctamente.
-            </div>
-          }
-        }
-      </div>
+      </select>
     </div>
-
-    <!-- Main Data Section (Accordion Flow) -->
-    <div class="px-8 py-6 relative space-y-4">
-      @if (srv.pasoActual === 1 && !srv.formulario.pacienteNn) {
-        <div class="absolute inset-0 z-10 bg-slate-50/80 backdrop-blur-[2px] flex items-center justify-center">
-          <div class="text-center">
-            <div class="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z" />
-              </svg>
-            </div>
-            <p class="text-sm font-medium text-slate-500">Busque un paciente para visualizar sus datos</p>
-          </div>
-        </div>
-      }
-
-      <!-- ACCORDION 1: DATOS DEL PACIENTE -->
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden transition-all duration-300" 
-           [ngClass]="{'opacity-50 blur-[1px] pointer-events-none': srv.pasoActual === 1 && !srv.formulario.pacienteNn}">
-        <button type="button" class="w-full px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 hover:bg-slate-100/80 transition-colors"
-                (click)="srv.pasoActual = 2" [disabled]="srv.pasoActual === 1 && !srv.formulario.pacienteNn">
-          <h3 class="text-sm font-bold text-slate-800 tracking-wide uppercase">Datos del Paciente</h3>
-          <div class="flex items-center gap-3">
-            <svg class="h-5 w-5 text-slate-400 transition-transform duration-300" [ngClass]="{'rotate-180': srv.pasoActual === 2}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        </button>
-        
-        @if (srv.pasoActual === 2) {
-          <div class="p-6 animate-fadeIn">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-5 mb-6">
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Apellido Paterno</label>
-                <input type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors uppercase" 
-                       [(ngModel)]="srv.formulario.apellidoPaterno" [disabled]="srv.formulario.pacienteNn">
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Apellido Materno</label>
-                <input type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors uppercase" 
-                       [(ngModel)]="srv.formulario.apellidoMaterno" [disabled]="srv.formulario.pacienteNn">
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Primer Nombre</label>
-                <input type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors uppercase" 
-                       [(ngModel)]="srv.formulario.primerNombre" [disabled]="srv.formulario.pacienteNn">
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Segundo Nombre</label>
-                <input type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors uppercase" 
-                       [(ngModel)]="srv.formulario.segundoNombre" [disabled]="srv.formulario.pacienteNn">
-              </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-5 mb-6">
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Fecha de nacimiento</label>
-                <input type="date" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" 
-                       [(ngModel)]="srv.formulario.fechaNacimiento">
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Sexo</label>
-                <select class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" 
-                        [(ngModel)]="srv.formulario.idTipoSexo">
-                  <option value="">Seleccione</option>
-                  @for (sexo of srv.tiposSexo; track sexo.id) {
-                    <option [value]="sexo.id">{{ sexo.descripcion }}</option>
-                  }
-                </select>
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Estado Civil</label>
-                <select class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" 
-                        [(ngModel)]="srv.formulario.idEstadoCivil">
-                  <option value="">Seleccione</option>
-                  @for (estado of srv.estadosCivil; track estado.id) {
-                    <option [value]="estado.id">{{ estado.descripcion }}</option>
-                  }
-                </select>
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Teléfono</label>
-                <input type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" 
-                       [(ngModel)]="srv.formulario.telefono">
-              </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-5">
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Departamento</label>
-                <select class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors truncate" 
-                        [(ngModel)]="srv.formulario.idDepartamentoDomicilio" (change)="cargarProvincias()">
-                  <option value="">Seleccione</option>
-                  @for (depto of srv.departamentos; track depto.id) {
-                    <option [value]="depto.id">{{ depto.nombre }}</option>
-                  }
-                </select>
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Provincia</label>
-                <select class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors truncate" 
-                        [(ngModel)]="srv.formulario.idProvinciaDomicilio" (change)="cargarDistritos()">
-                  <option value="">Seleccione</option>
-                  @for (prov of srv.provincias; track prov.id) {
-                    <option [value]="prov.id">{{ prov.nombre }}</option>
-                  }
-                </select>
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Distrito</label>
-                <select class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors truncate" 
-                        [(ngModel)]="srv.formulario.idDistritoDomicilio" (change)="cargarCentrosPoblados()">
-                  <option value="">Seleccione</option>
-                  @for (dist of srv.distritos; track dist.id) {
-                    <option [value]="dist.id">{{ dist.nombre }}</option>
-                  }
-                </select>
-              </div>
-              <div class="col-span-2 md:col-span-1">
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">C. Poblado</label>
-                <select class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors truncate" 
-                        [(ngModel)]="srv.formulario.idCentroPobladoDomicilio">
-                  <option value="">Seleccione</option>
-                  @for (cp of srv.centrosPoblados; track cp.id) {
-                    <option [value]="cp.id">{{ cp.nombre }}</option>
-                  }
-                </select>
-              </div>
-              <div class="md:col-span-4">
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Dirección</label>
-                <input type="text" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" 
-                       [(ngModel)]="srv.formulario.direccionDomicilio">
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-
-      <!-- ACCORDION 2: DATOS DEL TRIAJE -->
-      @if (srv.pasoActual >= 2) {
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden transition-all duration-300">
-          <button type="button" class="w-full px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 hover:bg-slate-100/80 transition-colors"
-                  (click)="srv.pasoActual = 3">
-            <h3 class="text-sm font-bold text-slate-800 tracking-wide uppercase">Datos del Triaje</h3>
-            <svg class="h-5 w-5 text-slate-400 transition-transform duration-300" [ngClass]="{'rotate-180': srv.pasoActual === 3}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          @if (srv.pasoActual === 3) {
-            <div class="p-6 animate-fadeIn">
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-5 mb-6">
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Accidente de tránsito</label>
-                  <label class="flex items-center cursor-pointer group mt-2">
-                    <div class="relative flex items-center">
-                      <input type="checkbox" class="sr-only" [(ngModel)]="srv.formulario.esAccidenteTransito">
-                      <div class="block w-11 h-6 rounded-full transition-colors duration-300" 
-                           [ngClass]="srv.formulario.esAccidenteTransito ? 'bg-indigo-600' : 'bg-slate-300'"></div>
-                      <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm" 
-                           [ngClass]="{'transform translate-x-5': srv.formulario.esAccidenteTransito}"></div>
-                    </div>
-                  </label>
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">IAFA</label>
-                  <select class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" 
-                          [(ngModel)]="srv.formulario.idFuenteFinanciamiento">
-                    <option value="">Seleccione...</option>
-                    @for (fuente of srv.fuentesFinanciamiento; track fuente.id) {
-                      <option [value]="fuente.id">{{ fuente.descripcion || fuente.nombre }}</option>
-                    }
-                  </select>
-                </div>
-                <div class="md:col-span-2">
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Cómo llegó</label>
-                  <select class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" 
-                          [(ngModel)]="srv.formulario.idEstadoLlego">
-                    <option value="">Seleccionar...</option>
-                    @for (estado of srv.estadosLlegoPaciente; track estado.id) {
-                      <option [value]="estado.id">{{ estado.descripcion }}</option>
-                    }
-                  </select>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 md:grid-cols-5 gap-x-6 gap-y-5 mb-6">
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">F. Cardiaca (lpm)</label>
-                  <input type="number" [(ngModel)]="srv.formulario.frecCardiaca" placeholder="Ej: 82" 
-                         class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Temp (°C)</label>
-                  <input type="number" step="0.1" [(ngModel)]="srv.formulario.temperatura" placeholder="Ej: 36.8" 
-                         class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">P.A. (mmHg)</label>
-                  <input type="text" [(ngModel)]="srv.formulario.presionArterial" placeholder="Ej: 120/80" 
-                         class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">SAT O₂ (%)</label>
-                  <input type="number" [(ngModel)]="srv.formulario.saturacion" placeholder="Ej: 98" 
-                         class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">F.R. (rpm)</label>
-                  <input type="number" [(ngModel)]="srv.formulario.frecRespiratoria" placeholder="Ej: 18" 
-                         class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">FiO₂ (%)</label>
-                  <input type="number" [(ngModel)]="srv.formulario.fiO2" placeholder="Ej: 21" 
-                         class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Peso (kg)</label>
-                  <input type="number" step="0.1" [(ngModel)]="srv.formulario.peso" placeholder="Ej: 70" 
-                         class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Talla (cm)</label>
-                  <input type="number" step="0.1" [(ngModel)]="srv.formulario.talla" placeholder="Ej: 172" 
-                         class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">IMC</label>
-                  <input type="text" disabled value="—" 
-                         class="w-full bg-slate-100 border border-slate-200 text-slate-500 rounded-lg p-2.5 text-sm transition-colors cursor-not-allowed" />
-                </div>
-              </div>
-
-              <div class="mb-6">
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Síntomas principales</label>
-                <textarea [(ngModel)]="srv.formulario.motivo" placeholder="Describa los síntomas principales del paciente" rows="3"
-                          class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-3 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"></textarea>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-5 gap-x-6 gap-y-5 mb-6">
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Tiempo de síntomas</label>
-                  <input type="number" [(ngModel)]="srv.formulario.tiempoEvolucionCantidad" placeholder="Ej: 3" 
-                         class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Frecuencia</label>
-                  <select [(ngModel)]="srv.formulario.tiempoEvolucionCantidadUnidad" 
-                          class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                    <option value="">Seleccionar...</option>
-                    @for (u of srv.unidadesTiempo; track u.value) {
-                      <option [value]="u.value">{{ u.label }}</option>
-                    }
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Escala del dolor</label>
-                  <select [(ngModel)]="srv.formulario.escalaDolor" 
-                          class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                    <option value="">Seleccionar...</option>
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Escala de Glasgow</label>
-                  <select [(ngModel)]="srv.formulario.escalaGlasgow" 
-                          class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                    <option value="">Seleccionar...</option>
-                    <option value="15">15</option>
-                    <option value="14">14</option>
-                    <option value="13">13</option>
-                    <option value="12">12</option>
-                    <option value="11">11</option>
-                    <option value="10">10</option>
-                    <option value="9">9</option>
-                    <option value="8">8</option>
-                    <option value="7">7</option>
-                    <option value="6">6</option>
-                    <option value="5">5</option>
-                    <option value="4">4</option>
-                    <option value="3">3</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Servicio derivado</label>
-                  <select [(ngModel)]="srv.formulario.idServicio" 
-                          class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                    <option value="">Buscar y seleccionar servicio...</option>
-                    @for (s of srv.servicios; track s.id) {
-                      <option [value]="s.id">{{ s.nombre }}</option>
-                    }
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tipo de prioridad</label>
-                <div class="flex flex-wrap gap-3">
-                  <label class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                         [ngClass]="{'border-blue-500 ring-1 ring-blue-500': srv.formulario.idTipoPrioridad === '1'}">
-                    <input type="radio" name="prioridad" value="1" [(ngModel)]="srv.formulario.idTipoPrioridad" class="sr-only">
-                    <span class="w-3 h-3 rounded-full bg-blue-500"></span>
-                    <span class="text-sm font-medium text-slate-700">I. Emerg. o Gravedad</span>
-                  </label>
-                  
-                  <label class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                         [ngClass]="{'border-green-500 ring-1 ring-green-500': srv.formulario.idTipoPrioridad === '2'}">
-                    <input type="radio" name="prioridad" value="2" [(ngModel)]="srv.formulario.idTipoPrioridad" class="sr-only">
-                    <span class="w-3 h-3 rounded-full bg-green-500"></span>
-                    <span class="text-sm font-medium text-slate-700">II. Urgencia Mayor</span>
-                  </label>
-
-                  <label class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                         [ngClass]="{'border-yellow-500 ring-1 ring-yellow-500': srv.formulario.idTipoPrioridad === '3'}">
-                    <input type="radio" name="prioridad" value="3" [(ngModel)]="srv.formulario.idTipoPrioridad" class="sr-only">
-                    <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
-                    <span class="text-sm font-medium text-slate-700">III. Urgencia Menor</span>
-                  </label>
-
-                  <label class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                         [ngClass]="{'border-orange-500 ring-1 ring-orange-500': srv.formulario.idTipoPrioridad === '4'}">
-                    <input type="radio" name="prioridad" value="4" [(ngModel)]="srv.formulario.idTipoPrioridad" class="sr-only">
-                    <span class="w-3 h-3 rounded-full bg-orange-500"></span>
-                    <span class="text-sm font-medium text-slate-700">IV. Patología Aguda Común</span>
-                  </label>
-
-                  <label class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                         [ngClass]="{'border-red-500 ring-1 ring-red-500': srv.formulario.idTipoPrioridad === '6'}">
-                    <input type="radio" name="prioridad" value="6" [(ngModel)]="srv.formulario.idTipoPrioridad" class="sr-only">
-                    <span class="w-3 h-3 rounded-full bg-red-500"></span>
-                    <span class="text-sm font-medium text-slate-700">Llegó Cadáver</span>
-                  </label>
-                </div>
-              </div>
-
-            </div>
-          }
-        </div>
-      }
+    <div>
+      <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Número de documento</label>
+      <input type="text" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;"
+             placeholder="Ej: 45220357" [(ngModel)]="srv.formulario.nroDocumento"
+             [disabled]="srv.formulario.pacienteNn" (keydown.enter)="onEnterDocumento($event)">
     </div>
+    <div style="display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 12px; border: 1px solid #d5dceb; border-radius: 11px; background: #f8fafc;">
+      <span style="font-size: 13px; font-weight: 600; color: #263c7a; white-space: nowrap;">Paciente NN</span>
+      <button type="button" (click)="toggleNN(!srv.formulario.pacienteNn)" [attr.aria-pressed]="srv.formulario.pacienteNn"
+              style="width: 40px; height: 22px; border-radius: 999px; border: none; cursor: pointer; position: relative; flex-shrink: 0; transition: background .2s;"
+              [style.background]="srv.formulario.pacienteNn ? '#0d9488' : '#c3cbd8'">
+        <span style="position: absolute; top: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .2s;"
+              [style.left]="srv.formulario.pacienteNn ? '20px' : '2px'"></span>
+      </button>
+    </div>
+    <button (click)="buscarPaciente()" [disabled]="srv.buscando || srv.formulario.pacienteNn"
+            style="display: flex; align-items: center; gap: 7px; height: 42px; padding: 0 20px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;"
+            [style.opacity]="(srv.buscando || srv.formulario.pacienteNn) ? 0.5 : 1">
+      @if (srv.buscando) {
+        <svg style="animation: spin 1s linear infinite;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+      } @else {
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+      }
+      <span>{{ srv.buscando ? 'Verificando...' : 'Buscar' }}</span>
+    </button>
   </div>
 
-  <div modal-footer class="px-8 py-5 bg-white border-t border-slate-200 flex justify-end gap-4 rounded-b-[18px]">
-    <button class="px-6 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" 
-            (click)="cerrar()">
+  <p style="font-size: 12px; color: #7a86a1; margin: 10px 0 0; line-height: 1.5;">
+    El sistema verifica automáticamente si el documento corresponde a un paciente ya registrado (SÍ) o a uno nuevo (NO). Si no existe, consulta a la RENIEC.
+  </p>
+
+  @if (srv.mensajeError) {
+    <div style="margin-top: 14px; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+      {{ srv.mensajeError }}
+    </div>
+  }
+
+  @if (srv.sisConsultado && srv.sisActivo) {
+    <div style="margin-top: 14px; display: flex; align-items: center; gap: 10px; padding: 10px 13px; border-radius: 11px; font-size: 13px; font-weight: 600; background: #ecfdf5; border: 1px solid #6ee7b7; color: #047857;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5" /></svg>
+      <span>Afiliado a SIS ({{ srv.sisActivo ? 'ACTIVO' : 'INACTIVO' }}){{ srv.sisDescripcion ? ' · ' + srv.sisDescripcion : '' }}</span>
+    </div>
+  }
+
+  @if (srv.sisGuardado) {
+    <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px; padding: 10px 13px; border-radius: 11px; font-size: 13px; font-weight: 600; background: #ecfdf5; border: 1px solid #6ee7b7; color: #047857;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5" /></svg>
+      <span>Afiliación SIS guardada correctamente.</span>
+    </div>
+  }
+
+  @if (srv.pacienteEncontrado) {
+    <div style="margin-top: 16px; border-radius: 14px; overflow: hidden;"
+         [style.border]="srv.formulario.idPaciente ? '1px solid #bbf7d0' : '1px solid #fde68a'">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 11px 16px; background: #f0f4ff; cursor: pointer; user-select: none;"
+           (click)="mostrarPaciente = !mostrarPaciente">
+        <span style="font-size: 12px; font-weight: 700; color: #263c7a; text-transform: uppercase; letter-spacing: .04em;">Datos del paciente</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+             style="color: #54617f; transition: transform .2s;"
+             [style.transform]="mostrarPaciente ? 'rotate(180deg)' : 'none'">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </div>
+      @if (mostrarPaciente) {
+        <div style="padding: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;">
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Apellido paterno</label>
+              <input type="text" placeholder="Apellido paterno" [disabled]="srv.formulario.pacienteNn"
+                     [(ngModel)]="srv.formulario.apellidoPaterno"
+                     style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Apellido materno</label>
+              <input type="text" placeholder="Apellido materno" [disabled]="srv.formulario.pacienteNn"
+                     [(ngModel)]="srv.formulario.apellidoMaterno"
+                     style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Primer nombre</label>
+              <input type="text" placeholder="Primer nombre" [disabled]="srv.formulario.pacienteNn"
+                     [(ngModel)]="srv.formulario.primerNombre"
+                     style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Segundo nombre</label>
+              <input type="text" placeholder="Segundo nombre" [disabled]="srv.formulario.pacienteNn"
+                     [(ngModel)]="srv.formulario.segundoNombre"
+                     style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Fecha de nacimiento</label>
+              <input type="date" [(ngModel)]="srv.formulario.fechaNacimiento"
+                     style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 14px;">
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Sexo</label>
+              <select [(ngModel)]="srv.formulario.idTipoSexo"
+                      style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+                <option value="">Seleccionar...</option>
+                @for (sexo of srv.tiposSexo; track sexo.id) {
+                  <option [value]="sexo.id">{{ sexo.descripcion }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Estado civil</label>
+              <select [(ngModel)]="srv.formulario.idEstadoCivil"
+                      style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+                <option value="">Seleccionar...</option>
+                @for (estado of srv.estadosCivil; track estado.id) {
+                  <option [value]="estado.id">{{ estado.descripcion }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Teléfono</label>
+              <input type="text" placeholder="9xx xxx xxx" [(ngModel)]="srv.formulario.telefono"
+                     style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Departamento</label>
+              <select [(ngModel)]="srv.formulario.idDepartamentoDomicilio" (change)="cargarProvincias()"
+                      style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+                <option value="">Seleccionar...</option>
+                @for (depto of srv.departamentos; track depto.id) {
+                  <option [value]="depto.id">{{ depto.nombre }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Provincia</label>
+              <select [(ngModel)]="srv.formulario.idProvinciaDomicilio" (change)="cargarDistritos()"
+                      style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+                <option value="">Seleccionar...</option>
+                @for (prov of srv.provincias; track prov.id) {
+                  <option [value]="prov.id">{{ prov.nombre }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 14px;">
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Distrito</label>
+              <select [(ngModel)]="srv.formulario.idDistritoDomicilio" (change)="cargarCentrosPoblados()"
+                      style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+                <option value="">Seleccionar...</option>
+                @for (dist of srv.distritos; track dist.id) {
+                  <option [value]="dist.id">{{ dist.nombre }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Centro poblado</label>
+              <select [(ngModel)]="srv.formulario.idCentroPobladoDomicilio"
+                      style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+                <option value="">Seleccionar...</option>
+                @for (cp of srv.centrosPoblados; track cp.id) {
+                  <option [value]="cp.id">{{ cp.nombre }}</option>
+                }
+              </select>
+            </div>
+            <div style="grid-column: span 2;">
+              <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Dirección</label>
+              <input type="text" placeholder="Dirección completa" [(ngModel)]="srv.formulario.direccionDomicilio"
+                     style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (srv.pasoActual >= 3) {
+    <div style="margin-top: 16px; border-radius: 14px; border: 1px solid #d5dceb; overflow: hidden;">
+      <div style="display: flex; align-items: center; gap: 8px; padding: 11px 16px; background: #f0f4ff; font-size: 12px; font-weight: 700; color: #263c7a; text-transform: uppercase; letter-spacing: .04em;">
+        Datos del paciente
+      </div>
+      <div style="padding: 16px;">
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;">
+          <div>
+            <span style="display: block; font-size: 10px; font-weight: 700; color: #94a0bd; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px;">Tipo doc.</span>
+            <span style="font-size: 13px; font-weight: 600; color: #07153a;">{{ srv.formulario.pacienteNn ? 'SIN DOCUMENTO' : 'DNI' }}</span>
+          </div>
+          <div>
+            <span style="display: block; font-size: 10px; font-weight: 700; color: #94a0bd; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px;">Nro. documento</span>
+            <span style="font-size: 13px; font-weight: 600; color: #07153a;">{{ srv.formulario.nroDocumento || '—' }}</span>
+          </div>
+          <div>
+            <span style="display: block; font-size: 10px; font-weight: 700; color: #94a0bd; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px;">Paciente</span>
+            <span style="font-size: 13px; font-weight: 600; color: #07153a;">{{ srv.formulario.primerNombre }} {{ srv.formulario.segundoNombre }} {{ srv.formulario.apellidoPaterno }} {{ srv.formulario.apellidoMaterno }}</span>
+          </div>
+          <div>
+            <span style="display: block; font-size: 10px; font-weight: 700; color: #94a0bd; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px;">Fecha nac.</span>
+            <span style="font-size: 13px; font-weight: 600; color: #07153a;">{{ srv.formulario.fechaNacimiento || '—' }}</span>
+          </div>
+          <div>
+            <span style="display: block; font-size: 10px; font-weight: 700; color: #94a0bd; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px;">Sexo</span>
+            <span style="font-size: 13px; font-weight: 600; color: #07153a;">{{ obtenerSexo() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 16px; border-radius: 14px; border: 1px solid #d5dceb; overflow: hidden;">
+      <div style="display: flex; align-items: center; gap: 8px; padding: 11px 16px; background: #f0f4ff; font-size: 12px; font-weight: 700; color: #263c7a; text-transform: uppercase; letter-spacing: .04em;">
+        Datos del triaje
+      </div>
+      <div style="padding: 16px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; align-items: center; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+            <span style="font-size: 14px; font-weight: 600; color: #263c7a;">Accidente de tránsito</span>
+            <button type="button" (click)="toggleAccidente()" [attr.aria-pressed]="srv.formulario.esAccidenteTransito"
+                    style="width: 52px; height: 28px; border-radius: 999px; border: none; cursor: pointer; position: relative; transition: background .2s;"
+                    [style.background]="srv.formulario.esAccidenteTransito ? '#0d9488' : '#d5dceb'">
+              <span style="position: absolute; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: left .2s;"
+                    [style.left]="srv.formulario.esAccidenteTransito ? '25px' : '3px'"></span>
+            </button>
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">IAFA</label>
+            <select [ngModel]="srv.formulario.idFuenteFinanciamiento" [disabled]="true"
+                    style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #eef1f6; color: #07153a;">
+              <option value="">Seleccionar...</option>
+              @for (fuente of srv.fuentesFinanciamiento; track fuente.idFuenteFinanciamiento) {
+                <option [value]="fuente.idFuenteFinanciamiento">{{ fuente.descripcion || fuente.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Cómo llegó</label>
+            <select [(ngModel)]="srv.formulario.idEstadoLlego"
+                    style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+              <option value="">Seleccionar...</option>
+              @for (estado of srv.estadosLlegoPaciente; track estado.id) {
+                <option [value]="estado.id">{{ estado.descripcion }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">F. Cardiaca (lpm)</label>
+            <input type="text" placeholder="82" [(ngModel)]="srv.formulario.frecCardiaca"
+                   style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Temp (°C)</label>
+            <input type="text" placeholder="36.8" [(ngModel)]="srv.formulario.temperatura"
+                   style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">P.A. (mmHg)</label>
+            <input type="text" placeholder="120/80" [(ngModel)]="srv.formulario.presionArterial"
+                   style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">SAT O₂ (%)</label>
+            <input type="text" placeholder="98" [(ngModel)]="srv.formulario.saturacion"
+                   style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">F.R. (rpm)</label>
+            <input type="text" placeholder="18" [(ngModel)]="srv.formulario.frecRespiratoria"
+                   style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 14px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">FIO₂ (%)</label>
+            <input type="text" placeholder="21" [(ngModel)]="srv.formulario.fiO2"
+                   style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Peso (kg)</label>
+            <input type="text" placeholder="70" [(ngModel)]="srv.formulario.peso" (ngModelChange)="calcularImc()"
+                   style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Talla (cm)</label>
+            <input type="text" placeholder="172" [(ngModel)]="srv.formulario.talla" (ngModelChange)="calcularImc()"
+                   style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">IMC</label>
+            <input type="text" disabled [value]="imc || '—'"
+                   style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f3f5fb; color: #07153a;">
+          </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Síntomas principales</label>
+          <textarea placeholder="Describa los síntomas principales del paciente" rows="2" [(ngModel)]="srv.formulario.motivo"
+                    style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a; resize: vertical; font-family: inherit;"></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 16px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Tiempo de síntomas</label>
+            <input type="text" placeholder="Ej: 3" [(ngModel)]="srv.formulario.tiempoEvolucionCantidad"
+                   style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Frecuencia</label>
+            <select [(ngModel)]="srv.formulario.tiempoEvolucionCantidadUnidad"
+                    style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+              <option value="">Seleccionar...</option>
+              @for (u of srv.unidadesTiempo; track u.value) {
+                <option [value]="u.value">{{ u.label }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Escala del dolor</label>
+            <select [(ngModel)]="srv.formulario.escalaDolor"
+                    style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+              <option value="">Seleccionar...</option>
+              @for (n of [0,1,2,3,4,5,6,7,8,9,10]; track n) {
+                <option [value]="n">{{ n }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Escala de Glasgow</label>
+            <select [(ngModel)]="srv.formulario.escalaGlasgow"
+                    style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+              <option value="">Seleccionar...</option>
+              @for (n of [3,4,5,6,7,8,9,10,11,12,13,14,15]; track n) {
+                <option [value]="n">{{ n }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Servicio derivado</label>
+            <select [(ngModel)]="srv.formulario.idServicio"
+                    style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+              <option value="">Buscar y seleccionar servicio...</option>
+              @for (s of srv.servicios; track s.id) {
+                <option [value]="s.id">{{ s.nombre }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 8px;">Tipo de prioridad</label>
+          <div style="display: flex; gap: 10px;">
+            @for (op of srv.prioridades; track op.value) {
+              <button type="button" (click)="seleccionarPrioridad(op.value)"
+                      style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px; border-radius: 11px; cursor: pointer; white-space: nowrap; font-size: 12.5px; font-weight: 600; color: #07153a;"
+                      [style.border]="srv.formulario.idTipoPrioridad === op.value ? '2px solid ' + op.color : '1px solid #e0e6f1'"
+                      [style.background]="srv.formulario.idTipoPrioridad === op.value ? op.color + '1a' : '#fff'">
+                <span [style.width.px]="12" [style.height.px]="12" [style.border-radius]="'50%'" [style.background]="op.color" [style.flex-shrink]="'0'"></span>
+                {{ op.label }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px;">
+    <button (click)="cerrar()"
+            style="padding: 10px 20px; border: 1px solid #e0e6f1; border-radius: 11px; background: #fff; font-size: 14px; font-weight: 600; color: #54617f; cursor: pointer;">
       Cancelar
     </button>
-    
     @if (srv.pasoActual === 2) {
-      <button class="px-6 py-2.5 text-sm font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:ring-4 focus:ring-teal-100 transition-all flex items-center justify-center shadow-sm"
-              (click)="srv.avanzarPaso()">
+      <button (click)="continuar()"
+              style="padding: 10px 22px; background: #0d9488; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer;">
         Continuar con el triaje
       </button>
     }
-    
     @if (srv.pasoActual === 3) {
-      <button class="px-6 py-2.5 text-sm font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:ring-4 focus:ring-teal-100 transition-all flex items-center justify-center gap-2 shadow-sm"
-              (click)="srv.guardarYContinuar()" [disabled]="srv.guardando"
-              [ngClass]="{'opacity-50 cursor-not-allowed': srv.guardando}">
-        <span>{{ srv.guardando ? 'Guardando...' : 'Registrar Triaje' }}</span>
-        @if (!srv.guardando) {
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      <button (click)="registrar()" [disabled]="srv.guardando"
+              style="padding: 10px 22px; background: #0d9488; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px;"
+              [style.opacity]="srv.guardando ? 0.7 : 1" [style.cursor]="srv.guardando ? 'wait' : 'pointer'">
+        @if (srv.guardando) {
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="animation: spin 1s linear infinite;">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
           </svg>
         }
+        {{ srv.guardando ? 'Registrando...' : 'Registrar Triaje' }}
       </button>
     }
   </div>
 </ventana-modal>
+}
+
+@if (reporteId) {
+  <app-reporte-triaje [idTriaje]="reporteId" (alCerrar)="cerrarReporte()"></app-reporte-triaje>
 }

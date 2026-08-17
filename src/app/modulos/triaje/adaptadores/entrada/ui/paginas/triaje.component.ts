@@ -1,13 +1,12 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Etiqueta } from '../../../../../../compartido/ui/etiqueta/etiqueta';
-import { VentanaModal } from '../../../../../../compartido/ui/ventana-modal/ventana-modal';
 import { TriajeApiService, RegistroTriajePayload } from '../../../salida/http/triaje.api.service';
 import { MaestrosApiService } from '../../../../../../compartido/api/maestros.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
 import { IFilaBackend, ICatalogoNombre } from '../../../../../../compartido/tipos/api-tipos';
 import { RegistroTriajeModal } from '../componentes/registro-triaje-modal/registro-triaje-modal';
+import { ReporteTriajeComponent } from '../componentes/reporte-triaje/reporte-triaje.component';
 import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 
 interface FormEvaluacion {
@@ -76,7 +75,7 @@ const SI_NO = [
 @Component({
   selector: 'app-triaje',
   standalone: true,
-  imports: [FormsModule, CommonModule, Etiqueta, VentanaModal, RegistroTriajeModal],
+  imports: [FormsModule, CommonModule, RegistroTriajeModal, ReporteTriajeComponent],
   templateUrl: './triaje.component.html'
 })
 export class TriajeComponent implements OnInit {
@@ -91,7 +90,11 @@ export class TriajeComponent implements OnInit {
   mensajeExito = '';
 
   filtro = '';
-  fecha = new Date().toISOString().slice(0, 10);
+  fechaInicio = new Date().toISOString().slice(0, 10);
+  fechaFin = new Date().toISOString().slice(0, 10);
+  servicioFiltro = '';
+  serviciosFiltro: ICatalogoNombre[] = [];
+  triajesBuscados = false;
 
   // Modal de registro (componente global compartido con la página Pacientes)
   modalRegistro = false;
@@ -101,6 +104,7 @@ export class TriajeComponent implements OnInit {
   reporte: IFilaBackend[] = [];
   cargandoReporte = false;
   errorReporte = '';
+  reporteTriajeId: number | null = null;
 
   // Modal de ficha de admisión (GET /api/v1/triaje/ficha-admision)
   modalFicha = false;
@@ -121,15 +125,17 @@ export class TriajeComponent implements OnInit {
   readonly opcionesSiNo = SI_NO;
 
   ngOnInit() {
-    this.cargarLista();
     this.cargarCatalogos();
+    this.cargarLista();
   }
 
   async cargarLista() {
     this.cargando = true;
     this.error = '';
+    this.triajesBuscados = true;
     try {
-      const items = await this.triajeApi.listar(this.fecha, this.fecha, this.filtro);
+      const derivado = this.servicioFiltro || '-100';
+      const items = await this.triajeApi.listar(this.fechaInicio, this.fechaFin, derivado, '-100');
       this.pacientes = Array.isArray(items) ? items : [];
     } catch (err: unknown) {
       this.error = err instanceof ApiRequestError ? err.message : 'No se pudo cargar el listado de triaje.';
@@ -142,22 +148,31 @@ export class TriajeComponent implements OnInit {
   async cargarCatalogos() {
     try {
       const serv = await this.maestrosApi.getServicios(2);
+      if (Array.isArray(serv)) this.serviciosFiltro = serv;
       if (Array.isArray(serv)) this.servicios = serv;
     } catch {
-      // Catálogo auxiliar; el formulario de evaluación sigue usable sin él.
+      // Catálogo auxiliar
     }
   }
 
   // --- Reporte de triaje ---
-  abrirReporte() {
-    this.modalReporte = true;
-    this.errorReporte = '';
-    this.generarReporte();
+  abrirReporte(idTriaje?: number) {
+    if (idTriaje) {
+      this.reporteTriajeId = idTriaje;
+    } else {
+      this.modalReporte = true;
+      this.errorReporte = '';
+      this.generarReporte();
+    }
   }
 
   cerrarReporte() {
-    this.modalReporte = false;
-    this.reporte = [];
+    if (this.reporteTriajeId) {
+      this.reporteTriajeId = null;
+    } else {
+      this.modalReporte = false;
+      this.reporte = [];
+    }
   }
 
   async generarReporte() {
@@ -407,5 +422,13 @@ export class TriajeComponent implements OnInit {
     const d = new Date(raw);
     if (Number.isNaN(d.getTime())) return '—';
     return `${Math.max(0, Math.floor((Date.now() - d.getTime()) / 60000))} min`;
+  }
+
+  fechaRegistro(item: IFilaBackend): string {
+    const raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'FechaIngreso', 'fechaIngreso']);
+    if (!raw) return '—';
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return raw;
+    return d.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
   }
 }
