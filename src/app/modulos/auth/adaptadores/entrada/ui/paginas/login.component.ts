@@ -4,12 +4,11 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../../aplicacion/auth.service';
 import { AuthApiService } from '../../../salida/http/auth.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
-import { Logotipo } from '../../../../../../compartido/ui/logotipo/logotipo';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, Logotipo],
+  imports: [FormsModule],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
@@ -51,10 +50,5 @@ export class LoginComponent {
     } finally {
       this.loading = false;
     }
-  }
-
-  loginDemo() {
-    this.authService.loginDemo();
-    this.router.navigate(['/dashboard']);
   }
 }

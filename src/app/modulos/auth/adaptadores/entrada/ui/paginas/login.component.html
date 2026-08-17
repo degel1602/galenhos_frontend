@@ -1,94 +1,175 @@
-<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: radial-gradient(1200px 600px at 15% -10%, #16265c 0%, transparent 55%), radial-gradient(1000px 700px at 110% 120%, #1b2f6b 0%, transparent 50%), linear-gradient(160deg,#07153a 0%,#0a1a45 100%);">
-  <div class="gp-in" style="width: 100%; max-width: 412px; display: flex; flex-direction: column; align-items: center; gap: 22px;">
-    
-    <div style="background: #fff; border-radius: 16px; padding: 16px 26px; box-shadow: 0 18px 45px rgba(3,10,30,.45);">
-      <logotipo [size]="26"></logotipo>
+<div class="min-h-screen w-full bg-[#f4f7f9] font-sans flex">
+  <!-- ============ PANEL IZQUIERDO: BRANDING ============ -->
+  <aside class="hidden lg:flex lg:w-[54%] flex-col bg-[#07153a] overflow-hidden relative">
+    <!-- Fondo: gradiente limpio -->
+    <div class="absolute inset-0 bg-gradient-to-br from-[#0a1a45] via-[#07153a] to-[#0b2158]"></div>
+    <div class="absolute -top-48 -right-48 w-[560px] h-[560px] rounded-full bg-[#1d3a8c]/40 blur-[130px]"></div>
+    <div class="absolute -bottom-56 -left-40 w-[520px] h-[520px] rounded-full bg-teal-500/10 blur-[130px]"></div>
+
+    <!-- Header -->
+    <div class="relative z-10 shrink-0 px-12 xl:px-16 pt-12 xl:pt-14">
+      <div class="w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-black/20">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect width="24" height="24" rx="6" fill="#07153a" />
+          <path d="M12 5v14M5 12h14" stroke="#66b6ff" stroke-width="2.6" stroke-linecap="round" />
+        </svg>
+      </div>
     </div>
 
-    <div style="width: 100%; background: #fff; border-radius: 20px; padding: 32px 30px; box-shadow: 0 24px 60px rgba(3,10,30,.4);">
-      <h1 style="margin: 0 0 4px; font-size: 22px; font-weight: 700; color: #07153a;">Bienvenido a GALENOS PRO</h1>
-      <p style="margin: 0 0 22px; font-size: 13.5px; color: #6b7794;">Sistema de Gestión de Citas Médicas</p>
+    <!-- Contenido central -->
+    <div class="relative z-10 flex-1 flex flex-col justify-center px-12 xl:px-16 py-10">
+      <div class="gp-anim-fade-up">
+        <span class="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.24em] text-teal-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+          Plataforma hospitalaria
+        </span>
+        <h1 class="mt-5 text-[40px] xl:text-[46px] font-serif font-bold text-white leading-[1.12] tracking-tight">
+          Cuidando la vida<br>
+          con <span class="bg-gradient-to-r from-teal-300 to-[#66b6ff] bg-clip-text text-transparent">tecnología</span> en salud.
+        </h1>
+      </div>
 
-      @if (error) {
-        <div style="display: flex; align-items: center; gap: 9px; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px; margin-bottom: 16px;">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-          <span>{{ error }}</span>
+      <!-- Línea ECG animada (elemento de diseño) -->
+      <svg class="mt-9 w-[200px] h-8 gp-anim-fade-up" viewBox="0 0 200 32" fill="none" preserveAspectRatio="none" style="animation-delay: .12s">
+        <path d="M0 16 H60 L68 16 L74 8 L80 24 L86 16 L94 16 L104 16 L110 16 L116 4 L124 28 L132 16 L150 16 H200"
+              stroke="#2dd4bf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+              stroke-dasharray="260" class="gp-anim-ecg" opacity="0.9"></path>
+      </svg>
+
+      <!-- Corazón + mensaje -->
+      <div class="gp-anim-fade-up mt-10 flex items-center gap-5" style="animation-delay: .2s">
+        <div class="w-[72px] h-[72px] shrink-0 rounded-full bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center shadow-xl shadow-teal-500/25 gp-anim-float">
+          <svg class="w-9 h-9 text-white gp-anim-heartbeat" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
         </div>
-      }
-
-      <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">
-        Usuario <span style="color: #dc2626;">*</span>
-      </label>
-      <div style="position: relative; margin-bottom: 16px;">
-        <svg style="position: absolute; left: 13px; top: 12px; color: #9aa6c0;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-        </svg>
-        <input 
-          [(ngModel)]="user"
-          (input)="error = ''"
-          (keydown.enter)="handleLogin()"
-          placeholder="usuario"
-          style="width: 100%; padding: 11px 14px 11px 40px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;"
-        />
+        <div class="leading-snug">
+          <div class="text-[15px] font-semibold text-white">Cuidado continuo</div>
+          <div class="text-[12.5px] text-slate-400 mt-1">Historia clínica, evolución médica y más</div>
+        </div>
       </div>
-
-      <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">
-        Contraseña <span style="color: #dc2626;">*</span>
-      </label>
-      <div style="position: relative; margin-bottom: 20px;">
-        <svg style="position: absolute; left: 13px; top: 12px; color: #9aa6c0;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
-          <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-        <input 
-          [type]="showPassword ? 'text' : 'password'"
-          [(ngModel)]="pass"
-          (input)="error = ''"
-          (keydown.enter)="handleLogin()"
-          placeholder="••••••••"
-          style="width: 100%; padding: 11px 40px 11px 40px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;"
-        />
-        <button 
-          (click)="showPassword = !showPassword"
-          type="button"
-          style="position: absolute; right: 13px; top: 10px; background: none; border: none; cursor: pointer; color: #9aa6c0; padding: 0; display: flex; align-items: center; justify-content: center;">
-          @if (showPassword) {
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-              <line x1="1" y1="1" x2="23" y2="23"></line>
-            </svg>
-          } @else {
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-          }
-        </button>
-      </div>
-
-      <button 
-        (click)="handleLogin()"
-        [disabled]="loading"
-        class="gp-primary-btn"
-        style="width: 100%; padding: 13px; background: #263c7a; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 20px rgba(38,60,122,.35);"
-      >
-        {{ loading ? 'Ingresando…' : 'Iniciar sesión' }}
-      </button>
-
-      <div style="display: flex; align-items: center; gap: 10px; margin: 18px 0;">
-        <span style="flex: 1; height: 1px; background: #e6eaf2;"></span>
-        <span style="font-size: 11px; color: #9aa6c0;">sin backend</span>
-        <span style="flex: 1; height: 1px; background: #e6eaf2;"></span>
-      </div>
-      <button 
-        (click)="loginDemo()"
-        class="gp-ghost-btn"
-        style="width: 100%; padding: 12px; background: #fff; color: #263c7a; border: 1px dashed #c7d0e2; border-radius: 12px; font-size: 13.5px; font-weight: 600; cursor: pointer;"
-      >
-        Entrar en modo demo (sin backend)
-      </button>
-
     </div>
 
-    <p style="margin: 0; font-size: 12px; color: #8aa0d4;">© 2026 GALENOS PRO · Sistema de Citas Médicas</p>
-  </div>
+    <!-- Footer -->
+    <div class="relative z-10 shrink-0 px-12 xl:px-16 pb-10 xl:pb-12 text-[12px] text-slate-500">
+      <span>© 2026 GALENOS PRO</span>
+    </div>
+  </aside>
+
+  <!-- ============ PANEL DERECHO: FORMULARIO ============ -->
+  <main class="flex-1 flex items-center justify-center p-6 md:p-10 relative overflow-hidden">
+    <div class="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-[#263c7a]/10 blur-[90px]"></div>
+    <div class="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-teal-500/10 blur-[90px]"></div>
+
+    <div class="w-full max-w-[410px] relative gp-anim-fade-up">
+      <!-- Card -->
+      <div class="bg-white rounded-2xl shadow-[0_24px_60px_-12px_rgba(7,21,58,0.18)] border border-slate-100 p-8 md:p-9">
+        <div class="gp-anim-fade-up">
+          <h1 class="text-[24px] font-serif font-bold text-[#07153a] tracking-tight">Bienvenido</h1>
+          <p class="text-[13px] text-slate-500 mt-1.5">Ingrese sus credenciales para acceder.</p>
+        </div>
+
+        <!-- Error -->
+        @if (error) {
+          <div class="gp-anim-fade-up flex items-start gap-2.5 bg-red-50 border border-red-200 text-red-700 text-[12.5px] font-medium px-4 py-3 rounded-xl mt-6">
+            <svg class="w-4 h-4 shrink-0 mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>{{ error }}</span>
+          </div>
+        }
+
+        <!-- Formulario -->
+        <form class="mt-7 flex flex-col gap-5" (ngSubmit)="handleLogin()">
+          <div class="gp-anim-fade-up" style="animation-delay: .1s">
+            <label class="block text-[12px] font-semibold text-slate-600 mb-2" for="login-usuario">
+              Usuario <span class="text-red-500">*</span>
+            </label>
+            <div class="relative group">
+              <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-[17px] h-[17px] text-slate-400 group-focus-within:text-teal-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <input
+                id="login-usuario"
+                type="text"
+                [(ngModel)]="user"
+                name="usuario"
+                (input)="error = ''"
+                placeholder="usuario"
+                autocomplete="username"
+                class="w-full pl-11 pr-4 py-[13px] border border-slate-200 rounded-xl text-[14px] text-[#07153a] bg-slate-50/60 placeholder:text-slate-400 focus:outline-none focus:ring-[3px] focus:ring-teal-500/15 focus:border-teal-500 focus:bg-white transition-all"
+              />
+            </div>
+          </div>
+
+          <div class="gp-anim-fade-up" style="animation-delay: .18s">
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-[12px] font-semibold text-slate-600" for="login-pass">
+                Contraseña <span class="text-red-500">*</span>
+              </label>
+              <button type="button" class="text-[11.5px] font-semibold text-teal-600 hover:text-teal-700 hover:underline transition-colors cursor-pointer">
+                ¿Olvidó su contraseña?
+              </button>
+            </div>
+            <div class="relative group">
+              <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-[17px] h-[17px] text-slate-400 group-focus-within:text-teal-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <input
+                id="login-pass"
+                [type]="showPassword ? 'text' : 'password'"
+                [(ngModel)]="pass"
+                name="pass"
+                (input)="error = ''"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                class="w-full pl-11 pr-12 py-[13px] border border-slate-200 rounded-xl text-[14px] text-[#07153a] bg-slate-50/60 placeholder:text-slate-400 focus:outline-none focus:ring-[3px] focus:ring-teal-500/15 focus:border-teal-500 focus:bg-white transition-all"
+              />
+              <button
+                type="button"
+                (click)="showPassword = !showPassword"
+                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-1 transition-colors"
+                [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                @if (showPassword) {
+                  <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                } @else {
+                  <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                }
+              </button>
+            </div>
+          </div>
+
+          <div class="gp-anim-fade-up flex items-center justify-between" style="animation-delay: .26s">
+            <label class="flex items-center gap-2 text-[12.5px] text-slate-600 cursor-pointer select-none">
+              <input type="checkbox" class="w-4 h-4 rounded border-slate-300 accent-teal-600 cursor-pointer" />
+              Recordarme
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            [disabled]="loading"
+            class="gp-anim-fade-up w-full py-3.5 rounded-xl bg-[#263c7a] text-white text-[14.5px] font-semibold tracking-wide shadow-lg shadow-[#263c7a]/25 hover:bg-[#1f3164] hover:shadow-xl hover:shadow-[#263c7a]/30 active:scale-[.985] transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            style="animation-delay: .32s">
+            @if (loading) {
+              <span class="flex items-center justify-center gap-2">
+                <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                </svg>
+                Ingresando…
+              </span>
+            } @else {
+              Iniciar sesión
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
 </div>

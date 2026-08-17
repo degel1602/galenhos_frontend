@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder } from '@angular/forms';
-import { OrdenService, OrdenMedica } from '../../../servicios/orden.service';
+import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, Validators } from '@angular/forms';
+import { OrdenService, OrdenMedica, ProductoCatalogo } from '../../../servicios/orden.service';
 import { EvolucionService } from '../../../servicios/evolucion.service';
 import { AuthService } from '../../../../auth/aplicacion/auth.service';
 
@@ -25,6 +25,9 @@ export class OrdenesMedicasComponent implements OnInit {
   public readonly isSubmitting = signal<boolean>(false);
   public readonly errorMessage = signal<string>('');
   public readonly successMessage = signal<string>('');
+
+  public readonly sugerencias = signal<ProductoCatalogo[]>([]);
+  private debounceTimer: any;
 
   ngOnInit() {
     this.cargarOrdenes();
@@ -64,16 +67,21 @@ export class OrdenesMedicasComponent implements OnInit {
       return;
     }
 
+    const detalles = detallesForm.filter((d: any) => d.idProducto);
+    if (detallesForm.length > 0 && detalles.length === 0) {
+      this.errorMessage.set('Seleccione cada medicamento desde el catálogo (escriba y elija el producto real).');
+      return;
+    }
+
     this.isSubmitting.set(true);
 
     const request: OrdenMedica = {
       idRegAtencion: paciente.idRegAtencion,
-      idMedico: 1, // Médico logueado (hardcodeado temporalmente)
       observacion: `${ordenData.orden ? '[' + ordenData.orden + '] ' : ''}${ordenData.detalle || ''}`,
-      detalles: detallesForm.map((d: any) => ({
-        idServicio: 1, // Fallback ya que UI permitía texto libre
+      detalles: detalles.map((d: any) => ({
+        idProducto: d.idProducto,
         cantidad: d.cantidad || 1,
-        indicaciones: d.indicaciones || d.medicamento // Juntamos medicamento con indicaciones por ahora
+        indicaciones: d.indicaciones || ''
       }))
     };
 
@@ -104,18 +112,47 @@ export class OrdenesMedicasComponent implements OnInit {
 
   agregarPrescripcion() {
     this.prescripcionArray.push(this.fb.group({
-      medicamento: [''],
-      cantidad: [null],
+      idProducto: [null],
+      medicamento: ['', Validators.required],
+      cantidad: [null, Validators.required],
       indicaciones: ['']
     }));
   }
 
   removerPrescripcion(index: number) {
     this.prescripcionArray.removeAt(index);
+    this.sugerencias.set([]);
   }
 
   getPrescripcionGroup(index: number): FormGroup {
     return this.prescripcionArray.at(index) as FormGroup;
   }
-}
 
+  buscarMedicamento(index: number) {
+    clearTimeout(this.debounceTimer);
+    const grupo = this.getPrescripcionGroup(index);
+    const texto = (grupo.get('medicamento')?.value || '').trim();
+    if (texto.length < 2) {
+      this.sugerencias.set([]);
+      return;
+    }
+
+    this.debounceTimer = setTimeout(async () => {
+      const productos = await this.ordenService.buscarProductos(texto);
+      this.sugerencias.set(productos);
+    }, 300);
+  }
+
+  seleccionarProducto(index: number, producto: ProductoCatalogo) {
+    const grupo = this.getPrescripcionGroup(index);
+    grupo.patchValue({
+      idProducto: producto.idProducto,
+      medicamento: `${producto.nombre}${producto.presentacion ? ' - ' + producto.presentacion : ''}`
+    });
+    this.sugerencias.set([]);
+  }
+
+  cerrarSugerencias() {
+    setTimeout(() => this.sugerencias.set([]), 200);
+  }
+}
