@@ -1,15 +1,17 @@
-import { Component, Input, Output, EventEmitter, inject, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VentanaModal } from '../../../../../../../compartido/ui/ventana-modal/ventana-modal';
 import { RegistroTriajeService } from './registro-triaje.service';
+import { ReporteTriajeComponent } from '../reporte-triaje/reporte-triaje.component';
 
 @Component({
   selector: 'app-registro-triaje-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, VentanaModal],
+  imports: [CommonModule, FormsModule, VentanaModal, ReporteTriajeComponent],
   providers: [RegistroTriajeService],
-  templateUrl: './registro-triaje-modal.html'
+  templateUrl: './registro-triaje-modal.html',
+  styles: [`@keyframes spin { to { transform: rotate(360deg); } }`]
 })
 export class RegistroTriajeModal implements OnInit {
   @Input() abierto = false;
@@ -17,6 +19,11 @@ export class RegistroTriajeModal implements OnInit {
   @Output() triajeIniciado = new EventEmitter<void>();
 
   public readonly srv = inject(RegistroTriajeService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  reporteId: number | null = null;
+  mostrarPaciente = true;
+  imc = '';
 
   ngOnInit(): void {
     void this.srv.cargarCatalogosIniciales();
@@ -24,11 +31,54 @@ export class RegistroTriajeModal implements OnInit {
 
   cerrar(): void {
     this.srv.limpiarEstado();
+    this.reporteId = null;
+    this.mostrarPaciente = true;
+    this.imc = '';
     this.alCerrar.emit();
   }
 
-  buscarPaciente(): void {
-    this.srv.buscarPaciente();
+  async buscarPaciente(): Promise<void> {
+    await this.srv.buscarPaciente();
+    this.mostrarPaciente = true;
+    this.cdr.detectChanges();
+  }
+
+  onEnterDocumento(event: Event): void {
+    if (!this.srv.buscando && !this.srv.formulario.pacienteNn) {
+      this.buscarPaciente();
+    }
+  }
+
+  toggleNN(checked: boolean): void {
+    this.srv.formulario.pacienteNn = checked;
+    this.srv.mensajeError = '';
+    this.srv.sisConsultado = false;
+    this.srv.sisActivo = false;
+    this.srv.sisGuardado = false;
+    if (checked) {
+      const sd = this.srv.tiposDocumentos.find(t => (t.descripcion || '').toUpperCase() === 'SD');
+      this.srv.formulario.idDocIdentidad = sd ? String(sd.id) : '';
+      this.srv.formulario.nroDocumento = '';
+      this.srv.formulario.apellidoPaterno = 'NN';
+      this.srv.formulario.apellidoMaterno = 'NN';
+      this.srv.formulario.primerNombre = 'NN';
+      this.srv.formulario.segundoNombre = '';
+      this.srv.pacienteEncontrado = true;
+      this.srv.actualizarIafaAutomatico();
+      this.srv.avanzarPaso();
+      this.mostrarPaciente = true;
+    } else {
+      this.srv.formulario.idDocIdentidad = '1';
+      this.srv.formulario.nroDocumento = '';
+      this.srv.formulario.apellidoPaterno = '';
+      this.srv.formulario.apellidoMaterno = '';
+      this.srv.formulario.primerNombre = '';
+      this.srv.formulario.segundoNombre = '';
+      this.srv.pacienteEncontrado = false;
+      this.srv.pasoActual = 1;
+      this.mostrarPaciente = true;
+    }
+    this.cdr.detectChanges();
   }
 
   cargarProvincias(): void {
@@ -49,11 +99,75 @@ export class RegistroTriajeModal implements OnInit {
     this.srv.cargarCentrosPoblados();
   }
 
-  async continuarTriaje(): Promise<void> {
-    await this.srv.guardarYContinuar();
-    if (!this.srv.mensajeError) {
-      this.triajeIniciado.emit();
-      this.cerrar();
+  calcularImc(): void {
+    const p = parseFloat(this.srv.formulario.peso);
+    const t = parseFloat(this.srv.formulario.talla);
+    if (!p || !t || p <= 0 || t <= 0) {
+      this.imc = '';
+      return;
     }
+    const result = p / Math.pow(t / 100, 2);
+    this.imc = result.toFixed(1);
+  }
+
+  toggleAccidente(): void {
+    this.srv.formulario.esAccidenteTransito = !this.srv.formulario.esAccidenteTransito;
+    this.srv.actualizarIafaAutomatico();
+    this.cdr.detectChanges();
+  }
+
+  obtenerSexo(): string {
+    const id = this.srv.formulario.idTipoSexo;
+    if (!id) return '—';
+    const sexo = this.srv.tiposSexo.find(s => String(s.id) === String(id));
+    return sexo ? (sexo.descripcion ?? '—') : '—';
+  }
+
+  continuar(): void {
+    if (!this.srv.pacienteEncontrado) {
+      this.srv.mensajeError = 'Busque el documento del paciente antes de continuar.';
+      this.cdr.detectChanges();
+      return;
+    }
+    this.srv.mensajeError = '';
+    this.srv.avanzarPaso();
+    this.mostrarPaciente = false;
+    this.cdr.detectChanges();
+  }
+
+  seleccionarPrioridad(value: string): void {
+    this.srv.formulario.idTipoPrioridad = value;
+    if (value === '6') {
+      this.srv.formulario.frecCardiaca = '';
+      this.srv.formulario.temperatura = '';
+      this.srv.formulario.presionArterial = '';
+      this.srv.formulario.saturacion = '';
+      this.srv.formulario.frecRespiratoria = '';
+      this.srv.formulario.fiO2 = '';
+      this.srv.formulario.peso = '';
+      this.srv.formulario.talla = '';
+      this.imc = '';
+    }
+    this.cdr.detectChanges();
+  }
+
+  async registrar(): Promise<void> {
+    await this.srv.guardarYContinuar();
+    this.cdr.detectChanges();
+    if (!this.srv.mensajeError) {
+      if (this.srv.ultimoTriajeId) {
+        this.reporteId = this.srv.ultimoTriajeId;
+        this.cdr.detectChanges();
+      } else {
+        this.triajeIniciado.emit();
+        this.cerrar();
+      }
+    }
+  }
+
+  cerrarReporte(): void {
+    this.reporteId = null;
+    this.triajeIniciado.emit();
+    this.cerrar();
   }
 }

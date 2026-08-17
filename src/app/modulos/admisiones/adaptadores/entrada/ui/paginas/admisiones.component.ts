@@ -8,16 +8,17 @@ import { ApiRequestError } from '../../../../../../compartido/api-client/api-cli
 import { ICatalogoNombre, IFilaBackend } from '../../../../../../compartido/tipos/api-tipos';
 import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 import { VentanaModal } from '../../../../../../compartido/ui/ventana-modal/ventana-modal';
+import { FichaAdmisionComponent } from '../componentes/ficha-admision/ficha-admision.component';
+import { SisFuaReportComponent } from '../componentes/sis-fua-report/sis-fua-report.component';
 
-interface FormAdmision {
-  nombreAcompanante: string;
-  telefonoAcompanante: string;
-  direccionPaciente: string;
-  observacion: string;
-}
+const TIPO_PRIORIDAD_INFO: Record<number, { label: string; bg: string; text: string; dot: string }> = {
+  1: { label: 'I. Emerg. o Gravedad', bg: '#fee2e2', text: '#b91c1c', dot: '#dc2626' },
+  2: { label: 'II. Urgencia Mayor', bg: '#ffedd5', text: '#c2410c', dot: '#f97316' },
+  3: { label: 'III. Urgencia Menor', bg: '#fef9c3', text: '#a16207', dot: '#eab308' },
+  4: { label: 'IV. Patología Aguda Común', bg: '#d1fae5', text: '#047857', dot: '#10b981' },
+  5: { label: 'Llegó Cadáver', bg: '#dbeafe', text: '#1d4ed8', dot: '#3b82f6' },
+};
 
-// Lee un campo de un map devuelto por el SP probando varias claves (los SP
-// resuelven los nombres de columna en runtime; variantes de mayúsculas).
 function campo(item: IFilaBackend | null | undefined, claves: string[]): string {
   if (!item) return '';
   for (const k of claves) {
@@ -31,10 +32,15 @@ function campo(item: IFilaBackend | null | undefined, claves: string[]): string 
   return '';
 }
 
+function campoNum(item: IFilaBackend | null | undefined, claves: string[]): number {
+  const raw = campo(item, claves);
+  return Number(raw) || 0;
+}
+
 @Component({
   selector: 'app-admisiones',
   standalone: true,
-  imports: [FormsModule, CommonModule, VentanaModal],
+  imports: [FormsModule, CommonModule, VentanaModal, FichaAdmisionComponent, SisFuaReportComponent],
   templateUrl: './admisiones.component.html'
 })
 export class AdmisionesComponent implements OnInit {
@@ -56,18 +62,20 @@ export class AdmisionesComponent implements OnInit {
   items: IFilaBackend[] = [];
   cargando = false;
   error = '';
-  mensajeExito = '';
+  buscar = false;
 
   modalAdmision: IFilaBackend | null = null;
-  formAdmision: FormAdmision = { nombreAcompanante: '', telefonoAcompanante: '', direccionPaciente: '', observacion: '' };
+  formAdmision: { nombreAcompanante: string; telefonoAcompanante: string; direccionPaciente: string; observacion: string; idEmpleado: number | '' } = { nombreAcompanante: '', telefonoAcompanante: '', direccionPaciente: '', observacion: '', idEmpleado: '' };
   guardando = false;
   errorAdmision = '';
 
-  // Ficha de admisión (GET /api/v1/triaje/ficha-admision)
-  modalFicha = false;
-  filasFicha: { clave: string; valor: string }[] = [];
-  cargandoFicha = false;
-  errorFicha = '';
+  medicosDisponibles: IFilaBackend[] = [];
+  cargandoMedicos = false;
+
+  mensajeExito = '';
+
+  modalFichaId: number | null = null;
+  modalFuaId: number | null = null;
 
   ngOnInit() {
     this.cargarCatalogos();
@@ -80,7 +88,6 @@ export class AdmisionesComponent implements OnInit {
         this.maestrosApi.getEspecialidades(),
         this.maestrosApi.getServicios(2)
       ]);
-
       if (Array.isArray(d)) this.departamentos = d;
       if (Array.isArray(e)) this.especialidades = e;
       if (Array.isArray(s)) this.servicios = s;
@@ -102,6 +109,7 @@ export class AdmisionesComponent implements OnInit {
         idServicio: this.idServicio !== '0' ? Number(this.idServicio) : undefined
       });
       this.items = Array.isArray(items) ? items : [];
+      this.buscar = true;
     } catch (err: unknown) {
       this.error = err instanceof ApiRequestError ? err.message : 'No se pudo obtener la bandeja de admisiones.';
     } finally {
@@ -112,83 +120,78 @@ export class AdmisionesComponent implements OnInit {
 
   abrirModalAdmision(item: IFilaBackend) {
     this.modalAdmision = item;
-    this.formAdmision = { nombreAcompanante: '', telefonoAcompanante: '', direccionPaciente: '', observacion: '' };
+    this.formAdmision = {
+      nombreAcompanante: '',
+      telefonoAcompanante: '',
+      direccionPaciente: campo(item, ['Direccion', 'direccion', 'DireccionDomicilio']) || '',
+      observacion: '',
+      idEmpleado: ''
+    };
     this.errorAdmision = '';
+    this.cargarMedicos(item);
   }
 
-  cerrarModalAdmision() {
-    this.modalAdmision = null;
-  }
-
-  idCuentaAtencion(item: IFilaBackend): number {
-    return Number(campo(item, ['IdCuentaAtencion', 'idCuentaAtencion', 'NroCuenta', 'nroCuenta', 'Cuenta', 'cuenta'])) || 0;
-  }
-
-  async abrirFicha(item: IFilaBackend) {
-    const id = this.idCuentaAtencion(item);
-    if (!id) {
-      this.error = 'El registro no tiene una cuenta de atención asociada.';
-      return;
-    }
-    this.modalFicha = true;
-    this.filasFicha = [];
-    this.errorFicha = '';
-    this.cargandoFicha = true;
+  async cargarMedicos(item: IFilaBackend) {
+    const idEspecialidad = campoNum(item, ['IdEspecialidad', 'idEspecialidad', 'Especialidad']);
+    if (!idEspecialidad) return;
+    this.cargandoMedicos = true;
     try {
-      const ficha = await this.triajeApi.obtenerFichaAdmision(id);
-      this.filasFicha = Object.entries(ficha).map(([clave, valor]) => {
-        let strValor = '';
-        if (valor !== null && valor !== undefined) {
-          if (typeof valor === 'object') {
-            strValor = JSON.stringify(valor);
-          } else {
-            strValor = String(valor);
-          }
-        }
-        return { clave, valor: strValor };
-      });
-    } catch (err: unknown) {
-      this.errorFicha = err instanceof ApiRequestError ? err.message : 'No se pudo obtener la ficha de admisión.';
+      const medicos = await this.triajeApi.medicosPorEspecialidad(idEspecialidad);
+      this.medicosDisponibles = Array.isArray(medicos) ? medicos : [];
+    } catch {
+      this.medicosDisponibles = [];
     } finally {
-      this.cargandoFicha = false;
+      this.cargandoMedicos = false;
       this.cdr.detectChanges();
     }
   }
 
-  cerrarFicha() {
-    this.modalFicha = false;
+  cerrarModalAdmision() {
+    this.modalAdmision = null;
+    this.medicosDisponibles = [];
+  }
+
+  handleAdmisionExitosa(mensaje: string) {
+    this.modalAdmision = null;
+    this.mensajeExito = mensaje || 'Admisión registrada correctamente.';
+    this.handleBuscar();
   }
 
   async admitir() {
     const item = this.modalAdmision;
-    const idTriaje = Number(campo(item, ['IdTriaje', 'idTriaje', 'IDTriaje']));
-    const idPacienteTriaje = Number(campo(item, ['IdPacienteTriaje', 'idPacienteTriaje', 'IdPaciente', 'idPaciente']));
+    if (!item) return;
+    const idTriaje = campoNum(item, ['IdTriaje', 'idTriaje', 'IDTriaje']);
+    const idPacienteTriaje = campoNum(item, ['IdPacienteTriaje', 'idPacienteTriaje', 'IdPaciente', 'idPaciente']);
     if (!idTriaje || !idPacienteTriaje) {
       this.errorAdmision = 'El registro no tiene un id de triaje válido.';
       return;
     }
-    if (this.formAdmision.telefonoAcompanante.trim() && !/^\d{6,15}$/.test(this.sanitizar(this.formAdmision.telefonoAcompanante))) {
-      this.errorAdmision = 'El teléfono del acompañante debe tener entre 6 y 15 dígitos.';
+    if (!this.formAdmision.nombreAcompanante.trim()) {
+      this.errorAdmision = 'El nombre del acompañante es obligatorio.';
+      return;
+    }
+    if (!this.formAdmision.telefonoAcompanante.trim()) {
+      this.errorAdmision = 'El teléfono del acompañante es obligatorio.';
+      return;
+    }
+    if (!this.formAdmision.direccionPaciente.trim()) {
+      this.errorAdmision = 'La dirección del paciente es obligatoria.';
       return;
     }
     this.guardando = true;
     this.errorAdmision = '';
-    const payload: CrearAdmisionPayload = { idTriaje, idPacienteTriaje };
-    const nombreAcompanante = this.sanitizar(this.formAdmision.nombreAcompanante);
-    const telefonoAcompanante = this.sanitizar(this.formAdmision.telefonoAcompanante);
-    const direccionPaciente = this.sanitizar(this.formAdmision.direccionPaciente);
-    const observacion = this.sanitizar(this.formAdmision.observacion);
-    if (nombreAcompanante) payload.nombreAcompanante = nombreAcompanante;
-    if (telefonoAcompanante) payload.telefonoAcompanante = telefonoAcompanante;
-    if (direccionPaciente) payload.direccionPaciente = direccionPaciente;
-    if (observacion) payload.observacion = observacion;
-
+    const payload: CrearAdmisionPayload = {
+      idTriaje,
+      idPacienteTriaje,
+      idEmpleado: this.formAdmision.idEmpleado ? Number(this.formAdmision.idEmpleado) : undefined,
+      nombreAcompanante: this.formAdmision.nombreAcompanante.trim() || undefined,
+      telefonoAcompanante: this.formAdmision.telefonoAcompanante.trim() || undefined,
+      direccionPaciente: this.formAdmision.direccionPaciente.trim() || undefined,
+      observacion: this.formAdmision.observacion.trim() || undefined,
+    };
     try {
-      await this.triajeApi.crearAdmision(payload);
-      this.modalAdmision = null;
-      this.mensajeExito = 'Admisión registrada correctamente.';
-      setTimeout(() => this.mensajeExito = '', 5000);
-      this.handleBuscar();
+      const resp = await this.triajeApi.crearAdmision(payload);
+      this.handleAdmisionExitosa(resp?.resultado || 'Admisión registrada correctamente.');
     } catch (err: unknown) {
       this.errorAdmision = err instanceof ApiRequestError ? err.message : 'No se pudo registrar la admisión.';
     } finally {
@@ -197,9 +200,88 @@ export class AdmisionesComponent implements OnInit {
     }
   }
 
-  // --- Ayudantes de render ---
-  // Elimina caracteres de control/espaciado invisible y recorta los extremos.
-  private sanitizar(texto: string): string {
+  abrirFicha(item: IFilaBackend) {
+    const id = campoNum(item, ['IdCuentaAtencion', 'idCuentaAtencion', 'NroCuenta', 'nroCuenta', 'Cuenta', 'cuenta']);
+    if (id) this.modalFichaId = id;
+  }
+
+  cerrarFicha() {
+    this.modalFichaId = null;
+  }
+
+  abrirFua(item: IFilaBackend) {
+    const id = campoNum(item, ['IdCuentaAtencion', 'idCuentaAtencion']);
+    if (id) this.modalFuaId = id;
+  }
+
+  cerrarFua() {
+    this.modalFuaId = null;
+  }
+
+  cerrarExito() {
+    this.mensajeExito = '';
+  }
+
+  // --- Helpers de render ---
+  idCuentaAtencion(item: IFilaBackend): number {
+    return campoNum(item, ['IdCuentaAtencion', 'idCuentaAtencion', 'NroCuenta', 'nroCuenta', 'Cuenta', 'cuenta']);
+  }
+
+  idTipoPrioridad(item: IFilaBackend): number {
+    return campoNum(item, ['IdTipoPrioridad', 'idTiposGravedad', 'IdTiposGravedad']);
+  }
+
+  prioridadInfo(item: IFilaBackend): { label: string; bg: string; text: string; dot: string } | null {
+    const id = this.idTipoPrioridad(item);
+    return TIPO_PRIORIDAD_INFO[id] || null;
+  }
+
+  prioridadTexto(item: IFilaBackend): string {
+    return campo(item, ['Prioridad', 'prioridad', 'TipoPrioridad', 'tipoPrioridad', 'DescripcionPrioridad']);
+  }
+
+  nombrePaciente(item: IFilaBackend): string {
+    const completo = campo(item, ['Paciente', 'paciente', 'NombreCompleto', 'nombreCompleto', 'Nombre', 'nombre']);
+    if (completo) return completo;
+    const partes = [
+      campo(item, ['ApellidoPaterno', 'apellidoPaterno']),
+      campo(item, ['ApellidoMaterno', 'apellidoMaterno']),
+      campo(item, ['PrimerNombre', 'primerNombre']),
+      campo(item, ['SegundoNombre', 'segundoNombre'])
+    ].filter(Boolean);
+    return partes.join(' ') || 'Paciente NN';
+  }
+
+  documento(item: IFilaBackend): string {
+    return campo(item, ['NroDocumento', 'nroDocumento', 'Documento', 'documento']);
+  }
+
+  servicio(item: IFilaBackend): string {
+    return campo(item, ['Servicio', 'servicio', 'Descripcion', 'descripcion']);
+  }
+
+  tipoIngreso(item: IFilaBackend): string {
+    return campo(item, ['TipoIngreso', 'tipoIngreso']);
+  }
+
+  iafa(item: IFilaBackend): string {
+    return campo(item, ['IAFA', 'iafa', 'FuenteFinanciamiento']);
+  }
+
+  esSis(item: IFilaBackend): boolean {
+    return this.iafa(item).toUpperCase().includes('SIS');
+  }
+
+  formatFechaTriaje(item: IFilaBackend): string {
+    const raw = campo(item, ['fecha_Triaje', 'FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro']);
+    if (!raw) return '—';
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' +
+           d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  sanitizar(texto: string): string {
     return texto.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '').trim();
   }
 
@@ -207,44 +289,5 @@ export class AdmisionesComponent implements OnInit {
     if (event.key.length === 1 && !/\d/.test(event.key)) {
       event.preventDefault();
     }
-  }
-
-  documento(item: IFilaBackend): string {
-    return campo(item, ['NroDocumento', 'nroDocumento', 'Documento', 'documento']);
-  }
-
-  nombrePaciente(item: IFilaBackend): string {
-    const completo = campo(item, ['NombreCompleto', 'nombreCompleto', 'Paciente', 'paciente', 'Nombre', 'nombre']);
-    if (completo) return completo;
-    const partes = [
-      campo(item, ['ApellidoPaterno', 'apellidoPaterno', 'Paterno', 'paterno']),
-      campo(item, ['ApellidoMaterno', 'apellidoMaterno', 'Materno', 'materno']),
-      campo(item, ['PrimerNombre', 'primerNombre', 'Nombres', 'nombres']),
-      campo(item, ['SegundoNombre', 'segundoNombre'])
-    ].filter(Boolean);
-    return partes.join(' ') || '—';
-  }
-
-  horaTriaje(item: IFilaBackend): string {
-    const raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'FechaIngreso', 'fechaIngreso', 'Fecha', 'fecha']);
-    if (!raw) return '—';
-    const d = new Date(raw);
-    if (Number.isNaN(d.getTime())) return raw;
-    return d.toLocaleString('es-PE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-  }
-
-  prioridad(item: IFilaBackend): string {
-    return campo(item, ['Prioridad', 'prioridad', 'TipoPrioridad', 'tipoPrioridad', 'DescripcionPrioridad']);
-  }
-
-  estadoAdmision(item: IFilaBackend): string {
-    const estado = campo(item, ['Estado', 'estado', 'IdEstado', 'idEstado', 'NombreEstado']);
-    if (!estado) return 'pendiente';
-    const s = estado.toLowerCase();
-    return s.includes('1') || s.includes('pend') || s.includes('act') ? 'pendiente' : 'admitido';
-  }
-
-  departamentoNombre(item: IFilaBackend): string {
-    return campo(item, ['Departamento', 'departamento', 'NombreDepartamento', 'Servicio']);
   }
 }
