@@ -3,10 +3,10 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 @Component({
   selector: 'ventana-modal',
   template: `
-    <div class="fixed inset-0 bg-[#07153a]/45 flex items-center justify-center p-6 z-[100]" (click)="cerrar()">
+    <div class="fixed inset-0 bg-[#07153a]/45 flex items-center justify-center p-6 z-[100] animate-in fade-in duration-200" (click)="cerrar()">
       <div 
         (click)="$event.stopPropagation()"
-        class="w-full max-h-[90vh] overflow-hidden bg-white rounded-[18px] shadow-[0_20px_60px_rgba(7,21,58,0.3)] flex flex-col"
+        class="w-full max-h-[90vh] overflow-hidden bg-white rounded-[18px] shadow-[0_20px_60px_rgba(7,21,58,0.3)] flex flex-col animate-in fade-in zoom-in-95 duration-150"
         [style.max-width.px]="ancho">
         
         <div class="flex items-start justify-between px-6 py-5 border-b border-[#eef1f6] shrink-0 bg-white rounded-t-[18px]">

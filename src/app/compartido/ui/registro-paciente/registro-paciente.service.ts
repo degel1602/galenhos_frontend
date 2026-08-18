@@ -66,7 +66,7 @@ export class RegistroPacienteService {
   };
 
   limpiarEstado(): void {
-    this.form = formVacio();
+    Object.assign(this.form, formVacio());
     this.error = '';
     this.aviso = '';
     this.depNacimientoSel = '';
@@ -203,7 +203,7 @@ export class RegistroPacienteService {
       }
       
       const mapeado = await this.reniecMapper.mapearDatos(datos, this.form, this.tiposSexo, this.estadosCivil);
-      this.form = { ...this.form, ...mapeado.form };
+      Object.assign(this.form, mapeado.form);
       if (mapeado.depNacimientoSel) this.depNacimientoSel = mapeado.depNacimientoSel;
       if (mapeado.provNacimientoSel) this.provNacimientoSel = mapeado.provNacimientoSel;
 

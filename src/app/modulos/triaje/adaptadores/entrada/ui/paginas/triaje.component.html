@@ -1,8 +1,7 @@
 <div class="gp-in" style="display: flex; flex-direction: column; gap: 18px;">
   <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;">
     <div>
-      <div style="font-size: 11px; font-weight: 700; letter-spacing: .14em; color: #7a86a1; text-transform: uppercase;">Bandeja en tiempo real</div>
-      <h1 style="margin: 4px 0 6px; font-size: 24px; font-weight: 700; color: #07153a;">Triaje de emergencia</h1>
+      
     </div>
     @if (authService.hasPermission('agregar')) {
       <button (click)="abrirModalRegistro()" 
@@ -15,9 +14,7 @@
 
   <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
     <div style="margin-bottom: 16px;">
-      <div style="font-size: 11px; font-weight: 700; letter-spacing: .14em; color: #7a86a1; text-transform: uppercase;">Consulta</div>
-      <h2 style="margin: 4px 0 2px; font-size: 18px; font-weight: 700; color: #07153a;">Triajes registrados</h2>
-      <p style="margin: 0; font-size: 12.5px; color: #7a86a1;">Filtre por rango de fechas y servicio de derivación.</p>
+      <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #07153a;">Triajes registrados</h2>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 16px;">
@@ -67,56 +64,63 @@
     }
 
     <div style="overflow-x: auto;">
-      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-        <thead>
-          <tr style="text-align: left; color: #7a86a1; font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em;">
-            <th style="padding: 0 10px 10px;">N.º Triaje</th>
-            <th style="padding: 0 10px 10px;">Documento</th>
-            <th style="padding: 0 10px 10px;">Paciente</th>
-            <th style="padding: 0 10px 10px;">Fecha registro</th>
-            <th style="padding: 0 10px 10px;">Servicio</th>
-            <th style="padding: 0 10px 10px;">Tipo gravedad</th>
-            <th style="padding: 0 10px 10px;">Estado</th>
-            <th style="padding: 0 10px 10px; text-align: right;">Reporte</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (cargando) {
-            <tr><td colspan="8" style="padding: 24px; text-align: center; color: #94a0bd;">Buscando...</td></tr>
-          } @else if (!triajesBuscados) {
-            <tr><td colspan="8" style="padding: 20px 10px; color: #94a0bd; text-align: center;">Realice una búsqueda para ver los triajes registrados.</td></tr>
-          } @else if (pacientes.length === 0) {
-            <tr><td colspan="8" style="padding: 20px 10px; color: #94a0bd; text-align: center;">No se encontraron triajes para los filtros seleccionados.</td></tr>
+      <app-tabla [columnas]="columnasTabla" [datos]="pacientes" [cargando]="cargando" mensajeCargando="Buscando..."
+                 [mostrarFiltroRequerido]="!triajesBuscados" mensajeFiltroRequerido="Realice una búsqueda para ver los triajes registrados."
+                 mensajeVacio="No se encontraron triajes para los filtros seleccionados.">
+
+        <ng-template appColumnaTemplate="idTriajeCustom" let-p>
+          <span style="font-weight: 600; color: #263c7a;">{{ idTriaje(p) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="documentoCustom" let-p>
+          <span style="color: #54617f;">{{ documento(p) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="pacienteCustom" let-p>
+          <span style="font-weight: 600; color: #07153a;">{{ nombrePaciente(p) }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="sexoCustom" let-p>
+          @if (sexo(p) === '1' || sexo(p)?.toUpperCase() === 'MASCULINO' || sexo(p)?.toUpperCase() === 'VARÓN' || sexo(p)?.toUpperCase() === 'VARON' || sexo(p)?.toUpperCase() === 'M' || sexo(p)?.toUpperCase() === 'V') {
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Varón" style="margin: 0 auto;"><circle cx="10" cy="14" r="5"></circle><path d="M13.5 10.5 21 3"></path><path d="M16 3h5v5"></path></svg>
+          } @else if (sexo(p) === '2' || sexo(p)?.toUpperCase() === 'FEMENINO' || sexo(p)?.toUpperCase() === 'MUJER' || sexo(p)?.toUpperCase() === 'F') {
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Mujer" style="margin: 0 auto;"><circle cx="12" cy="10" r="5"></circle><path d="M12 15v7"></path><path d="M9 19h6"></path></svg>
           } @else {
-            @for (p of pacientes; track $index) {
-              <tr style="border-top: 1px solid #eef1f6;">
-                <td style="padding: 12px 10px; vertical-align: top; font-weight: 600; color: #263c7a;">{{ idTriaje(p) || '—' }}</td>
-                <td style="padding: 12px 10px; vertical-align: top; color: #54617f;">{{ documento(p) || '—' }}</td>
-                <td style="padding: 12px 10px; vertical-align: top; font-weight: 600; color: #07153a;">{{ nombrePaciente(p) }}</td>
-                <td style="padding: 12px 10px; vertical-align: top; color: #54617f;">{{ fechaRegistro(p) }}</td>
-                <td style="padding: 12px 10px; vertical-align: top; color: #54617f;">{{ campo(p, ['Servicio', 'servicio', 'NombreServicio']) || 'NO ASIGNADO' }}</td>
-                <td style="padding: 12px 10px; vertical-align: top; color: #54617f;">{{ campo(p, ['TipoGravedad', 'tipoGravedad', 'Prioridad', 'prioridad']) || '—' }}</td>
-                <td style="padding: 12px 10px; vertical-align: top;">
-                  @if (estadoTriaje(p) === 'triado') {
-                    <span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7;">Activo</span>
-                  } @else {
-                    <span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #f8fafc; color: #54617f; border: 1px solid #e0e6f1;">Otro</span>
-                  }
-                </td>
-                <td style="padding: 12px 10px; vertical-align: top; text-align: right;">
-                  @if (idTriaje(p)) {
-                    <button (click)="abrirReporte(idTriaje(p))"
-                            style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #263c7a; color: #fff; border: none; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8M16 17H8M10 9H8" /></svg>
-                      Reporte
-                    </button>
-                  }
-                </td>
-              </tr>
-            }
+            <span style="color: #94a0bd; font-weight: bold; font-size: 16px;">—</span>
           }
-        </tbody>
-      </table>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="fechaCustom" let-p>
+          <span style="color: #54617f;">{{ fechaRegistro(p) }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="servicioCustom" let-p>
+          <span style="color: #54617f;">{{ campo(p, ['Servicio', 'servicio', 'NombreServicio']) || 'NO ASIGNADO' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="gravedadCustom" let-p>
+          <span style="color: #54617f;">{{ campo(p, ['TipoGravedad', 'tipoGravedad', 'Prioridad', 'prioridad']) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="estadoCustom" let-p>
+          @if (estadoTriaje(p) === 'triado') {
+            <span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7;">Activo</span>
+          } @else {
+            <span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #f8fafc; color: #54617f; border: 1px solid #e0e6f1;">Otro</span>
+          }
+        </ng-template>
+
+        <ng-template appColumnaTemplate="accionCustom" let-p>
+          @if (idTriaje(p)) {
+            <button (click)="abrirReporte(idTriaje(p))"
+                    style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #263c7a; color: #fff; border: none; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8M16 17H8M10 9H8" /></svg>
+              Reporte
+            </button>
+          }
+        </ng-template>
+
+      </app-tabla>
     </div>
   </div>
 

@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PacientesApiService } from '../../../salida/http/pacientes.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
@@ -6,6 +7,8 @@ import { IPaciente } from '../../../../../../compartido/tipos/api-tipos';
 import { RegistroPacienteModal } from '../../../../../../compartido/ui/registro-paciente/registro-paciente-modal';
 import { PaginacionComponent } from '../../../../../../compartido/ui/paginacion/paginacion';
 import { AuthService } from '../../../../../auth/aplicacion/auth.service';
+import { TablaComponent, ColumnaTabla } from '../../../../../../compartido/componentes/tabla/tabla.component';
+import { ColumnaTemplateDirective } from '../../../../../../compartido/componentes/tabla/columna-template.directive';
 
 interface Filtros {
   documento: string;
@@ -18,7 +21,7 @@ interface Filtros {
 @Component({
   selector: 'app-pacientes-lista',
   standalone: true,
-  imports: [FormsModule, RegistroPacienteModal, PaginacionComponent],
+  imports: [CommonModule, FormsModule, RegistroPacienteModal, PaginacionComponent, TablaComponent, ColumnaTemplateDirective],
   templateUrl: './pacientes-lista.component.html'
 })
 export class PacientesListaComponent implements OnInit {
@@ -40,6 +43,15 @@ export class PacientesListaComponent implements OnInit {
   modalAbierto = false;
   pacienteEditando: IPaciente | null = null;
   mensajeExito = '';
+
+  columnasTabla: ColumnaTabla[] = [
+    { campo: 'documentoCustom', cabecera: 'Documento' },
+    { campo: 'hcCustom', cabecera: 'H.C.' },
+    { campo: 'pacienteCustom', cabecera: 'Paciente' },
+    { campo: 'sexoCustom', cabecera: 'Sexo', alineacion: 'center' },
+    { campo: 'fNacimientoCustom', cabecera: 'F. Nacimiento' },
+    { campo: 'accionesCustom', cabecera: 'Acciones', alineacion: 'right' }
+  ];
 
   // Paginación
   paginaActual = 1;

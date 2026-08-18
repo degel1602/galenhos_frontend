@@ -2,11 +2,14 @@ import { Component, Input, ChangeDetectionStrategy, inject } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder } from '@angular/forms';
 import { AuthService } from '../../../../auth/aplicacion/auth.service';
+import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
+import { TablaComponent, ColumnaTabla } from '../../../../../compartido/componentes/tabla/tabla.component';
+import { ColumnaTemplateDirective } from '../../../../../compartido/componentes/tabla/columna-template.directive';
 
 @Component({
   selector: 'app-plan-tratamiento',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent, TablaComponent, ColumnaTemplateDirective],
   templateUrl: './plan-tratamiento.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -15,6 +18,15 @@ export class PlanTratamientoComponent {
   public readonly authService = inject(AuthService);
 
   constructor(private readonly fb: FormBuilder) {}
+
+  columnasMedicamentos: ColumnaTabla[] = [
+    { campo: 'medicamentoCustom', cabecera: 'Medicamento / Insumo' },
+    { campo: 'dosisCustom', cabecera: 'Dosis / Cantidad' },
+    { campo: 'frecuenciaCustom', cabecera: 'Frecuencia' },
+    { campo: 'viaCustom', cabecera: 'Vía de admin.' },
+    { campo: 'duracionCustom', cabecera: 'Duración' },
+    { campo: 'accionesCustom', cabecera: '', alineacion: 'center' }
+  ];
 
   get farmacologicoArray(): FormArray {
     return this.formGroup.get('farmacologico') as FormArray;

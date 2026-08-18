@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { VentanaModal } from '../../../../../../../compartido/ui/ventana-modal/ventana-modal';
 import { RegistroTriajeService } from './registro-triaje.service';
 import { ReporteTriajeComponent } from '../reporte-triaje/reporte-triaje.component';
+import { ErrorMensajeComponent } from '../../../../../../../compartido/ui/validacion/error-mensaje.component';
 
 @Component({
   selector: 'app-registro-triaje-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, VentanaModal, ReporteTriajeComponent],
+  imports: [CommonModule, FormsModule, VentanaModal, ReporteTriajeComponent, ErrorMensajeComponent],
   providers: [RegistroTriajeService],
   templateUrl: './registro-triaje-modal.html',
   styles: [`@keyframes spin { to { transform: rotate(360deg); } }`]

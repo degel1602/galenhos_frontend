@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges, inject, OnChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges, inject, OnChanges, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VentanaModal } from '../ventana-modal/ventana-modal';
 import { RegistroPacienteService } from './registro-paciente.service';
@@ -22,14 +22,16 @@ export class RegistroPacienteModal implements OnChanges {
   @Output() actualizado = new EventEmitter<string>();
 
   public readonly srv = inject(RegistroPacienteService);
+  private readonly cdr = inject(ChangeDetectorRef);
   public normalizarNombre = normalizarNombre;
 
-  ngOnChanges(cambios: SimpleChanges): void {
+  async ngOnChanges(cambios: SimpleChanges): Promise<void> {
     if (cambios['abierto']?.currentValue === true) {
       this.srv.limpiarEstado();
       this.srv.cargarCatalogos();
       if (this.pacienteId) {
-        this.srv.cargarPaciente(this.pacienteId);
+        await this.srv.cargarPaciente(this.pacienteId);
+        this.cdr.detectChanges(); // Ensure Angular paints the fetched data
       }
     }
   }

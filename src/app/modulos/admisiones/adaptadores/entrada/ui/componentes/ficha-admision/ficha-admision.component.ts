@@ -88,7 +88,7 @@ function decodificarBase64(valor: string | null | undefined): string {
           <iframe
             #fichaFrame
             [title]="'Ficha de Admisión N° ' + idCuentaAtencion"
-            style="width:100%;height:68vh;border:1px solid #e2e8f2;border-radius:12px;background:#fff">
+            style="width:100%;height:calc(90vh - 240px);min-height:340px;border:1px solid #e2e8f2;border-radius:12px;background:#fff;display:block">
           </iframe>
           <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;border-top:1px solid #e6eaf2;padding-top:16px">
             <button

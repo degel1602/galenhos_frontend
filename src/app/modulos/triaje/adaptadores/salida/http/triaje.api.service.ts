@@ -1,10 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiClientService, ApiRequestError } from '../../../../../compartido/api-client/api-client.service';
 import { IReniecResultado, IFilaBackend } from '../../../../../compartido/tipos/api-tipos';
+import { AuthService } from '../../../../auth/aplicacion/auth.service';
 
-// RegistroTriajePayload modela el cuerpo de POST /api/v1/triaje.
-// Todos los campos son opcionales en el backend (punteros); se envían solo
-// los que el formulario recopila.
 export interface RegistroTriajePayload {
   idTriaje?: number;
   idDocIdentidad?: number;
@@ -59,7 +57,7 @@ export interface PendientesAdmisionParams {
 export interface CrearAdmisionPayload {
   idTriaje: number;
   idPacienteTriaje: number;
-  idEmpleado?: number;
+  idMedico?: number;
   nombreAcompanante?: string;
   telefonoAcompanante?: string;
   direccionPaciente?: string;
@@ -75,16 +73,45 @@ export interface ReporteTriajeParams {
   idPaciente?: number;
 }
 
+export interface TriajeConsultaPayload {
+  idAtencion: number;
+  idPaciente: number;
+  idEmpleado: number;
+  talla?: string;
+  peso?: string;
+  temperatura?: string;
+  pulso?: string;
+  frecRespiratoria?: string;
+  frecCardiaca?: string;
+  frecCardiacaFetal?: string;
+  perimCefalico?: string;
+  origen?: string;
+  perimAbdominal?: string;
+  sat02?: string;
+  fi02?: string;
+  presionArterial?: string;
+  hemoglobina?: string;
+  observacion?: string;
+  imc?: string;
+  gestante?: string;
+}
+
+export interface TriajeConsultaParams {
+  fini: string;
+  ffin: string;
+  filtro?: string;
+  idServicio?: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class TriajeApiService {
   private apiClient = inject(ApiClientService);
+  private authService = inject(AuthService);
 
   private static readonly RENIEC_TIMEOUT_MS = 30000;
 
-  // El servicio SOAP externo puede tardar o colgarse; un timeout duro
-  // garantiza que la UI nunca se quede "Consultando…" para siempre.
   consultarReniec(nroDocumento: string): Promise<IReniecResultado> {
     const promesa = this.apiClient.request<IReniecResultado>(`/api/v1/reniec/${encodeURIComponent(nroDocumento)}?operacion=completo`);
     return Promise.race([
@@ -144,9 +171,10 @@ export class TriajeApiService {
 
   async agregarFua(idCuentaAtencion: number): Promise<void> {
     try {
+      const idEmpleado = this.authService.getIdEmpleado();
       await this.apiClient.request<unknown>('/api/v1/sis/fua/agregar', {
         method: 'POST',
-        body: JSON.stringify({ idCuentaAtencion, idEmpleado: 2937, nombrePc: '' })
+        body: JSON.stringify({ idCuentaAtencion, idEmpleado: idEmpleado > 0 ? idEmpleado : 1, nombrePc: '' })
       });
     } catch {
       // El endpoint puede fallar silenciosamente; continuamos con la impresión.
@@ -158,7 +186,7 @@ export class TriajeApiService {
   }
 
   diagnosticosFua(idCuentaAtencion: number): Promise<IFilaBackend[]> {
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/diagnosticos?idAtencion=${idCuentaAtencion}`);
+    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/diagnosticos?idCuentaAtencion=${idCuentaAtencion}`);
   }
 
   medicamentosFua(idCuentaAtencion: number): Promise<IFilaBackend[]> {
@@ -175,5 +203,30 @@ export class TriajeApiService {
 
   medicosPorEspecialidad(idEspecialidad: number): Promise<IFilaBackend[]> {
     return this.apiClient.request<IFilaBackend[]>(`/api/v1/triaje/medicos/${idEspecialidad}`);
+  }
+
+  listarTriajeConsulta(params: TriajeConsultaParams): Promise<IFilaBackend[]> {
+    const query = new URLSearchParams({ fini: params.fini, ffin: params.ffin });
+    if (params.filtro) query.append('filtro', params.filtro);
+    if (params.idServicio) query.append('idServicio', String(params.idServicio));
+    return this.apiClient.request<IFilaBackend[]>(`/api/v1/triaje/consulta?${query.toString()}`);
+  }
+
+  registrarTriajeConsulta(payload: TriajeConsultaPayload): Promise<RespuestaSp> {
+    return this.apiClient.request<RespuestaSp>('/api/v1/triaje/consulta', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  obtenerTriajeConsultaPorAtencion(idAtencion: number): Promise<IFilaBackend | null> {
+    return this.apiClient.request<IFilaBackend | null>(`/api/v1/triaje/consulta/atencion/${idAtencion}`);
+  }
+
+  actualizarEstadoTriajeConsulta(idTriaje: number, estado: string): Promise<{ ok: boolean }> {
+    return this.apiClient.request<{ ok: boolean }>(`/api/v1/triaje/consulta/${idTriaje}/estado`, {
+      method: 'PUT',
+      body: JSON.stringify({ estado })
+    });
   }
 }

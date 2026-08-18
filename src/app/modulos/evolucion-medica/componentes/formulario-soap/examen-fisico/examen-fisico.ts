@@ -1,11 +1,12 @@
 import { Component, Input, ChangeDetectionStrategy, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormArray, FormGroup } from '@angular/forms';
+import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
 
 @Component({
   selector: 'app-examen-fisico',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent],
   templateUrl: './examen-fisico.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })

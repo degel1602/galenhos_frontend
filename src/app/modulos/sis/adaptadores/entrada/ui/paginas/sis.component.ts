@@ -1,8 +1,10 @@
 import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SisApiService, SisAfiliado, SisAfiliacionPayload } from '../../../salida/http/sis.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
 import { IFilaBackend } from '../../../../../../compartido/tipos/api-tipos';
+import { TablaComponent, ColumnaTabla } from '../../../../../../compartido/componentes/tabla/tabla.component';
 
 interface FormFiliacion {
   documentoNumero: string;
@@ -22,7 +24,7 @@ function formFiliacionVacio(): FormFiliacion {
 @Component({
   selector: 'app-sis',
   standalone: true,
-  imports: [FormsModule],
+  imports: [CommonModule, FormsModule, TablaComponent],
   templateUrl: './sis.component.html'
 })
 export class SisComponent {
@@ -42,6 +44,7 @@ export class SisComponent {
   operando = false;
   resultados: IFilaBackend[] = [];
   clavesResultados: string[] = [];
+  columnasTabla: ColumnaTabla[] = [];
   resultadoTitulo = '';
   fua: IFilaBackend | null = null;
   filasFua: { clave: string; valor: string }[] = [];
@@ -93,6 +96,7 @@ export class SisComponent {
           for (const k of Object.keys(fila)) claves.add(k);
         }
         this.clavesResultados = Array.from(claves);
+        this.columnasTabla = this.clavesResultados.map(c => ({ campo: c, cabecera: c }));
       }
     } catch (err: unknown) {
       this.error = err instanceof ApiRequestError ? err.message : 'No se pudo ejecutar la operación SIS.';

@@ -7,6 +7,7 @@ import { PacientesListaComponent } from '../modulos/pacientes/adaptadores/entrad
 import { ConfiguracionComponent } from '../modulos/configuracion/adaptadores/entrada/ui/paginas/configuracion.component';
 import { CitasComponent } from '../modulos/citas/adaptadores/entrada/ui/paginas/citas.component';
 import { TriajeComponent } from '../modulos/triaje/adaptadores/entrada/ui/paginas/triaje.component';
+import { TriajeConsultaComponent } from '../modulos/triaje/adaptadores/entrada/ui/paginas/triaje-consulta.component';
 import { AdmisionesComponent } from '../modulos/admisiones/adaptadores/entrada/ui/paginas/admisiones.component';
 import { authGuard, unauthGuard } from '../modulos/auth/aplicacion/auth.guard';
 
@@ -25,7 +26,7 @@ export const rutasPrincipales: Routes = [
       { path: 'dashboard', component: DashboardComponent, data: { title: 'Dashboard' } },
       { path: 'pacientes', component: PacientesListaComponent, data: { title: 'Pacientes' } },
       { path: 'citas', component: CitasComponent, data: { title: 'Citas' } },
-      { path: 'triajes', component: TriajeComponent, data: { title: 'Triaje' } },
+      { path: 'triajes', component: TriajeConsultaComponent, data: { title: 'Triaje Consulta Externa' } },
       { path: 'emergencia_triaje', component: TriajeComponent, data: { title: 'Triaje Emergencia' } },
       { path: 'admisionemergencia', component: AdmisionesComponent, data: { title: 'Admisiones' } },
       { path: 'sis', loadComponent: () => import('../modulos/sis/adaptadores/entrada/ui/paginas/sis.component').then(m => m.SisComponent), data: { title: 'SIS' } },

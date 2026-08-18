@@ -1,12 +1,5 @@
 <div class="gp-in" style="display: flex; flex-direction: column; gap: 18px;">
-  <div>
-    <div style="font-size: 11px; font-weight: 700; letter-spacing: .14em; color: #7a86a1; text-transform: uppercase;">Bandeja de admisión</div>
-    <h1 style="margin: 4px 0 6px; font-size: 24px; font-weight: 700; color: #07153a;">Pacientes post-triaje sin admisión</h1>
-    <p style="margin: 0; font-size: 13px; color: #7a86a1; max-width: 640px; line-height: 1.5;">
-      Listado de pacientes ya triados que aún no tienen admisión registrada. Filtre por fecha, paciente,
-      departamento, especialidad o consultorio para localizar la bandeja.
-    </p>
-  </div>
+
 
   <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
     <div style="display: grid; grid-template-columns: 150px 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
@@ -79,89 +72,90 @@
     </div>
 
     <div style="overflow-x: auto;">
-      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-        <thead>
-          <tr style="text-align: left; color: #7a86a1; font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em;">
-            <th style="padding: 0 10px 10px;">Prioridad</th>
-            <th style="padding: 0 10px 10px;">Paciente</th>
-            <th style="padding: 0 10px 10px;">Servicio</th>
-            <th style="padding: 0 10px 10px;">Tipo ingreso</th>
-            <th style="padding: 0 10px 10px;">Fecha triaje</th>
-            <th style="padding: 0 10px 10px;">IAFA</th>
-            <th style="padding: 0 10px 10px; text-align: right;">Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (cargando) {
-            <tr><td colspan="7" style="padding: 20px 10px; color: #94a0bd; text-align: center;">Consultando...</td></tr>
-          } @else if (!buscar) {
-            <tr><td colspan="7" style="padding: 20px 10px; color: #94a0bd; text-align: center;">Realice una búsqueda para ver resultados.</td></tr>
-          } @else if (items.length === 0) {
-            <tr><td colspan="7" style="padding: 20px 10px; color: #94a0bd; text-align: center;">No se encontraron pacientes para los filtros aplicados.</td></tr>
+      <app-tabla [columnas]="columnasTabla" [datos]="items" [cargando]="cargando" mensajeCargando="Consultando..."
+                 [mostrarFiltroRequerido]="!buscar" mensajeFiltroRequerido="Realice una búsqueda para ver resultados."
+                 mensajeVacio="No se encontraron pacientes para los filtros aplicados.">
+
+        <ng-template appColumnaTemplate="prioridadCustom" let-p>
+          @if (prioridadInfo(p)) {
+            <span style="display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap;"
+                  [style.background]="prioridadInfo(p)!.bg" [style.color]="prioridadInfo(p)!.text">
+              <span [style.width]="'7px'" [style.height]="'7px'" style="border-radius: 50%; flex-shrink: 0;"
+                    [style.background]="prioridadInfo(p)!.dot"></span>
+              {{ prioridadInfo(p)!.label }}
+            </span>
           } @else {
-            @for (p of items; track $index) {
-              <tr style="border-top: 1px solid #eef1f6;">
-                <td style="padding: 12px 10px; vertical-align: top;">
-                  @if (prioridadInfo(p)) {
-                    <span style="display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap;"
-                          [style.background]="prioridadInfo(p)!.bg" [style.color]="prioridadInfo(p)!.text">
-                      <span [style.width]="'7px'" [style.height]="'7px'" style="border-radius: 50%; flex-shrink: 0;"
-                            [style.background]="prioridadInfo(p)!.dot"></span>
-                      {{ prioridadInfo(p)!.label }}
-                    </span>
-                  } @else {
-                    <span style="font-size: 12px; color: #7a86a1;">{{ prioridadTexto(p) || '—' }}</span>
-                  }
-                </td>
-                <td style="padding: 12px 10px; vertical-align: top;">
-                  <div style="font-weight: 600; color: #07153a;">{{ nombrePaciente(p) }}</div>
-                  <div style="display: flex; align-items: center; gap: 8px; margin-top: 3px; flex-wrap: wrap;">
-                    <span style="font-size: 12px; color: #54617f;">DNI: {{ documento(p) || '—' }}</span>
-                    @if (idCuentaAtencion(p) > 0) {
-                      <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: #d1fae5; color: #047857; font-size: 11px; font-weight: 700; white-space: nowrap;">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12" /></svg>
-                        {{ idCuentaAtencion(p) }}
-                      </span>
-                    }
-                  </div>
-                </td>
-                <td style="padding: 12px 10px; vertical-align: top; color: #54617f; max-width: 200px;">{{ servicio(p) || '—' }}</td>
-                <td style="padding: 12px 10px; vertical-align: top; color: #54617f;">{{ tipoIngreso(p) || '—' }}</td>
-                <td style="padding: 12px 10px; vertical-align: top; color: #54617f;">{{ formatFechaTriaje(p) }}</td>
-                <td style="padding: 12px 10px; vertical-align: top;">
-                  <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: #e0f2fe; color: #075985; font-size: 11.5px; font-weight: 700; white-space: nowrap;">
-                    {{ iafa(p) || '—' }}
-                  </span>
-                </td>
-                <td style="padding: 12px 10px; vertical-align: top; text-align: right;">
-                  @if (idCuentaAtencion(p) > 0) {
-                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                      <button (click)="abrirFicha(p)"
-                              style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #263c7a; color: #fff; border: none; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8M16 17H8M10 9H8" /></svg>
-                        Ficha admisión
-                      </button>
-                      @if (esSis(p)) {
-                        <button (click)="abrirFua(p)"
-                                style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #075985; color: #fff; border: none; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9V2h12v7" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
-                          FUA
-                        </button>
-                      }
-                    </div>
-                  } @else {
-                    <button (click)="abrirModalAdmision(p)"
-                            style="display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; background: #263c7a; color: #fff; border: none; border-radius: 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap;">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                      Para admisionar
-                    </button>
-                  }
-                </td>
-              </tr>
-            }
+            <span style="font-size: 12px; color: #7a86a1;">{{ prioridadTexto(p) || '—' }}</span>
           }
-        </tbody>
-      </table>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="pacienteCustom" let-p>
+          <div style="font-weight: 600; color: #07153a;">{{ nombrePaciente(p) }}</div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 3px; flex-wrap: wrap;">
+            <span style="font-size: 12px; color: #54617f;">DNI: {{ documento(p) || '—' }}</span>
+            @if (idCuentaAtencion(p) > 0) {
+              <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: #d1fae5; color: #047857; font-size: 11px; font-weight: 700; white-space: nowrap;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12" /></svg>
+                {{ idCuentaAtencion(p) }}
+              </span>
+            }
+          </div>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="servicioCustom" let-p>
+          <span style="color: #54617f; display: block; max-width: 200px;">{{ servicio(p) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="tipoIngresoCustom" let-p>
+          <span style="color: #54617f;">{{ tipoIngreso(p) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="fechaTriajeCustom" let-p>
+          <span style="color: #54617f;">{{ formatFechaTriaje(p) }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="iafaCustom" let-p>
+          <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: #e0f2fe; color: #075985; font-size: 11.5px; font-weight: 700; white-space: nowrap;">
+            {{ iafa(p) || '—' }}
+          </span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="sexoCustom" let-p>
+          @if (sexo(p) === '1' || sexo(p)?.toUpperCase() === 'MASCULINO' || sexo(p)?.toUpperCase() === 'VARÓN' || sexo(p)?.toUpperCase() === 'VARON' || sexo(p)?.toUpperCase() === 'M' || sexo(p)?.toUpperCase() === 'V') {
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Varón" style="margin: 0 auto;"><circle cx="10" cy="14" r="5"></circle><path d="M13.5 10.5 21 3"></path><path d="M16 3h5v5"></path></svg>
+          } @else if (sexo(p) === '2' || sexo(p)?.toUpperCase() === 'FEMENINO' || sexo(p)?.toUpperCase() === 'MUJER' || sexo(p)?.toUpperCase() === 'F') {
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Mujer" style="margin: 0 auto;"><circle cx="12" cy="10" r="5"></circle><path d="M12 15v7"></path><path d="M9 19h6"></path></svg>
+          } @else {
+            <span style="color: #94a0bd; font-weight: bold; font-size: 16px;">—</span>
+          }
+        </ng-template>
+
+        <ng-template appColumnaTemplate="accionCustom" let-p>
+          @if (idCuentaAtencion(p) > 0) {
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+              <button (click)="abrirFicha(p)"
+                      style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #263c7a; color: #fff; border: none; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8M16 17H8M10 9H8" /></svg>
+                Ficha admisión
+              </button>
+              @if (esSis(p)) {
+                <button (click)="abrirFua(p)"
+                        style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #075985; color: #fff; border: none; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9V2h12v7" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
+                  FUA
+                </button>
+              }
+            </div>
+          } @else {
+            <button (click)="abrirModalAdmision(p)"
+                    style="display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; background: #263c7a; color: #fff; border: none; border-radius: 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+              Para admisionar
+            </button>
+          }
+        </ng-template>
+
+      </app-tabla>
     </div>
   </div>
 
@@ -177,25 +171,28 @@
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
         <div>
           <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Nombre del acompañante *</label>
-          <input [(ngModel)]="formAdmision.nombreAcompanante" maxlength="120" autocomplete="off" placeholder="Ej: María Pérez"
+          <input [(ngModel)]="formAdmision.nombreAcompanante" name="nombreAc" #nomAcCtrl="ngModel" required minlength="3" maxlength="120" autocomplete="off" placeholder="Ej: María Pérez"
                  style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          <app-error-mensaje [control]="nomAcCtrl"></app-error-mensaje>
         </div>
         <div>
           <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Teléfono del acompañante *</label>
-          <input [(ngModel)]="formAdmision.telefonoAcompanante" (keydown)="soloDigitos($event)" maxlength="15" autocomplete="off" placeholder="Ej: 987654321"
+          <input [(ngModel)]="formAdmision.telefonoAcompanante" name="telAc" #telAcCtrl="ngModel" required pattern="^[0-9]{9}$" (keydown)="soloDigitos($event)" maxlength="15" autocomplete="off" placeholder="Ej: 987654321"
                  style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+          <app-error-mensaje [control]="telAcCtrl"></app-error-mensaje>
         </div>
       </div>
 
       <div style="margin-top: 14px;">
         <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Dirección del paciente *</label>
-        <input [(ngModel)]="formAdmision.direccionPaciente" maxlength="200" autocomplete="off" placeholder="Dirección del paciente"
+        <input [(ngModel)]="formAdmision.direccionPaciente" name="dirPac" #dirPacCtrl="ngModel" required minlength="5" maxlength="200" autocomplete="off" placeholder="Dirección del paciente"
                style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        <app-error-mensaje [control]="dirPacCtrl"></app-error-mensaje>
       </div>
 
       <div style="margin-top: 14px;">
         <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Médico</label>
-        <select [(ngModel)]="formAdmision.idEmpleado"
+        <select [(ngModel)]="formAdmision.idMedico"
                 style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
           <option value="">— Seleccionar médico —</option>
           @for (med of medicosDisponibles; track med['idMedico']) {
@@ -204,6 +201,9 @@
         </select>
         @if (cargandoMedicos) {
           <div style="font-size: 11px; color: #7a86a1; margin-top: 4px;">Cargando médicos...</div>
+        }
+        @if (errorMedicos) {
+          <div style="font-size: 11px; color: #b91c1c; margin-top: 4px;">{{ errorMedicos }}</div>
         }
       </div>
 

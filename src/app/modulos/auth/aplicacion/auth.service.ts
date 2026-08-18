@@ -22,6 +22,18 @@ export class AuthService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
+  getIdEmpleado(): number {
+    const token = this.getToken();
+    if (!token) return 0;
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload));
+      return decoded.idEmpleado || 0;
+    } catch {
+      return 0;
+    }
+  }
+
   getStoredUsername(): string | null {
     return localStorage.getItem(this.USERNAME_KEY);
   }

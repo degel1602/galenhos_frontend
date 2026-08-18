@@ -23,7 +23,13 @@ export class ApiClientService {
   private readonly API_BASE_URL_KEY = 'galenos.apiBaseUrl';
 
   getApiBaseUrl(): string {
-    return localStorage.getItem(this.API_BASE_URL_KEY) || 'http://localhost:8080';
+    const savedUrl = localStorage.getItem(this.API_BASE_URL_KEY);
+    if (savedUrl) {
+      return savedUrl;
+    }
+    // Usamos el hostname dinámicamente para soportar acceso por IP en la red local
+    const hostname = window.location.hostname;
+    return `http://${hostname}:8080`;
   }
 
   setApiBaseUrl(url: string): void {

@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, FormBuilder, FormGroup, FormArray, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EvolucionService } from '../../servicios/evolucion.service';
 import { AuthService } from '../../../auth/aplicacion/auth.service';
 import { SintomaService, SintomaCatalogo, SintomaSeleccionado } from '../../servicios/sintoma.service';
@@ -232,7 +232,7 @@ export class FormularioSoapComponent implements OnInit {
         this.fb.group({
           sistema: [sys],
           normal: [true],
-          hallazgo: ['']
+          hallazgo: ['', [Validators.minLength(5)]]
         })
       )
     ]),

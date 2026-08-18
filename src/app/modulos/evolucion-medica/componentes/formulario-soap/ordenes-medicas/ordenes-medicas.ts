@@ -4,11 +4,14 @@ import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, Validators } fr
 import { OrdenService, OrdenMedica, ProductoCatalogo } from '../../../servicios/orden.service';
 import { EvolucionService } from '../../../servicios/evolucion.service';
 import { AuthService } from '../../../../auth/aplicacion/auth.service';
+import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
+import { TablaComponent, ColumnaTabla } from '../../../../../compartido/componentes/tabla/tabla.component';
+import { ColumnaTemplateDirective } from '../../../../../compartido/componentes/tabla/columna-template.directive';
 
 @Component({
   selector: 'app-ordenes-medicas',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent, TablaComponent, ColumnaTemplateDirective],
   templateUrl: './ordenes-medicas.html',
   // No usamos OnPush porque cargamos datos de API asíncronamente
 })
@@ -28,6 +31,20 @@ export class OrdenesMedicasComponent implements OnInit {
 
   public readonly sugerencias = signal<ProductoCatalogo[]>([]);
   private debounceTimer: any;
+
+  columnasPrescripcion: ColumnaTabla[] = [
+    { campo: 'medicamentoCustom', cabecera: 'Medicamento y Presentación' },
+    { campo: 'cantidadCustom', cabecera: 'Cantidad', ancho: '100px' },
+    { campo: 'indicacionesCustom', cabecera: 'Indicaciones para el paciente' },
+    { campo: 'accionesCustom', cabecera: '', alineacion: 'center', ancho: '60px' }
+  ];
+
+  columnasHistorial: ColumnaTabla[] = [
+    { campo: 'fechaCustom', cabecera: 'Fecha' },
+    { campo: 'medicoCustom', cabecera: 'Médico' },
+    { campo: 'observacionCustom', cabecera: 'Observación General' },
+    { campo: 'itemsCustom', cabecera: 'Items de Receta' }
+  ];
 
   ngOnInit() {
     this.cargarOrdenes();

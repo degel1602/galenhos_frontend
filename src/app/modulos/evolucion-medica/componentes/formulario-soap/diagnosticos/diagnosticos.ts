@@ -11,10 +11,14 @@ export interface DxForm {
   estado: FormControl<string | null>;
 }
 
+import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
+import { TablaComponent, ColumnaTabla } from '../../../../../compartido/componentes/tabla/tabla.component';
+import { ColumnaTemplateDirective } from '../../../../../compartido/componentes/tabla/columna-template.directive';
+
 @Component({
   selector: 'app-diagnosticos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent, TablaComponent, ColumnaTemplateDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mb-8">
@@ -27,56 +31,60 @@ export interface DxForm {
       <p class="text-slate-500 text-[12.5px] mb-4">Incluya diagnóstico principal, secundarios, nuevos y descartados. Cada uno con código CIE-10, tipo, condición y estado.</p>
       
       <div class="overflow-x-auto">
-        <table class="w-full text-[13px] text-left border-collapse min-w-[700px]">
-          <thead>
-            <tr class="border-b-2 border-slate-200">
-              <th class="w-[100px] text-[10.8px] uppercase tracking-wider text-slate-500 p-2 font-semibold">CIE-10</th>
-              <th class="text-[10.8px] uppercase tracking-wider text-slate-500 p-2 font-semibold">Descripción</th>
-              <th class="text-[10.8px] uppercase tracking-wider text-slate-500 p-2 font-semibold">Tipo</th>
-              <th class="text-[10.8px] uppercase tracking-wider text-slate-500 p-2 font-semibold">Condición</th>
-              <th class="text-[10.8px] uppercase tracking-wider text-slate-500 p-2 font-semibold">Estado</th>
-              <th class="w-[40px]"></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (dx of formArray.controls; track $index) {
-              <tr class="border-b border-slate-100 group" [formGroup]="dx">
-                <td class="p-1.5 align-top">
-                  <input type="text" formControlName="cie10" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="A00.0">
-                </td>
-                <td class="p-1.5 align-top">
-                  <input type="text" formControlName="descripcion" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Descripción del diagnóstico">
-                </td>
-                <td class="p-1.5 align-top">
-                  <select formControlName="tipo" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
-                    <option value="Presuntivo">Presuntivo</option>
-                    <option value="Definitivo">Definitivo</option>
-                  </select>
-                </td>
-                <td class="p-1.5 align-top">
-                  <select formControlName="condicion" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
-                    <option value="Principal">Principal</option>
-                    <option value="Secundario">Secundario</option>
-                  </select>
-                </td>
-                <td class="p-1.5 align-top">
-                  <select formControlName="estado" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
-                    <option value="Activo">Activo</option>
-                    <option value="Resuelto">Resuelto</option>
-                    <option value="Descartado">Descartado</option>
-                  </select>
-                </td>
-                <td class="p-1.5 align-middle text-center">
-                  @if (authService.hasPermission('modificar') || authService.hasPermission('eliminar')) {
-                    <button (click)="removerDx($index)" class="text-slate-400 hover:text-rose-600 transition-colors opacity-0 group-hover:opacity-100" title="Eliminar fila">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-                    </button>
-                  }
-                </td>
-              </tr>
+        <app-tabla [columnas]="columnasDiagnosticos" [datos]="formArray.controls" [cargando]="false"
+                   mensajeVacio="No hay diagnósticos registrados.">
+
+          <ng-template appColumnaTemplate="cie10Custom" let-dx let-i="index">
+            <div [formGroup]="dx" class="p-1">
+              <input type="text" formControlName="cie10" [id]="'cie10_' + i" class="w-full border border-slate-200 rounded-md p-1.5 font-mono text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="A00.0">
+              <app-error-mensaje [control]="dx.get('cie10')"></app-error-mensaje>
+            </div>
+          </ng-template>
+
+          <ng-template appColumnaTemplate="descripcionCustom" let-dx let-i="index">
+            <div [formGroup]="dx" class="p-1">
+              <input type="text" formControlName="descripcion" [id]="'desc_' + i" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Descripción del diagnóstico">
+              <app-error-mensaje [control]="dx.get('descripcion')"></app-error-mensaje>
+            </div>
+          </ng-template>
+
+          <ng-template appColumnaTemplate="tipoCustom" let-dx let-i="index">
+            <div [formGroup]="dx" class="p-1">
+              <select formControlName="tipo" [id]="'tipo_' + i" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                <option value="Presuntivo">Presuntivo</option>
+                <option value="Definitivo">Definitivo</option>
+              </select>
+            </div>
+          </ng-template>
+
+          <ng-template appColumnaTemplate="condicionCustom" let-dx let-i="index">
+            <div [formGroup]="dx" class="p-1">
+              <select formControlName="condicion" [id]="'cond_' + i" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                <option value="Principal">Principal</option>
+                <option value="Secundario">Secundario</option>
+              </select>
+            </div>
+          </ng-template>
+
+          <ng-template appColumnaTemplate="estadoCustom" let-dx let-i="index">
+            <div [formGroup]="dx" class="p-1">
+              <select formControlName="estado" [id]="'estado_' + i" class="w-full border border-slate-200 rounded-md p-1.5 text-[12.5px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none">
+                <option value="Activo">Activo</option>
+                <option value="Resuelto">Resuelto</option>
+                <option value="Descartado">Descartado</option>
+              </select>
+            </div>
+          </ng-template>
+
+          <ng-template appColumnaTemplate="accionesCustom" let-dx let-i="index">
+            @if (authService.hasPermission('modificar') || authService.hasPermission('eliminar')) {
+              <button (click)="removerDx(i)" class="text-slate-400 hover:text-rose-600 transition-colors mt-1.5" title="Eliminar fila">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+              </button>
             }
-          </tbody>
-        </table>
+          </ng-template>
+
+        </app-tabla>
       </div>
       
       @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
@@ -91,6 +99,15 @@ export class DiagnosticosComponent {
   @Input({required: true}) formArray!: FormArray<FormGroup<DxForm>>;
   private readonly fb = inject(FormBuilder);
   public readonly authService = inject(AuthService);
+
+  columnasDiagnosticos: ColumnaTabla[] = [
+    { campo: 'cie10Custom', cabecera: 'CIE-10', ancho: '100px' },
+    { campo: 'descripcionCustom', cabecera: 'Descripción' },
+    { campo: 'tipoCustom', cabecera: 'Tipo' },
+    { campo: 'condicionCustom', cabecera: 'Condición' },
+    { campo: 'estadoCustom', cabecera: 'Estado' },
+    { campo: 'accionesCustom', cabecera: '', alineacion: 'center', ancho: '40px' }
+  ];
 
   agregarDx() {
     this.formArray.push(this.fb.group({

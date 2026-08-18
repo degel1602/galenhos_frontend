@@ -1,6 +1,11 @@
 @if (abierto) {
 <ventana-modal [titulo]="titulo" [subtitulo]="subtitulo" [ancho]="760" (alCerrar)="cerrar()">
   <div class="flex flex-col gap-5">
+    @if (srv.error) {
+      <div class="bg-red-50 text-red-700 text-sm font-medium px-4 py-3 rounded-lg mb-2">
+        {{ srv.error }}
+      </div>
+    }
 
     <!-- Identificación -->
     <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider pt-1">Identificación</div>

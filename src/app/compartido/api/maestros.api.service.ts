@@ -15,7 +15,7 @@ export class MaestrosApiService {
   private readonly apiClient = inject(ApiClientService);
 
   getTiposDocumentos(): Promise<ICatalogoDescripcion[]> { return this.apiClient.request<ICatalogoDescripcion[]>('/api/v1/tipos-documentos'); }
-  getIdiomas(): Promise<ICatalogoDescripcion[]> { return this.apiClient.request<ICatalogoDescripcion[]>('/api/v1/idiomas'); }
+  getIdiomas(): Promise<ICatalogoDescripcion[]> { return this.apiClient.request<any[]>('/api/v1/idiomas').then(res => res.map(i => ({ id: i.id, descripcion: i.lengua || i.descripcion }))); }
   getEtnias(): Promise<ICatalogoDescripcion[]> { return this.apiClient.request<ICatalogoDescripcion[]>('/api/v1/etnias'); }
   getDepartamentos(): Promise<ICatalogoNombre[]> { return this.apiClient.request<ICatalogoNombre[]>('/api/v1/departamentos'); }
   getPaises(): Promise<ICatalogoNombre[]> { return this.apiClient.request<ICatalogoNombre[]>('/api/v1/paises'); }

@@ -14,7 +14,7 @@
 
   <!-- Cabecera y Acciones -->
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-    <h2 class="text-xl font-semibold text-slate-800 tracking-tight">Pacientes</h2>
+
     @if (authService.hasPermission('agregar')) {
       <button (click)="abrirNuevoPaciente()" class="inline-flex items-center justify-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition-colors w-full md:w-auto">
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,67 +77,58 @@
   <!-- Tabla Desnuda -->
   <div class="mt-4">
     <div class="overflow-x-auto">
-      <table class="w-full text-sm text-left">
-        <thead>
-          <tr class="border-b-2 border-slate-300 text-slate-600">
-            <th class="py-3 pr-6 font-semibold">Documento</th>
-            <th class="py-3 pr-6 font-semibold">H.C.</th>
-            <th class="py-3 pr-6 font-semibold">Paciente</th>
-            <th class="py-3 pr-6 font-semibold">F. Nacimiento</th>
-            <th class="py-3 font-semibold text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-200">
-          @if (cargando && pacientes.length === 0) {
-            <tr>
-              <td colspan="5" class="py-12 text-center text-slate-500">
-                <div class="flex flex-col items-center justify-center space-y-3">
-                  <svg class="animate-spin h-6 w-6 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Cargando resultados...</span>
-                </div>
-              </td>
-            </tr>
-          } @else if (!cargando && pacientes.length === 0) {
-            <tr>
-              <td colspan="5" class="py-12 text-center text-slate-500">
-                No se encontraron pacientes que coincidan con la búsqueda.
-              </td>
-            </tr>
+      <app-tabla [columnas]="columnasTabla" [datos]="pacientes" [cargando]="cargando" mensajeCargando="Cargando resultados..."
+                 [mostrarFiltroRequerido]="false"
+                 mensajeVacio="No se encontraron pacientes que coincidan con la búsqueda.">
+
+        <ng-template appColumnaTemplate="documentoCustom" let-p>
+          <span class="text-slate-700">{{ p.documentNumber }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="hcCustom" let-p>
+          <span class="text-slate-700 font-medium">{{ p.historyNumber }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="pacienteCustom" let-p>
+          <span class="text-slate-900 font-medium">
+            {{ p.paternalSurname }} {{ p.maternalSurname }}, {{ p.firstName }} {{ p.secondName }}
+          </span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="sexoCustom" let-p>
+          @if (p['sexTypeId'] == 1 || p['sexTypeId'] == '1') {
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Varón" class="mx-auto"><circle cx="10" cy="14" r="5"></circle><path d="M13.5 10.5 21 3"></path><path d="M16 3h5v5"></path></svg>
+          } @else if (p['sexTypeId'] == 2 || p['sexTypeId'] == '2') {
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Mujer" class="mx-auto"><circle cx="12" cy="10" r="5"></circle><path d="M12 15v7"></path><path d="M9 19h6"></path></svg>
           } @else {
-            @for (p of pacientes; track p.patientId) {
-              <tr class="hover:bg-slate-100 transition-colors group">
-                <td class="py-4 pr-6 text-slate-700">{{ p.documentNumber }}</td>
-                <td class="py-4 pr-6 text-slate-700 font-medium">{{ p.historyNumber }}</td>
-                <td class="py-4 pr-6 text-slate-900 font-medium">
-                  {{ p.paternalSurname }} {{ p.maternalSurname }}, {{ p.firstName }} {{ p.secondName }}
-                </td>
-                <td class="py-4 text-slate-600">{{ (p.dateOfBirth || '').slice(0, 10) }}</td>
-                <td class="py-4 text-right">
-                  <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    @if (authService.hasPermission('modificar')) {
-                      <button (click)="abrirEdicion(p)" class="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded transition-colors" title="Editar paciente">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                        </svg>
-                      </button>
-                    }
-                    @if (authService.hasPermission('eliminar')) {
-                      <button (click)="eliminarPaciente(p)" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Eliminar paciente">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                      </button>
-                    }
-                  </div>
-                </td>
-              </tr>
-            }
+            <span class="text-slate-400">—</span>
           }
-        </tbody>
-      </table>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="fNacimientoCustom" let-p>
+          <span class="text-slate-600">{{ (p.dateOfBirth || '').slice(0, 10) }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="accionesCustom" let-p>
+          <div class="flex justify-end gap-2">
+            @if (authService.hasPermission('modificar')) {
+              <button (click)="abrirEdicion(p)" class="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded transition-colors" title="Editar paciente">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                </svg>
+              </button>
+            }
+            @if (authService.hasPermission('eliminar')) {
+              <button (click)="eliminarPaciente(p)" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Eliminar paciente">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            }
+          </div>
+        </ng-template>
+
+      </app-tabla>
     </div>
 
     <!-- Paginación -->

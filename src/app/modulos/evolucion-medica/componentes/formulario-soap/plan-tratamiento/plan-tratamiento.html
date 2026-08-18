@@ -1,4 +1,4 @@
-<!-- FARMACOLÓGICO -->
+<!-- FARMACOLÓGICO --> 
 <div class="mb-8">
   <h3 class="flex items-center gap-2 text-[13px] font-semibold text-teal-950 mb-4 pb-2 border-b border-slate-200">
     <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -8,45 +8,55 @@
     Tratamiento farmacológico
   </h3>
   <div class="overflow-x-auto">
-    <table class="w-full text-left border-collapse text-[13px]">
-      <thead>
-        <tr>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Medicamento</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Dosis</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Frecuencia</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Vía</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Duración</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold w-10"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (ctrl of farmacologicoArray.controls; track ctrl; let i = $index) {
-          <tr [formGroup]="getFormGroup(i)" class="border-b border-slate-100">
-            <td class="p-1.5"><input type="text" [id]="'med_' + i" aria-label="Medicamento" formControlName="medicamento" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Medicamento"></td>
-            <td class="p-1.5"><input type="text" [id]="'dosis_' + i" aria-label="Dosis" formControlName="dosis" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. 500mg"></td>
-            <td class="p-1.5"><input type="text" [id]="'frec_' + i" aria-label="Frecuencia" formControlName="frecuencia" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. c/8h"></td>
-            <td class="p-1.5">
-              <select [id]="'via_' + i" aria-label="Vía" formControlName="via" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800">
-                <option>Oral</option>
-                <option>Endovenosa</option>
-                <option>Intramuscular</option>
-                <option>Subcutánea</option>
-                <option>Tópica</option>
-                <option>Inhalatoria</option>
-              </select>
-            </td>
-            <td class="p-1.5"><input type="text" [id]="'duracion_' + i" aria-label="Duración" formControlName="duracion" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. 7 días"></td>
-            <td class="p-1.5 text-center">
-              @if (authService.hasPermission('modificar') || authService.hasPermission('eliminar')) {
-                <button class="text-slate-400 hover:text-rose-600 transition-colors" (click)="removerMedicamento(i)" title="Eliminar fila">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-                </button>
-              }
-            </td>
-          </tr>
+    <app-tabla [columnas]="columnasMedicamentos" [datos]="farmacologicoArray.controls" [cargando]="false"
+               mensajeVacio="No hay medicamentos registrados.">
+
+      <ng-template appColumnaTemplate="medicamentoCustom" let-ctrl let-i="index">
+        <div [formGroup]="ctrl" class="p-1">
+          <input type="text" [id]="'med_' + i" aria-label="Medicamento" formControlName="medicamento" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Medicamento">
+        </div>
+      </ng-template>
+
+      <ng-template appColumnaTemplate="dosisCustom" let-ctrl let-i="index">
+        <div [formGroup]="ctrl" class="p-1">
+          <input type="text" [id]="'dosis_' + i" aria-label="Dosis" formControlName="dosis" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. 500mg">
+        </div>
+      </ng-template>
+
+      <ng-template appColumnaTemplate="frecuenciaCustom" let-ctrl let-i="index">
+        <div [formGroup]="ctrl" class="p-1">
+          <input type="text" [id]="'frec_' + i" aria-label="Frecuencia" formControlName="frecuencia" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. c/8h">
+        </div>
+      </ng-template>
+
+      <ng-template appColumnaTemplate="viaCustom" let-ctrl let-i="index">
+        <div [formGroup]="ctrl" class="p-1">
+          <select [id]="'via_' + i" aria-label="Vía" formControlName="via" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800">
+            <option>Oral</option>
+            <option>Endovenosa</option>
+            <option>Intramuscular</option>
+            <option>Subcutánea</option>
+            <option>Tópica</option>
+            <option>Inhalatoria</option>
+          </select>
+        </div>
+      </ng-template>
+
+      <ng-template appColumnaTemplate="duracionCustom" let-ctrl let-i="index">
+        <div [formGroup]="ctrl" class="p-1">
+          <input type="text" [id]="'duracion_' + i" aria-label="Duración" formControlName="duracion" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Ej. 7 días">
+        </div>
+      </ng-template>
+
+      <ng-template appColumnaTemplate="accionesCustom" let-ctrl let-i="index">
+        @if (authService.hasPermission('modificar') || authService.hasPermission('eliminar')) {
+          <button class="text-slate-400 hover:text-rose-600 transition-colors mt-1.5" (click)="removerMedicamento(i)" title="Eliminar fila">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+          </button>
         }
-      </tbody>
-    </table>
+      </ng-template>
+
+    </app-tabla>
     @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
       <button class="mt-3 bg-teal-50 text-teal-700 border border-dashed border-teal-500 px-3 py-2 rounded-lg text-[12.6px] font-semibold hover:bg-teal-100 transition-colors"
         (click)="agregarMedicamento()">+ Agregar medicamento</button>
@@ -97,14 +107,17 @@
     <div class="flex flex-col">
       <label for="laboratorioSolicitado" class="text-[11.5px] font-semibold text-slate-500 mb-1">Laboratorio</label>
       <textarea id="laboratorioSolicitado" rows="2" formControlName="laboratorio" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. Hemograma de control"></textarea>
+      <app-error-mensaje [control]="examenesGroup.get('laboratorio')"></app-error-mensaje>
     </div>
     <div class="flex flex-col">
       <label for="imagenesSolicitadas" class="text-[11.5px] font-semibold text-slate-500 mb-1">Imágenes</label>
       <textarea id="imagenesSolicitadas" rows="2" formControlName="imagenes" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. TAC abdominal"></textarea>
+      <app-error-mensaje [control]="examenesGroup.get('imagenes')"></app-error-mensaje>
     </div>
     <div class="flex flex-col">
       <label for="otrosProcedimientos" class="text-[11.5px] font-semibold text-slate-500 mb-1">Otros procedimientos</label>
       <textarea id="otrosProcedimientos" rows="2" formControlName="otros" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Ej. ECG de control"></textarea>
+      <app-error-mensaje [control]="examenesGroup.get('otros')"></app-error-mensaje>
     </div>
   </div>
 </div>
@@ -134,6 +147,7 @@
   <div class="flex flex-col">
     <label for="otraEspecialidad" class="text-[11.5px] font-semibold text-slate-500 mb-1">Otra especialidad</label>
     <input type="text" id="otraEspecialidad" formControlName="otra" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none" placeholder="Especifique...">
+    <app-error-mensaje [control]="interconsultasGroup.get('otra')"></app-error-mensaje>
   </div>
 </div>
 

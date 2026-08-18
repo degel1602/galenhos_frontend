@@ -10,6 +10,10 @@ import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 import { VentanaModal } from '../../../../../../compartido/ui/ventana-modal/ventana-modal';
 import { FichaAdmisionComponent } from '../componentes/ficha-admision/ficha-admision.component';
 import { SisFuaReportComponent } from '../componentes/sis-fua-report/sis-fua-report.component';
+import { ErrorMensajeComponent } from '../../../../../../compartido/ui/validacion/error-mensaje.component';
+
+import { TablaComponent, ColumnaTabla } from '../../../../../../compartido/componentes/tabla/tabla.component';
+import { ColumnaTemplateDirective } from '../../../../../../compartido/componentes/tabla/columna-template.directive';
 
 const TIPO_PRIORIDAD_INFO: Record<number, { label: string; bg: string; text: string; dot: string }> = {
   1: { label: 'I. Emerg. o Gravedad', bg: '#fee2e2', text: '#b91c1c', dot: '#dc2626' },
@@ -40,7 +44,7 @@ function campoNum(item: IFilaBackend | null | undefined, claves: string[]): numb
 @Component({
   selector: 'app-admisiones',
   standalone: true,
-  imports: [FormsModule, CommonModule, VentanaModal, FichaAdmisionComponent, SisFuaReportComponent],
+  imports: [FormsModule, CommonModule, VentanaModal, FichaAdmisionComponent, SisFuaReportComponent, ErrorMensajeComponent, TablaComponent, ColumnaTemplateDirective],
   templateUrl: './admisiones.component.html'
 })
 export class AdmisionesComponent implements OnInit {
@@ -49,7 +53,7 @@ export class AdmisionesComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   public readonly authService = inject(AuthService);
 
-  fecha = new Date().toISOString().slice(0, 10);
+  fecha = (d => `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`)(new Date());
   filtro = '';
   idDepartamento = '0';
   idEspecialidad = '0';
@@ -65,12 +69,24 @@ export class AdmisionesComponent implements OnInit {
   buscar = false;
 
   modalAdmision: IFilaBackend | null = null;
-  formAdmision: { nombreAcompanante: string; telefonoAcompanante: string; direccionPaciente: string; observacion: string; idEmpleado: number | '' } = { nombreAcompanante: '', telefonoAcompanante: '', direccionPaciente: '', observacion: '', idEmpleado: '' };
+  formAdmision: { nombreAcompanante: string; telefonoAcompanante: string; direccionPaciente: string; observacion: string; idMedico: number | '' } = { nombreAcompanante: '', telefonoAcompanante: '', direccionPaciente: '', observacion: '', idMedico: '' };
   guardando = false;
   errorAdmision = '';
 
   medicosDisponibles: IFilaBackend[] = [];
   cargandoMedicos = false;
+  errorMedicos = '';
+
+  columnasTabla: ColumnaTabla[] = [
+    { campo: 'prioridadCustom', cabecera: 'Prioridad' },
+    { campo: 'pacienteCustom', cabecera: 'Paciente' },
+    { campo: 'servicioCustom', cabecera: 'Servicio', ancho: '200px' },
+    { campo: 'tipoIngresoCustom', cabecera: 'Tipo ingreso' },
+    { campo: 'fechaTriajeCustom', cabecera: 'Fecha triaje' },
+    { campo: 'iafaCustom', cabecera: 'IAFA' },
+    { campo: 'sexoCustom', cabecera: 'Sexo', alineacion: 'center' },
+    { campo: 'accionCustom', cabecera: 'Acción', alineacion: 'right' }
+  ];
 
   mensajeExito = '';
 
@@ -125,21 +141,32 @@ export class AdmisionesComponent implements OnInit {
       telefonoAcompanante: '',
       direccionPaciente: campo(item, ['Direccion', 'direccion', 'DireccionDomicilio']) || '',
       observacion: '',
-      idEmpleado: ''
+      idMedico: ''
     };
     this.errorAdmision = '';
     this.cargarMedicos(item);
   }
 
   async cargarMedicos(item: IFilaBackend) {
-    const idEspecialidad = campoNum(item, ['IdEspecialidad', 'idEspecialidad', 'Especialidad']);
-    if (!idEspecialidad) return;
+    let idEspecialidad = campoNum(item, ['IdEspecialidad', 'idEspecialidad', 'Especialidad']);
+    if (!idEspecialidad) idEspecialidad = Number(this.idEspecialidad) || 0;
+
     this.cargandoMedicos = true;
+    this.errorMedicos = '';
     try {
       const medicos = await this.triajeApi.medicosPorEspecialidad(idEspecialidad);
-      this.medicosDisponibles = Array.isArray(medicos) ? medicos : [];
-    } catch {
+      if (Array.isArray(medicos)) {
+        // Remove duplicates by idMedico since doctors can have multiple specialties
+        this.medicosDisponibles = medicos.filter((v, i, a) => a.findIndex(t => t['idMedico'] === v['idMedico']) === i);
+      } else {
+        this.medicosDisponibles = [];
+      }
+      if (this.medicosDisponibles.length === 0) {
+        this.errorMedicos = 'No se encontraron médicos para la especialidad seleccionada.';
+      }
+    } catch (err: unknown) {
       this.medicosDisponibles = [];
+      this.errorMedicos = err instanceof ApiRequestError ? err.message : 'No se pudieron cargar los médicos.';
     } finally {
       this.cargandoMedicos = false;
       this.cdr.detectChanges();
@@ -161,7 +188,7 @@ export class AdmisionesComponent implements OnInit {
     const item = this.modalAdmision;
     if (!item) return;
     const idTriaje = campoNum(item, ['IdTriaje', 'idTriaje', 'IDTriaje']);
-    const idPacienteTriaje = campoNum(item, ['IdPacienteTriaje', 'idPacienteTriaje', 'IdPaciente', 'idPaciente']);
+    const idPacienteTriaje = campoNum(item, ['IdPacienteTriaje', 'idPacienteTriaje', 'IdpacienteTriaje', 'IdPaciente', 'idPaciente']);
     if (!idTriaje || !idPacienteTriaje) {
       this.errorAdmision = 'El registro no tiene un id de triaje válido.';
       return;
@@ -183,7 +210,7 @@ export class AdmisionesComponent implements OnInit {
     const payload: CrearAdmisionPayload = {
       idTriaje,
       idPacienteTriaje,
-      idEmpleado: this.formAdmision.idEmpleado ? Number(this.formAdmision.idEmpleado) : undefined,
+      idMedico: this.formAdmision.idMedico ? Number(this.formAdmision.idMedico) : undefined,
       nombreAcompanante: this.formAdmision.nombreAcompanante.trim() || undefined,
       telefonoAcompanante: this.formAdmision.telefonoAcompanante.trim() || undefined,
       direccionPaciente: this.formAdmision.direccionPaciente.trim() || undefined,
@@ -268,13 +295,21 @@ export class AdmisionesComponent implements OnInit {
     return campo(item, ['IAFA', 'iafa', 'FuenteFinanciamiento']);
   }
 
+  sexo(item: IFilaBackend): string {
+    return campo(item, ['Sexo', 'sexo', 'TipoSexo', 'tipoSexo', 'IdTipoSexo', 'idTipoSexo', 'SexTypeID', 'sexTypeId', 'Genero', 'genero', 'IdGenero', 'idGenero', 'Sex', 'sex', 'SEXO', 'GENERO'])?.toString() || '';
+  }
+
   esSis(item: IFilaBackend): boolean {
-    return this.iafa(item).toUpperCase().includes('SIS');
+    // La fuente de financiamiento SIS es la 3 en FuentesFinanciamiento
+    // (verificado en BD); el texto IAFA es el respaldo.
+    return campoNum(item, ['IdFuenteFinanciamiento', 'idFuenteFinanciamiento']) === 3
+      || this.iafa(item).toUpperCase().includes('SIS');
   }
 
   formatFechaTriaje(item: IFilaBackend): string {
-    const raw = campo(item, ['fecha_Triaje', 'FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro']);
+    let raw = campo(item, ['fecha_Triaje', 'FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro']);
     if (!raw) return '—';
+    if (raw.endsWith('Z')) raw = raw.slice(0, -1);
     const d = new Date(raw);
     if (isNaN(d.getTime())) return '—';
     return d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' +

@@ -5,11 +5,13 @@ import { EvolucionService, EvolucionFirma } from '../../servicios/evolucion.serv
 import { BuscadorRangoFechas, CriteriosBusqueda } from '../../../../compartido/ui/buscador-rango-fechas/buscador-rango-fechas';
 import { PaginacionComponent } from '../../../../compartido/ui/paginacion/paginacion';
 import { VerEvolucionComponent } from './ver-evolucion/ver-evolucion';
+import { TablaComponent, ColumnaTabla } from '../../../../compartido/componentes/tabla/tabla.component';
+import { ColumnaTemplateDirective } from '../../../../compartido/componentes/tabla/columna-template.directive';
 
 @Component({
   selector: 'app-bandeja-pacientes',
   standalone: true,
-  imports: [CommonModule, FormsModule, BuscadorRangoFechas, PaginacionComponent, VerEvolucionComponent],
+  imports: [CommonModule, FormsModule, BuscadorRangoFechas, PaginacionComponent, VerEvolucionComponent, TablaComponent, ColumnaTemplateDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col min-h-[calc(100vh-98px)] md:min-h-[calc(100vh-114px)] lg:min-h-[calc(100vh-130px)] -mt-4 md:-mt-6 lg:-mt-8 -mx-4 md:-mx-6 lg:-mx-8">
@@ -109,41 +111,39 @@ import { VerEvolucionComponent } from './ver-evolucion/ver-evolucion';
               </div>
             } @else {
               <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                  <thead>
-                    <tr class="text-[11px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200">
-                      <th class="p-2.5 font-semibold">N.º</th>
-                      <th class="p-2.5 font-semibold">Fecha de firma</th>
-                      <th class="p-2.5 font-semibold">Médico</th>
-                      <th class="p-2.5 font-semibold">Estado</th>
-                      <th class="p-2.5 font-semibold">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody class="text-[12.5px] text-slate-700">
-                    @for (evolucion of evolucionesPaciente(); track evolucion.idFirma; let i = $index) {
-                      <tr class="hover:bg-slate-100/60 border-b border-slate-100">
-                        <td class="p-2.5 font-mono text-[11.5px] text-slate-500">{{ i + 1 }}</td>
-                        <td class="p-2.5 font-mono text-[11.5px] text-slate-600">{{ evolucion.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}</td>
-                        <td class="p-2.5 font-medium text-slate-800">{{ obtenerMedico(evolucion) }}</td>
-                        <td class="p-2.5">
-                          <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-green-100 text-green-700 border border-green-200">Firmada</span>
-                        </td>
-                        <td class="p-2.5">
-                          <button
-                            type="button"
-                            (click)="verEvolucion(evolucion)"
-                            class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-teal-600 hover:text-teal-800 hover:underline transition-colors cursor-pointer">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                              <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                            Ver
-                          </button>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
+                <app-tabla [columnas]="columnasEvoluciones" [datos]="evolucionesPaciente()" [cargando]="false"
+                           mensajeVacio="Este paciente aún no tiene evoluciones registradas en el sistema.">
+
+                  <ng-template appColumnaTemplate="numeroCustom" let-evolucion let-i="index">
+                    <span class="font-mono text-[11.5px] text-slate-500">{{ i + 1 }}</span>
+                  </ng-template>
+
+                  <ng-template appColumnaTemplate="fechaCustom" let-evolucion>
+                    <span class="font-mono text-[11.5px] text-slate-600">{{ evolucion.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </ng-template>
+
+                  <ng-template appColumnaTemplate="medicoCustom" let-evolucion>
+                    <span class="font-medium text-slate-800">{{ obtenerMedico(evolucion) }}</span>
+                  </ng-template>
+
+                  <ng-template appColumnaTemplate="estadoCustom" let-evolucion>
+                    <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-green-100 text-green-700 border border-green-200">Firmada</span>
+                  </ng-template>
+
+                  <ng-template appColumnaTemplate="accionesCustom" let-evolucion>
+                    <button
+                      type="button"
+                      (click)="verEvolucion(evolucion)"
+                      class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-teal-600 hover:text-teal-800 hover:underline transition-colors cursor-pointer">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      Ver
+                    </button>
+                  </ng-template>
+
+                </app-tabla>
               </div>
             }
           </div>
@@ -189,7 +189,15 @@ export class BandejaPacientesComponent {
 
   public readonly evolucionesPaciente = signal<EvolucionFirma[]>([]);
   public readonly evolucionesCargando = signal<boolean>(false);
-  public readonly evolucionDetalle = signal<any | null>(null);
+  public readonly evolucionDetalle = signal<EvolucionFirma | null>(null);
+
+  columnasEvoluciones: ColumnaTabla[] = [
+    { campo: 'numeroCustom', cabecera: 'N.º' },
+    { campo: 'fechaCustom', cabecera: 'Fecha de firma' },
+    { campo: 'medicoCustom', cabecera: 'Médico' },
+    { campo: 'estadoCustom', cabecera: 'Estado' },
+    { campo: 'accionesCustom', cabecera: 'Acciones' }
+  ];
 
   constructor() {
     effect(() => {

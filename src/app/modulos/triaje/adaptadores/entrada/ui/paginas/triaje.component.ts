@@ -8,6 +8,8 @@ import { IFilaBackend, ICatalogoNombre } from '../../../../../../compartido/tipo
 import { RegistroTriajeModal } from '../componentes/registro-triaje-modal/registro-triaje-modal';
 import { ReporteTriajeComponent } from '../componentes/reporte-triaje/reporte-triaje.component';
 import { AuthService } from '../../../../../auth/aplicacion/auth.service';
+import { TablaComponent, ColumnaTabla } from '../../../../../../compartido/componentes/tabla/tabla.component';
+import { ColumnaTemplateDirective } from '../../../../../../compartido/componentes/tabla/columna-template.directive';
 
 interface FormEvaluacion {
   motivo: string;
@@ -75,7 +77,7 @@ const SI_NO = [
 @Component({
   selector: 'app-triaje',
   standalone: true,
-  imports: [FormsModule, CommonModule, RegistroTriajeModal, ReporteTriajeComponent],
+  imports: [FormsModule, CommonModule, RegistroTriajeModal, ReporteTriajeComponent, TablaComponent, ColumnaTemplateDirective],
   templateUrl: './triaje.component.html'
 })
 export class TriajeComponent implements OnInit {
@@ -90,21 +92,33 @@ export class TriajeComponent implements OnInit {
   mensajeExito = '';
 
   filtro = '';
-  fechaInicio = new Date().toISOString().slice(0, 10);
-  fechaFin = new Date().toISOString().slice(0, 10);
+  fechaInicio = (d => `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`)(new Date());
+  fechaFin = (d => `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`)(new Date());
   servicioFiltro = '';
   serviciosFiltro: ICatalogoNombre[] = [];
   triajesBuscados = false;
 
   // Modal de registro (componente global compartido con la página Pacientes)
   modalRegistro = false;
+  reporteTriajeId: number | null = null;
+
+  columnasTabla: ColumnaTabla[] = [
+    { campo: 'idTriajeCustom', cabecera: 'N.º Triaje' },
+    { campo: 'documentoCustom', cabecera: 'Documento' },
+    { campo: 'pacienteCustom', cabecera: 'Paciente' },
+    { campo: 'sexoCustom', cabecera: 'Sexo', alineacion: 'center' },
+    { campo: 'fechaCustom', cabecera: 'Fecha registro' },
+    { campo: 'servicioCustom', cabecera: 'Servicio' },
+    { campo: 'gravedadCustom', cabecera: 'Tipo gravedad' },
+    { campo: 'estadoCustom', cabecera: 'Estado' },
+    { campo: 'accionCustom', cabecera: 'Reporte', alineacion: 'right' }
+  ];
 
   // Modal de reporte de triaje (GET /api/v1/triaje/reporte)
   modalReporte = false;
   reporte: IFilaBackend[] = [];
   cargandoReporte = false;
   errorReporte = '';
-  reporteTriajeId: number | null = null;
 
   // Modal de ficha de admisión (GET /api/v1/triaje/ficha-admision)
   modalFicha = false;
@@ -398,9 +412,14 @@ export class TriajeComponent implements OnInit {
     return partes.join(' ') || '—';
   }
 
+  sexo(item: IFilaBackend): string {
+    return campo(item, ['Sexo', 'sexo', 'TipoSexo', 'tipoSexo', 'IdTipoSexo', 'idTipoSexo', 'SexTypeID', 'sexTypeId', 'Genero', 'genero', 'IdGenero', 'idGenero', 'Sex', 'sex', 'SEXO', 'GENERO'])?.toString() || '';
+  }
+
   hora(item: IFilaBackend): string {
-    const raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'FechaIngreso', 'fechaIngreso', 'Fecha', 'fecha', 'HoraRegistro']);
+    let raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'fecha_registro', 'FechaIngreso', 'fechaIngreso', 'Fecha', 'fecha', 'HoraRegistro']);
     if (!raw) return '—';
+    if (raw.endsWith('Z')) raw = raw.slice(0, -1);
     const d = new Date(raw);
     if (Number.isNaN(d.getTime())) return raw;
     return d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
@@ -417,16 +436,18 @@ export class TriajeComponent implements OnInit {
   }
 
   tiempoEspera(item: IFilaBackend): string {
-    const raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'FechaIngreso', 'fechaIngreso', 'Fecha', 'fecha', 'HoraRegistro']);
+    let raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'fecha_registro', 'FechaIngreso', 'fechaIngreso', 'Fecha', 'fecha', 'HoraRegistro']);
     if (!raw) return '—';
+    if (raw.endsWith('Z')) raw = raw.slice(0, -1);
     const d = new Date(raw);
     if (Number.isNaN(d.getTime())) return '—';
     return `${Math.max(0, Math.floor((Date.now() - d.getTime()) / 60000))} min`;
   }
 
   fechaRegistro(item: IFilaBackend): string {
-    const raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'FechaIngreso', 'fechaIngreso']);
+    let raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'fecha_registro', 'FechaIngreso', 'fechaIngreso']);
     if (!raw) return '—';
+    if (raw.endsWith('Z')) raw = raw.slice(0, -1);
     const d = new Date(raw);
     if (Number.isNaN(d.getTime())) return raw;
     return d.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });

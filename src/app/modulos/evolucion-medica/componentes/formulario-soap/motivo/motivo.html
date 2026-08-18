@@ -70,9 +70,7 @@
             </button>
           }
         </div>
-        @if (motivoForm.get('tipo')?.invalid && motivoForm.get('tipo')?.touched) {
-          <p class="text-red-500 text-[11.5px] mt-1">Seleccione un tipo de motivo.</p>
-        }
+        <app-error-mensaje [control]="motivoForm.get('tipo')"></app-error-mensaje>
       </fieldset>
 
       <!-- Descripción -->
@@ -88,9 +86,7 @@
           class="w-full border border-slate-200 rounded-md p-2.5 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none resize-y"
           [class.border-red-300]="motivoForm.get('descripcion')?.invalid && motivoForm.get('descripcion')?.touched">
         </textarea>
-        @if (motivoForm.get('descripcion')?.invalid && motivoForm.get('descripcion')?.touched) {
-          <p class="text-red-500 text-[11.5px] mt-1">La descripción debe tener al menos 5 caracteres.</p>
-        }
+        <app-error-mensaje [control]="motivoForm.get('descripcion')"></app-error-mensaje>
       </div>
 
       <!-- Error general -->

@@ -46,6 +46,7 @@
     <div class="flex flex-col">
       <label for="detalleOrden" class="text-[11.5px] font-semibold text-slate-500 mb-1">Detalle de la orden (servicio, cama, especialidad...)</label>
       <textarea id="detalleOrden" rows="2" formControlName="detalle" class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y" placeholder="Detalles..."></textarea>
+      <app-error-mensaje [control]="ordenesGroup.get('detalle')"></app-error-mensaje>
     </div>
 
     <div class="flex justify-end mt-1">
@@ -88,51 +89,53 @@
     }
   </div>
   <div class="overflow-x-auto">
-    <table class="w-full text-left border-collapse text-[13px]">
-      <thead>
-        <tr>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Medicamento y Presentación</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold w-24">Cantidad</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold">Indicaciones para el paciente</th>
-          <th class="text-[10.8px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 p-2 font-semibold w-10"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (ctrl of prescripcionArray.controls; track ctrl; let i = $index) {
-          <tr [formGroup]="getPrescripcionGroup(i)" class="border-b border-slate-100">
-            <td class="p-1.5 relative">
-              <input type="text" id="medicamento_{{i}}" aria-label="Medicamento" formControlName="medicamento"
-                (input)="buscarMedicamento(i)" (focus)="buscarMedicamento(i)" (blur)="cerrarSugerencias()"
-                class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800"
-                placeholder="Escriba para buscar en el catálogo...">
-              @if (sugerencias().length > 0 && i === prescripcionArray.length - 1) {
-                <ul class="absolute z-20 mt-1 w-full max-h-56 overflow-auto bg-white border border-slate-200 rounded-md shadow-lg">
-                  @for (p of sugerencias(); track p.idProducto) {
-                    <li>
-                      <button type="button" class="w-full text-left px-3 py-2 hover:bg-teal-50 text-[12px] text-slate-700"
-                        (mousedown)="seleccionarProducto(i, p)">
-                        <span class="font-medium">{{ p.nombre }}</span>
-                        <span class="text-slate-400">{{ p.presentacion ? ' - ' + p.presentacion : '' }}</span>
-                        <span class="ml-1 text-teal-700">S/ {{ p.precioVenta.toFixed(2) }}</span>
-                      </button>
-                    </li>
-                  }
-                </ul>
+    <app-tabla [columnas]="columnasPrescripcion" [datos]="prescripcionArray.controls" [cargando]="false"
+               mensajeVacio="No hay medicamentos en la prescripción.">
+
+      <ng-template appColumnaTemplate="medicamentoCustom" let-ctrl let-i="index">
+        <div [formGroup]="ctrl" class="p-1.5 relative">
+          <input type="text" [id]="'medicamento_' + i" aria-label="Medicamento" formControlName="medicamento"
+            (input)="buscarMedicamento(i)" (focus)="buscarMedicamento(i)" (blur)="cerrarSugerencias()"
+            class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800"
+            placeholder="Escriba para buscar en el catálogo...">
+          @if (sugerencias().length > 0 && i === prescripcionArray.length - 1) {
+            <ul class="absolute z-20 mt-1 w-full max-h-56 overflow-auto bg-white border border-slate-200 rounded-md shadow-lg">
+              @for (p of sugerencias(); track p.idProducto) {
+                <li>
+                  <button type="button" class="w-full text-left px-3 py-2 hover:bg-teal-50 text-[12px] text-slate-700"
+                    (mousedown)="seleccionarProducto(i, p)">
+                    <span class="font-medium">{{ p.nombre }}</span>
+                    <span class="text-slate-400">{{ p.presentacion ? ' - ' + p.presentacion : '' }}</span>
+                    <span class="ml-1 text-teal-700">S/ {{ p.precioVenta.toFixed(2) }}</span>
+                  </button>
+                </li>
               }
-            </td>
-            <td class="p-1.5"><input type="number" id="cantidad_{{i}}" aria-label="Cantidad" formControlName="cantidad" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="0"></td>
-            <td class="p-1.5"><input type="text" id="indicaciones_{{i}}" aria-label="Indicaciones" formControlName="indicaciones" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Tomar 1 tableta cada 8h por 3 días"></td>
-            <td class="p-1.5 text-center">
-              @if (authService.hasPermission('modificar') || authService.hasPermission('eliminar')) {
-                <button class="text-slate-400 hover:text-rose-600 transition-colors" (click)="removerPrescripcion(i)" title="Eliminar fila">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-                </button>
-              }
-            </td>
-          </tr>
+            </ul>
+          }
+        </div>
+      </ng-template>
+
+      <ng-template appColumnaTemplate="cantidadCustom" let-ctrl let-i="index">
+        <div [formGroup]="ctrl" class="p-1.5">
+          <input type="number" [id]="'cantidad_' + i" aria-label="Cantidad" formControlName="cantidad" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="0">
+        </div>
+      </ng-template>
+
+      <ng-template appColumnaTemplate="indicacionesCustom" let-ctrl let-i="index">
+        <div [formGroup]="ctrl" class="p-1.5">
+          <input type="text" [id]="'indicaciones_' + i" aria-label="Indicaciones" formControlName="indicaciones" class="w-full border border-slate-200 rounded p-1.5 text-[12.5px] bg-slate-50 text-slate-800" placeholder="Tomar 1 tableta cada 8h por 3 días">
+        </div>
+      </ng-template>
+
+      <ng-template appColumnaTemplate="accionesCustom" let-ctrl let-i="index">
+        @if (authService.hasPermission('modificar') || authService.hasPermission('eliminar')) {
+          <button class="text-slate-400 hover:text-rose-600 transition-colors mt-2" (click)="removerPrescripcion(i)" title="Eliminar fila">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+          </button>
         }
-      </tbody>
-    </table>
+      </ng-template>
+
+    </app-tabla>
     @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
       <button class="mt-3 bg-teal-50 text-teal-700 border border-dashed border-teal-500 px-3 py-2 rounded-lg text-[12.6px] font-semibold hover:bg-teal-100 transition-colors"
         (click)="agregarPrescripcion()">+ Agregar prescripción</button>
@@ -172,32 +175,30 @@
     </div>
   } @else {
     <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="text-[11px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200">
-            <th class="p-2.5 font-semibold">Fecha</th>
-            <th class="p-2.5 font-semibold">Médico</th>
-            <th class="p-2.5 font-semibold">Observación General</th>
-            <th class="p-2.5 font-semibold">Items de Receta</th>
-          </tr>
-        </thead>
-        <tbody class="text-[12.5px] text-slate-700">
-          @for (orden of ordenesPrevias(); track orden.idOrden) {
-            <tr class="hover:bg-slate-100/60 border-b border-slate-100">
-              <td class="p-2.5 font-mono text-[11.5px] text-slate-500">{{ orden.fechaOrden | date:'dd/MM/yyyy HH:mm' }}</td>
-              <td class="p-2.5 font-medium">Dr. {{ orden.medico || '—' }}</td>
-              <td class="p-2.5 text-slate-600">{{ orden.observacion || '-' }}</td>
-              <td class="p-2.5">
-                <ul class="list-disc pl-4 text-[11px] text-slate-600">
-                  @for (det of orden.detalles; track det.idProducto) {
-                    <li>{{ det.nombreProducto || det.indicaciones }} (Cant: {{ det.cantidad }})</li>
-                  }
-                </ul>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+      <app-tabla [columnas]="columnasHistorial" [datos]="ordenesPrevias()" [cargando]="false"
+                 mensajeVacio="No hay órdenes o recetas previas para esta atención.">
+
+        <ng-template appColumnaTemplate="fechaCustom" let-orden>
+          <span class="font-mono text-[11.5px] text-slate-500">{{ orden.fechaOrden | date:'dd/MM/yyyy HH:mm' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="medicoCustom" let-orden>
+          <span class="font-medium">Dr. {{ orden.medico || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="observacionCustom" let-orden>
+          <span class="text-slate-600">{{ orden.observacion || '-' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="itemsCustom" let-orden>
+          <ul class="list-disc pl-4 text-[11px] text-slate-600">
+            @for (det of orden.detalles; track det.idProducto) {
+              <li>{{ det.nombreProducto || det.indicaciones }} (Cant: {{ det.cantidad }})</li>
+            }
+          </ul>
+        </ng-template>
+
+      </app-tabla>
     </div>
   }
 </div>

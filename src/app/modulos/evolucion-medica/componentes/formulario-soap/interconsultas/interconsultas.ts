@@ -4,11 +4,14 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { InterconsultaService, Interconsulta, EspecialidadInterconsulta, MedicoInterconsulta } from '../../../servicios/interconsulta.service';
 import { EvolucionService } from '../../../servicios/evolucion.service';
 import { AuthService } from '../../../../auth/aplicacion/auth.service';
+import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
+import { TablaComponent, ColumnaTabla } from '../../../../../compartido/componentes/tabla/tabla.component';
+import { ColumnaTemplateDirective } from '../../../../../compartido/componentes/tabla/columna-template.directive';
 
 @Component({
   selector: 'app-interconsultas',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent, TablaComponent, ColumnaTemplateDirective],
   templateUrl: './interconsultas.html'
 })
 export class InterconsultasComponent implements OnInit {
@@ -31,6 +34,19 @@ export class InterconsultasComponent implements OnInit {
   public readonly especialidades = signal<EspecialidadInterconsulta[]>([]);
   public readonly medicos = signal<MedicoInterconsulta[]>([]);
   public readonly medicosCargando = signal<boolean>(false);
+
+  get columnasInterconsultas(): ColumnaTabla[] {
+    const cols: ColumnaTabla[] = [
+      { campo: 'fechaCustom', cabecera: 'Fecha' },
+      { campo: 'especialidadCustom', cabecera: 'Especialidad' },
+      { campo: 'motivoCustom', cabecera: 'Motivo' },
+      { campo: 'estadoCustom', cabecera: 'Estado' }
+    ];
+    if (this.authService.hasPermission('modificar')) {
+      cols.push({ campo: 'accionesCustom', cabecera: 'Acciones' });
+    }
+    return cols;
+  }
 
   ngOnInit(): void {
     this.cargarHistorial();

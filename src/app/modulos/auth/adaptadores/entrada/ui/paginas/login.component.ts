@@ -5,11 +5,35 @@ import { AuthService } from '../../../../aplicacion/auth.service';
 import { AuthApiService } from '../../../salida/http/auth.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
 
+import { TypewriterTextComponent } from '../../../../../../compartido/ui/typewriter-text/typewriter-text.component';
+
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
-  templateUrl: './login.component.html'
+  imports: [FormsModule, TypewriterTextComponent],
+  templateUrl: './login.component.html',
+  styles: [`
+    .slideshow-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      animation: slideFade 20s infinite ease-in-out;
+    }
+    .slideshow-bg:nth-child(1) { animation-delay: 0s; }
+    .slideshow-bg:nth-child(2) { animation-delay: 6s; }
+    .slideshow-bg:nth-child(3) { animation-delay: 12s; }
+    .slideshow-bg:nth-child(4) { animation-delay: 18s; }
+
+    @keyframes slideFade {
+      0% { opacity: 0; transform: scale(1.05); }
+      10% { opacity: 1; }
+      25% { opacity: 1; }
+      35% { opacity: 0; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1); }
+    }
+  `]
 })
 export class LoginComponent {
   private authService = inject(AuthService);
@@ -21,6 +45,15 @@ export class LoginComponent {
   error = '';
   loading = false;
   showPassword = false;
+
+  heroTexts = [
+    'Para médicos y especialistas.',
+    'Gestión clínica integral.',
+    'Para todo el equipo de salud.',
+    'Innovación en cada consulta.',
+    'Para nuestro aliado en Seguridad.',
+    'El futuro de la atención médica en tus manos.'
+  ];
 
   async handleLogin() {
     if (!this.user || !this.pass) {

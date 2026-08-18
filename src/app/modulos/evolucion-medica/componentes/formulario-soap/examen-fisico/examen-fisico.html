@@ -40,6 +40,7 @@
             <textarea #hallazgoInput formControlName="hallazgo" rows="2"
                       class="w-full border border-orange-200 rounded-lg p-2.5 text-[13px] bg-orange-50 text-slate-800 focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none transition-all resize-y"
                       placeholder="Describir hallazgo de {{ sistema.nombre | lowercase }}..."></textarea>
+            <app-error-mensaje [control]="getFormGroup($index).get('hallazgo')"></app-error-mensaje>
           }
         </div>
       </div>

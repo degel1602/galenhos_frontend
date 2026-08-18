@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { ResultadoService, ResultadoInfo } from '../../../servicios/resultado.service';
 import { EvolucionService } from '../../../servicios/evolucion.service';
+import { TablaComponent, ColumnaTabla } from '../../../../../compartido/componentes/tabla/tabla.component';
+import { ColumnaTemplateDirective } from '../../../../../compartido/componentes/tabla/columna-template.directive';
 
 @Component({
   selector: 'app-resultados',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TablaComponent, ColumnaTemplateDirective],
   templateUrl: './resultados.html'
 })
 export class ResultadosComponent implements OnInit {
@@ -20,6 +22,22 @@ export class ResultadosComponent implements OnInit {
   public readonly imagenes = signal<ResultadoInfo[]>([]);
   public readonly isLoading = signal<boolean>(false);
   public readonly errorMessage = signal<string>('');
+
+  columnasLaboratorio: ColumnaTabla[] = [
+    { campo: 'examenCustom', cabecera: 'Examen' },
+    { campo: 'fechaCustom', cabecera: 'Fecha' },
+    { campo: 'resultadoCustom', cabecera: 'Resultado / Detalle' },
+    { campo: 'estadoCustom', cabecera: 'Estado' },
+    { campo: 'revisadoCustom', cabecera: 'Revisado', alineacion: 'center' }
+  ];
+
+  columnasImagenes: ColumnaTabla[] = [
+    { campo: 'estudioCustom', cabecera: 'Estudio' },
+    { campo: 'fechaCustom', cabecera: 'Fecha' },
+    { campo: 'informeCustom', cabecera: 'Informe / Conclusión' },
+    { campo: 'estadoCustom', cabecera: 'Estado' },
+    { campo: 'revisadoCustom', cabecera: 'Revisado', alineacion: 'center' }
+  ];
 
   ngOnInit(): void {
     this.cargarResultados();

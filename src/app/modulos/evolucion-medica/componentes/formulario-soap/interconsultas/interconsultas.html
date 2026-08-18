@@ -22,9 +22,7 @@
             <option [value]="esp.idEspecialidad">{{ esp.nombre }}</option>
           }
         </select>
-        @if (interconsultaForm.get('idEspecialidad')?.invalid && interconsultaForm.get('idEspecialidad')?.touched) {
-          <p class="text-red-500 text-[11px] mt-0.5">Seleccione una especialidad.</p>
-        }
+        <app-error-mensaje [control]="interconsultaForm.get('idEspecialidad')"></app-error-mensaje>
       </div>
 
       <div class="flex flex-col">
@@ -49,9 +47,7 @@
           [class.border-red-300]="interconsultaForm.get('motivo')?.invalid && interconsultaForm.get('motivo')?.touched"
           placeholder="Describa la razón clínica para solicitar la interconsulta (mín. 10 caracteres)...">
         </textarea>
-        @if (interconsultaForm.get('motivo')?.invalid && interconsultaForm.get('motivo')?.touched) {
-          <p class="text-red-500 text-[11px] mt-0.5">El motivo debe tener al menos 10 caracteres.</p>
-        }
+        <app-error-mensaje [control]="interconsultaForm.get('motivo')"></app-error-mensaje>
       </div>
 
       @if (errorMessage()) {
@@ -114,53 +110,47 @@
       </div>
     } @else {
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="text-[11px] uppercase tracking-wider text-slate-500 border-b-2 border-slate-200">
-              <th class="p-2.5 font-semibold">Fecha</th>
-              <th class="p-2.5 font-semibold">Especialidad</th>
-              <th class="p-2.5 font-semibold">Motivo</th>
-              <th class="p-2.5 font-semibold">Estado</th>
-              @if (authService.hasPermission('modificar')) {
-                <th class="p-2.5 font-semibold">Acciones</th>
-              }
-            </tr>
-          </thead>
-          <tbody class="text-[12.5px] text-slate-700">
-            @for (ic of interconsultas(); track ic.idInterconsulta) {
-              <tr class="hover:bg-slate-100/60 border-b border-slate-100">
-                <td class="p-2.5 font-mono text-[11.5px] text-slate-500">{{ ic.fechaSolicitud | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td class="p-2.5 font-medium text-slate-800">{{ obtenerNombreEspecialidad(ic.idEspecialidad) }}</td>
-                <td class="p-2.5 truncate max-w-[200px] text-slate-600" [title]="ic.motivo">{{ ic.motivo }}</td>
-                <td class="p-2.5">
-                  <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold border"
-                    [ngClass]="{
-                      'bg-slate-100 text-slate-600 border-slate-200': ic.estado === 'Pendiente' || !ic.estado,
-                      'bg-teal-100 text-teal-700 border-teal-200': ic.estado === 'Firmado',
-                      'bg-amber-100 text-amber-700 border-amber-200': ic.estado === 'En Progreso',
-                      'bg-green-100 text-green-700 border-green-200': ic.estado === 'Completado'
-                    }">
-                    {{ ic.estado || 'Pendiente' }}
-                  </span>
-                </td>
-                @if (authService.hasPermission('modificar')) {
-                  <td class="p-2.5">
-                    @if (!ic.estado || ic.estado === 'Pendiente') {
-                      <button
-                        type="button"
-                        (click)="atender(ic.idInterconsulta!)"
-                        class="text-[11.5px] font-medium text-teal-600 hover:text-teal-800 hover:underline transition-colors">
-                        Atender
-                      </button>
-                    } @else {
-                      <span class="text-[11.5px] text-slate-400">—</span>
-                    }
-                  </td>
-                }
-              </tr>
+        <app-tabla [columnas]="columnasInterconsultas" [datos]="interconsultas()" [cargando]="false"
+                   mensajeVacio="No hay interconsultas registradas para esta atención.">
+
+          <ng-template appColumnaTemplate="fechaCustom" let-ic>
+            <span class="font-mono text-[11.5px] text-slate-500">{{ ic.fechaSolicitud | date:'dd/MM/yyyy HH:mm' }}</span>
+          </ng-template>
+
+          <ng-template appColumnaTemplate="especialidadCustom" let-ic>
+            <span class="font-medium text-slate-800">{{ obtenerNombreEspecialidad(ic.idEspecialidad) }}</span>
+          </ng-template>
+
+          <ng-template appColumnaTemplate="motivoCustom" let-ic>
+            <div class="truncate max-w-[200px] text-slate-600" [title]="ic.motivo">{{ ic.motivo }}</div>
+          </ng-template>
+
+          <ng-template appColumnaTemplate="estadoCustom" let-ic>
+            <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold border"
+              [ngClass]="{
+                'bg-slate-100 text-slate-600 border-slate-200': ic.estado === 'Pendiente' || !ic.estado,
+                'bg-teal-100 text-teal-700 border-teal-200': ic.estado === 'Firmado',
+                'bg-amber-100 text-amber-700 border-amber-200': ic.estado === 'En Progreso',
+                'bg-green-100 text-green-700 border-green-200': ic.estado === 'Completado'
+              }">
+              {{ ic.estado || 'Pendiente' }}
+            </span>
+          </ng-template>
+
+          <ng-template appColumnaTemplate="accionesCustom" let-ic>
+            @if (!ic.estado || ic.estado === 'Pendiente') {
+              <button
+                type="button"
+                (click)="atender(ic.idInterconsulta!)"
+                class="text-[11.5px] font-medium text-teal-600 hover:text-teal-800 hover:underline transition-colors">
+                Atender
+              </button>
+            } @else {
+              <span class="text-[11.5px] text-slate-400">—</span>
             }
-          </tbody>
-        </table>
+          </ng-template>
+
+        </app-tabla>
       </div>
     }
   </div>

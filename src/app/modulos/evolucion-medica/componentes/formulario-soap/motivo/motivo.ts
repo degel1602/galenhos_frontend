@@ -5,6 +5,8 @@ import { MotivoService, MotivoAtencion } from '../../../servicios/motivo.service
 import { EvolucionService } from '../../../servicios/evolucion.service';
 import { AuthService } from '../../../../auth/aplicacion/auth.service';
 
+import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
+
 interface TipoMotivo {
   readonly valor: string;
   readonly etiqueta: string;
@@ -14,7 +16,7 @@ interface TipoMotivo {
 @Component({
   selector: 'app-motivo',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent],
   templateUrl: './motivo.html'
 })
 export class MotivoComponent implements OnInit {

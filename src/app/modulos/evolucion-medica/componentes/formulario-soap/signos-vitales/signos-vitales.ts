@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
+import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
+
 @Component({
   selector: 'app-signos-vitales',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div [formGroup]="form">
@@ -25,6 +27,7 @@ import { Subscription } from 'rxjs';
             <input type="text" formControlName="presionArterial" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="120/80">
             <span class="text-[10.5px] text-slate-400 ml-1">mmHg</span>
           </div>
+          <app-error-mensaje [control]="form.get('presionArterial')"></app-error-mensaje>
         </div>
 
         <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
@@ -33,6 +36,7 @@ import { Subscription } from 'rxjs';
             <input type="number" formControlName="frecuenciaCardiaca" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="72">
             <span class="text-[10.5px] text-slate-400 ml-1">lpm</span>
           </div>
+          <app-error-mensaje [control]="form.get('frecuenciaCardiaca')"></app-error-mensaje>
         </div>
 
         <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
@@ -41,6 +45,7 @@ import { Subscription } from 'rxjs';
             <input type="number" formControlName="frecuenciaRespiratoria" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="16">
             <span class="text-[10.5px] text-slate-400 ml-1">rpm</span>
           </div>
+          <app-error-mensaje [control]="form.get('frecuenciaRespiratoria')"></app-error-mensaje>
         </div>
 
         <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
@@ -49,6 +54,7 @@ import { Subscription } from 'rxjs';
             <input type="number" step="0.1" formControlName="temperatura" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="36.5">
             <span class="text-[10.5px] text-slate-400 ml-1">°C</span>
           </div>
+          <app-error-mensaje [control]="form.get('temperatura')"></app-error-mensaje>
         </div>
 
         <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
@@ -57,6 +63,7 @@ import { Subscription } from 'rxjs';
             <input type="number" formControlName="saturacionOxigeno" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="98">
             <span class="text-[10.5px] text-slate-400 ml-1">%</span>
           </div>
+          <app-error-mensaje [control]="form.get('saturacionOxigeno')"></app-error-mensaje>
         </div>
 
         <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">

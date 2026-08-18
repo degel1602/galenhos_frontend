@@ -1,0 +1,234 @@
+<div class="gp-in" style="display: flex; flex-direction: column; gap: 18px;">
+
+
+  <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+      <div>
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Fecha inicio</label>
+        <input type="date" [(ngModel)]="fechaInicio" style="width: 100%; padding: 9px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Fecha fin</label>
+        <input type="date" [(ngModel)]="fechaFin" style="width: 100%; padding: 9px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Consultorio</label>
+        <select [(ngModel)]="servicioFiltro" style="width: 100%; padding: 9px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+          <option value="">Todos</option>
+          @for (s of serviciosFiltro; track s.id) {
+            <option [value]="s.id">{{ s.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Paciente o documento</label>
+        <input [(ngModel)]="filtro" (keydown.enter)="cargarLista()" placeholder="Buscar..."
+               style="width: 100%; padding: 9px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+      </div>
+      <button (click)="cargarLista()" [disabled]="cargando"
+              style="display: flex; align-items: center; gap: 7px; height: 42px; padding: 0 20px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;"
+              [style.opacity]="cargando ? 0.7 : 1">
+        @if (cargando) {
+          <svg style="animation: spin 1s linear infinite;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+          <span>Buscando...</span>
+        } @else {
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+          <span>Buscar</span>
+        }
+      </button>
+    </div>
+
+    @if (error) {
+      <div style="margin-top: 14px; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+        {{ error }}
+      </div>
+    }
+
+    @if (mensajeExito) {
+      <div style="margin-top: 14px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+        {{ mensajeExito }}
+      </div>
+    }
+  </div>
+
+  <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
+    <div style="overflow-x: auto;">
+      <app-tabla [columnas]="columnasTabla" [datos]="atenciones" [cargando]="cargando" mensajeCargando="Buscando..."
+                 [mostrarFiltroRequerido]="!buscado" mensajeFiltroRequerido="Realice una búsqueda para ver las atenciones de consulta externa."
+                 mensajeVacio="No se encontraron atenciones para los filtros seleccionados.">
+
+        <ng-template appColumnaTemplate="cuentaCustom" let-p>
+          <span style="font-weight: 600; color: #263c7a;">{{ cuenta(p) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="fechaHoraCustom" let-p>
+          <span style="color: #54617f;">{{ fechaHora(p) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="documentoCustom" let-p>
+          <span style="color: #54617f;">{{ documento(p) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="pacienteCustom" let-p>
+          <span style="font-weight: 600; color: #07153a;">{{ nombrePaciente(p) }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="edadCustom" let-p>
+          <span style="color: #54617f;">{{ campo(p, ['Edad', 'edad']) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="sexoCustom" let-p>
+          <span style="color: #54617f;">{{ campo(p, ['Sexo', 'sexo']) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="consultorioCustom" let-p>
+          <span style="color: #54617f;">{{ campo(p, ['Consultorio', 'consultorio', 'Servicio']) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="financiadorCustom" let-p>
+          <span style="color: #54617f;">{{ campo(p, ['Finaciador', 'finaciador', 'FuenteFinanciamiento']) || '—' }}</span>
+        </ng-template>
+
+        <ng-template appColumnaTemplate="triajeCustom" let-p>
+          @if (tieneTriaje(p)) {
+            <span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7;">Con triaje</span>
+          } @else {
+            <span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #f8fafc; color: #54617f; border: 1px solid #e0e6f1;">Pendiente</span>
+          }
+        </ng-template>
+
+        <ng-template appColumnaTemplate="accionCustom" let-p>
+          <button (click)="abrirModal(p)"
+                  style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #263c7a; color: #fff; border: none; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+            {{ tieneTriaje(p) ? 'Ver triaje' : 'Registrar triaje' }}
+          </button>
+        </ng-template>
+
+      </app-tabla>
+    </div>
+  </div>
+
+  @if (modalTriaje) {
+    <ventana-modal [titulo]="nombrePaciente(atencionActual)" subtitulo="Triaje de consulta externa" [ancho]="680" (alCerrar)="cerrarModal()">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Talla (cm) *</label>
+          <input [(ngModel)]="form.talla" type="number" step="0.01" placeholder="Ej: 165"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Peso (kg) *</label>
+          <input [(ngModel)]="form.peso" type="number" step="0.01" placeholder="Ej: 60.5"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">IMC</label>
+          <input [value]="calcularImc()" readonly placeholder="Automático"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f1f5f9; color: #54617f;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Temperatura (°C)</label>
+          <input [(ngModel)]="form.temperatura" type="number" step="0.1" placeholder="Ej: 36.5"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Pulso</label>
+          <input [(ngModel)]="form.pulso" type="number" placeholder="Ej: 72"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Frec. respiratoria</label>
+          <input [(ngModel)]="form.frecRespiratoria" type="number" placeholder="Ej: 16"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Frec. cardíaca</label>
+          <input [(ngModel)]="form.frecCardiaca" type="number" placeholder="Ej: 70"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Frec. cardíaca fetal</label>
+          <input [(ngModel)]="form.frecCardiacaFetal" type="number" placeholder="Ej: 140"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Perímetro cefálico</label>
+          <input [(ngModel)]="form.perimCefalico" type="number" step="0.1" placeholder="Ej: 34"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Perímetro abdominal</label>
+          <input [(ngModel)]="form.perimAbdominal" type="number" step="0.1" placeholder="Ej: 80"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">SATO₂ (%)</label>
+          <input [(ngModel)]="form.sat02" type="number" placeholder="Ej: 98"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">FIO₂ (%)</label>
+          <input [(ngModel)]="form.fi02" type="number" placeholder="Ej: 21"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Presión arterial</label>
+          <input [(ngModel)]="form.presionArterial" placeholder="Ej: 120/80"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Hemoglobina</label>
+          <input [(ngModel)]="form.hemoglobina" type="number" step="0.1" placeholder="Ej: 13.5"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Origen</label>
+          <input [(ngModel)]="form.origen" placeholder="Origen del triaje"
+                 style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Gestante</label>
+          <select [(ngModel)]="form.gestante" style="width: 100%; padding: 9px 12px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a;">
+            <option value="0">No</option>
+            <option value="1">Sí</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Observación</label>
+        <textarea [(ngModel)]="form.observacion" rows="2" maxlength="255" placeholder="Observaciones del triaje"
+                  style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 10px; font-size: 14px; background: #f8fafc; color: #07153a; resize: vertical; font-family: inherit;"></textarea>
+      </div>
+
+      @if (errorGuardado) {
+        <div style="margin-top: 14px; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+          {{ errorGuardado }}
+        </div>
+      }
+
+      <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 22px;">
+        <div style="display: flex; gap: 10px;">
+          @if (idTriajeExistente) {
+            <button (click)="marcarAtendido()"
+                    style="padding: 10px 20px; border: 1px solid #d5dceb; border-radius: 11px; background: #fff; font-size: 14px; font-weight: 600; color: #54617f; cursor: pointer;">
+              Marcar atendido
+            </button>
+          }
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button (click)="cerrarModal()"
+                  style="padding: 10px 20px; border: 1px solid #e0e6f1; border-radius: 11px; background: #fff; font-size: 14px; font-weight: 600; color: #54617f; cursor: pointer;">
+            Cancelar
+          </button>
+          <button (click)="guardar()" [disabled]="guardando"
+                  style="padding: 10px 22px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer;"
+                  [style.opacity]="guardando ? 0.7 : 1">
+            {{ guardando ? 'Guardando...' : 'Guardar triaje' }}
+          </button>
+        </div>
+      </div>
+    </ventana-modal>
+  }
+</div>
