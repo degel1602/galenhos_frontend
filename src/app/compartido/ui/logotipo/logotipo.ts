@@ -15,7 +15,7 @@ import { Component, Input } from '@angular/core';
         </span>
       </span>
     </div>
-  `
+  `,
 })
 export class Logotipo {
   @Input() size: number = 24;

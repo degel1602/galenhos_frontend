@@ -1,11 +1,18 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MotivoService, MotivoAtencion } from '../../../servicios/motivo.service';
-import { EvolucionService } from '../../../servicios/evolucion.service';
-import { AuthService } from '../../../../auth/aplicacion/auth.service';
-
+import { Component, inject, type OnInit, signal } from '@angular/core';
+import {
+  FormBuilder,
+  type FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
+import { AuthService } from '../../../../auth/aplicacion/auth.service';
+import { EvolucionService } from '../../../servicios/evolucion.service';
+import {
+  type MotivoAtencion,
+  MotivoService,
+} from '../../../servicios/motivo.service';
 
 interface TipoMotivo {
   readonly valor: string;
@@ -17,7 +24,7 @@ interface TipoMotivo {
   selector: 'app-motivo',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent],
-  templateUrl: './motivo.html'
+  templateUrl: './motivo.html',
 })
 export class MotivoComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -27,7 +34,7 @@ export class MotivoComponent implements OnInit {
 
   public readonly motivoForm: FormGroup = this.fb.group({
     tipo: ['', Validators.required],
-    descripcion: ['', [Validators.required, Validators.minLength(5)]]
+    descripcion: ['', [Validators.required, Validators.minLength(5)]],
   });
 
   public readonly motivos = signal<MotivoAtencion[]>([]);
@@ -42,7 +49,7 @@ export class MotivoComponent implements OnInit {
     { valor: 'Reevaluación', etiqueta: 'Reevaluación', icono: 'refresh' },
     { valor: 'Postoperatorio', etiqueta: 'Postoperatorio', icono: 'cruz' },
     { valor: 'Interconsulta', etiqueta: 'Interconsulta', icono: 'mensaje' },
-    { valor: 'Emergencia', etiqueta: 'Emergencia', icono: 'campana' }
+    { valor: 'Emergencia', etiqueta: 'Emergencia', icono: 'campana' },
   ];
 
   ngOnInit(): void {
@@ -57,7 +64,9 @@ export class MotivoComponent implements OnInit {
     this.errorMessage.set('');
 
     try {
-      const datos = await this.motivoService.listarMotivos(paciente.idRegAtencion);
+      const datos = await this.motivoService.listarMotivos(
+        paciente.idRegAtencion,
+      );
       this.motivos.set(datos);
     } catch {
       this.errorMessage.set('No se pudieron cargar los motivos previos.');
@@ -75,12 +84,15 @@ export class MotivoComponent implements OnInit {
     this.isSubmitting.set(true);
     this.errorMessage.set('');
 
-    const { tipo, descripcion } = this.motivoForm.value as { tipo: string; descripcion: string };
+    const { tipo, descripcion } = this.motivoForm.value as {
+      tipo: string;
+      descripcion: string;
+    };
 
     const exito = await this.motivoService.crearMotivo(paciente.idRegAtencion, {
       idRegAtencion: paciente.idRegAtencion,
       tipo,
-      descripcion
+      descripcion,
     });
 
     this.isSubmitting.set(false);
@@ -89,7 +101,9 @@ export class MotivoComponent implements OnInit {
       this.motivoForm.reset({ tipo: '', descripcion: '' });
       await this.cargarMotivos();
     } else {
-      this.errorMessage.set('No se pudo registrar el motivo. Inténtalo de nuevo.');
+      this.errorMessage.set(
+        'No se pudo registrar el motivo. Inténtalo de nuevo.',
+      );
     }
   }
 
@@ -101,7 +115,7 @@ export class MotivoComponent implements OnInit {
       Control: 'bg-green-100 text-green-700 border-green-200',
       Seguimiento: 'bg-blue-100 text-blue-700 border-blue-200',
       Reevaluación: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-      Consulta: 'bg-teal-100 text-teal-700 border-teal-200'
+      Consulta: 'bg-teal-100 text-teal-700 border-teal-200',
     };
     return colores[tipo] ?? 'bg-slate-100 text-slate-700 border-slate-200';
   }

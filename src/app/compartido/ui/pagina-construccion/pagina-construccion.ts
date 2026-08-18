@@ -25,7 +25,7 @@ import { Router } from '@angular/router';
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class PaginaConstruccionComponent {
   private router = inject(Router);

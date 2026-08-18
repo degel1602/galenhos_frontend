@@ -1,18 +1,37 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { InterconsultaService, Interconsulta, EspecialidadInterconsulta, MedicoInterconsulta } from '../../../servicios/interconsulta.service';
-import { EvolucionService } from '../../../servicios/evolucion.service';
-import { AuthService } from '../../../../auth/aplicacion/auth.service';
-import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
-import { TablaComponent, ColumnaTabla } from '../../../../../compartido/componentes/tabla/tabla.component';
+import { Component, inject, type OnInit, signal } from '@angular/core';
+import {
+  FormBuilder,
+  type FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ColumnaTemplateDirective } from '../../../../../compartido/componentes/tabla/columna-template.directive';
+import {
+  type ColumnaTabla,
+  TablaComponent,
+} from '../../../../../compartido/componentes/tabla/tabla.component';
+import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
+import { AuthService } from '../../../../auth/aplicacion/auth.service';
+import { EvolucionService } from '../../../servicios/evolucion.service';
+import {
+  type EspecialidadInterconsulta,
+  type Interconsulta,
+  InterconsultaService,
+  type MedicoInterconsulta,
+} from '../../../servicios/interconsulta.service';
 
 @Component({
   selector: 'app-interconsultas',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent, TablaComponent, ColumnaTemplateDirective],
-  templateUrl: './interconsultas.html'
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ErrorMensajeComponent,
+    TablaComponent,
+    ColumnaTemplateDirective,
+  ],
+  templateUrl: './interconsultas.html',
 })
 export class InterconsultasComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -23,7 +42,7 @@ export class InterconsultasComponent implements OnInit {
   public readonly interconsultaForm: FormGroup = this.fb.group({
     idEspecialidad: ['', Validators.required],
     idMedicoDestino: [''],
-    motivo: ['', [Validators.required, Validators.minLength(10)]]
+    motivo: ['', [Validators.required, Validators.minLength(10)]],
   });
 
   public readonly interconsultas = signal<Interconsulta[]>([]);
@@ -40,7 +59,7 @@ export class InterconsultasComponent implements OnInit {
       { campo: 'fechaCustom', cabecera: 'Fecha' },
       { campo: 'especialidadCustom', cabecera: 'Especialidad' },
       { campo: 'motivoCustom', cabecera: 'Motivo' },
-      { campo: 'estadoCustom', cabecera: 'Estado' }
+      { campo: 'estadoCustom', cabecera: 'Estado' },
     ];
     if (this.authService.hasPermission('modificar')) {
       cols.push({ campo: 'accionesCustom', cabecera: 'Acciones' });
@@ -65,7 +84,10 @@ export class InterconsultasComponent implements OnInit {
     if (!idEspecialidad) return;
 
     this.medicosCargando.set(true);
-    const lista = await this.interconsultaService.listarMedicosPorEspecialidad(idEspecialidad);
+    const lista =
+      await this.interconsultaService.listarMedicosPorEspecialidad(
+        idEspecialidad,
+      );
     this.medicos.set(lista);
     this.medicosCargando.set(false);
   }
@@ -83,10 +105,14 @@ export class InterconsultasComponent implements OnInit {
     this.errorMessage.set('');
 
     try {
-      const datos = await this.interconsultaService.listarPorAtencion(paciente.idRegAtencion);
+      const datos = await this.interconsultaService.listarPorAtencion(
+        paciente.idRegAtencion,
+      );
       this.interconsultas.set(datos);
     } catch {
-      this.errorMessage.set('No se pudieron cargar las interconsultas previas.');
+      this.errorMessage.set(
+        'No se pudieron cargar las interconsultas previas.',
+      );
     } finally {
       this.isLoading.set(false);
     }
@@ -100,36 +126,52 @@ export class InterconsultasComponent implements OnInit {
 
     this.isSubmitting.set(true);
 
-    const formData = this.interconsultaForm.value as { idEspecialidad: string; idMedicoDestino: string; motivo: string };
+    const formData = this.interconsultaForm.value as {
+      idEspecialidad: string;
+      idMedicoDestino: string;
+      motivo: string;
+    };
     const request: Interconsulta = {
       idAtencionOrigen: idAtencion,
       idEspecialidad: Number(formData.idEspecialidad),
-      idMedicoDestino: formData.idMedicoDestino ? Number(formData.idMedicoDestino) : 0,
-      motivo: formData.motivo
+      idMedicoDestino: formData.idMedicoDestino
+        ? Number(formData.idMedicoDestino)
+        : 0,
+      motivo: formData.motivo,
     };
 
     const exito = await this.interconsultaService.crear(request);
     this.isSubmitting.set(false);
 
     if (exito) {
-      this.interconsultaForm.reset({ idEspecialidad: '', idMedicoDestino: '', motivo: '' });
+      this.interconsultaForm.reset({
+        idEspecialidad: '',
+        idMedicoDestino: '',
+        motivo: '',
+      });
       this.medicos.set([]);
       await this.cargarHistorial();
     } else {
-      this.errorMessage.set('Error al solicitar la interconsulta. Inténtalo de nuevo.');
+      this.errorMessage.set(
+        'Error al solicitar la interconsulta. Inténtalo de nuevo.',
+      );
     }
   }
 
   async atender(idInterconsulta: number): Promise<void> {
-    const exito = await this.interconsultaService.actualizarEstado(idInterconsulta, 'En Progreso');
+    const exito = await this.interconsultaService.actualizarEstado(
+      idInterconsulta,
+      'En Progreso',
+    );
     if (exito) {
       await this.cargarHistorial();
     }
   }
 
   obtenerNombreEspecialidad(idEspecialidad: number): string {
-    const especialidad = this.especialidades().find(e => e.idEspecialidad === idEspecialidad);
+    const especialidad = this.especialidades().find(
+      (e) => e.idEspecialidad === idEspecialidad,
+    );
     return especialidad?.nombre ?? `Esp. #${idEspecialidad}`;
   }
 }
-

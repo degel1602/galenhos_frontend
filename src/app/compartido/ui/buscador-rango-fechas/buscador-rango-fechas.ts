@@ -1,6 +1,12 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 export interface CriteriosBusqueda {
   filtro: string;
@@ -72,16 +78,22 @@ export interface CriteriosBusqueda {
         </svg>
       </button>
     </div>
-  `
+  `,
 })
 export class BuscadorRangoFechas {
   @Input() placeholder: string = 'Buscar…';
   @Input() textoBoton: string = 'Buscar';
   @Input() cargando: boolean = false;
 
-  @Input() set fechaDesdeInicial(v: string) { this.fechaDesde = v ?? ''; }
-  @Input() set fechaHastaInicial(v: string) { this.fechaHasta = v ?? ''; }
-  @Input() set filtroInicial(v: string) { this.filtro = v ?? ''; }
+  @Input() set fechaDesdeInicial(v: string) {
+    this.fechaDesde = v ?? '';
+  }
+  @Input() set fechaHastaInicial(v: string) {
+    this.fechaHasta = v ?? '';
+  }
+  @Input() set filtroInicial(v: string) {
+    this.filtro = v ?? '';
+  }
 
   @Output() buscar = new EventEmitter<CriteriosBusqueda>();
   @Output() limpiarFiltros = new EventEmitter<void>();
@@ -91,13 +103,17 @@ export class BuscadorRangoFechas {
   fechaHasta = '';
 
   emitirBusqueda() {
-    if (this.fechaDesde && this.fechaHasta && this.fechaDesde > this.fechaHasta) {
+    if (
+      this.fechaDesde &&
+      this.fechaHasta &&
+      this.fechaDesde > this.fechaHasta
+    ) {
       [this.fechaDesde, this.fechaHasta] = [this.fechaHasta, this.fechaDesde];
     }
     this.buscar.emit({
       filtro: this.filtro.trim(),
       fechaDesde: this.fechaDesde,
-      fechaHasta: this.fechaHasta
+      fechaHasta: this.fechaHasta,
     });
   }
 

@@ -1,5 +1,11 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 
 @Component({
   selector: 'app-paginacion',
@@ -74,7 +80,7 @@ import { CommonModule } from '@angular/common';
         </button>
       </div>
     </div>
-  `
+  `,
 })
 export class PaginacionComponent {
   @Input() page = 1;
@@ -110,7 +116,8 @@ export class PaginacionComponent {
 
   irAPagina(nuevaPagina: number) {
     const total = Math.max(1, this.totalPages);
-    if (nuevaPagina < 1 || nuevaPagina > total || nuevaPagina === this.page) return;
+    if (nuevaPagina < 1 || nuevaPagina > total || nuevaPagina === this.page)
+      return;
     this.pageChange.emit(nuevaPagina);
   }
 }

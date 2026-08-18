@@ -1,6 +1,17 @@
-import { Component, Input, ChangeDetectionStrategy, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormArray, FormGroup } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  type ElementRef,
+  Input,
+  type QueryList,
+  ViewChildren,
+} from '@angular/core';
+import {
+  type FormArray,
+  type FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
 
 @Component({
@@ -8,23 +19,28 @@ import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/e
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent],
   templateUrl: './examen-fisico.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExamenFisicoComponent {
   @Input({ required: true }) formArray!: FormArray;
 
-  @ViewChildren('hallazgoInput') textareas!: QueryList<ElementRef<HTMLTextAreaElement>>;
+  @ViewChildren('hallazgoInput') textareas!: QueryList<
+    ElementRef<HTMLTextAreaElement>
+  >;
 
   sistemas: { nombre: string; sub?: string }[] = [
     { nombre: 'Estado general' },
     { nombre: 'Piel' },
-    { nombre: 'Cabeza y cuello', sub: 'Cabeza, cuello, ojos, oídos, nariz, boca' },
+    {
+      nombre: 'Cabeza y cuello',
+      sub: 'Cabeza, cuello, ojos, oídos, nariz, boca',
+    },
     { nombre: 'Tórax y pulmones' },
     { nombre: 'Corazón' },
     { nombre: 'Abdomen' },
     { nombre: 'Genitourinario' },
     { nombre: 'Extremidades y osteomuscular' },
-    { nombre: 'Neurológico y estado mental' }
+    { nombre: 'Neurológico y estado mental' },
   ];
 
   getFormGroup(index: number): FormGroup {
@@ -46,7 +62,9 @@ export class ExamenFisicoComponent {
   }
 
   marcarTodoNormal(): void {
-    this.formArray.controls.forEach(g => g.patchValue({ normal: true, hallazgo: '' }));
+    this.formArray.controls.forEach((g) => {
+      g.patchValue({ normal: true, hallazgo: '' });
+    });
   }
 
   private focusTextarea(index: number): void {

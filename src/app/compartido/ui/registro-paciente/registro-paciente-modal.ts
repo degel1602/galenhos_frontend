@@ -1,15 +1,24 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges, inject, OnChanges, ChangeDetectorRef } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  inject,
+  type OnChanges,
+  Output,
+  type SimpleChanges,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VentanaModal } from '../ventana-modal/ventana-modal';
-import { RegistroPacienteService } from './registro-paciente.service';
 import { normalizarNombre } from './registro-paciente.interfaces';
+import { RegistroPacienteService } from './registro-paciente.service';
 
 @Component({
   selector: 'registro-paciente-modal',
   standalone: true,
   imports: [FormsModule, VentanaModal],
   providers: [RegistroPacienteService],
-  templateUrl: './registro-paciente-modal.html'
+  templateUrl: './registro-paciente-modal.html',
 })
 export class RegistroPacienteModal implements OnChanges {
   @Input() abierto = false;
@@ -26,12 +35,12 @@ export class RegistroPacienteModal implements OnChanges {
   public normalizarNombre = normalizarNombre;
 
   async ngOnChanges(cambios: SimpleChanges): Promise<void> {
-    if (cambios['abierto']?.currentValue === true) {
+    if (cambios.abierto?.currentValue === true) {
       this.srv.limpiarEstado();
       this.srv.cargarCatalogos();
       if (this.pacienteId) {
         await this.srv.cargarPaciente(this.pacienteId);
-        this.cdr.detectChanges(); // Ensure Angular paints the fetched data
+        this.cdr.detectChanges();
       }
     }
   }
@@ -62,7 +71,13 @@ export class RegistroPacienteModal implements OnChanges {
     }
   }
 
-  onCambioDepartamento(tipo: 'domicilio' | 'nacimiento' | 'procedencia'): void { this.srv.onCambioDepartamento(tipo); }
-  onCambioProvincia(tipo: 'domicilio' | 'nacimiento' | 'procedencia'): void { this.srv.onCambioProvincia(tipo); }
-  onCambioDistrito(tipo: 'domicilio' | 'nacimiento' | 'procedencia'): void { this.srv.onCambioDistrito(tipo); }
+  onCambioDepartamento(tipo: 'domicilio' | 'nacimiento' | 'procedencia'): void {
+    this.srv.onCambioDepartamento(tipo);
+  }
+  onCambioProvincia(tipo: 'domicilio' | 'nacimiento' | 'procedencia'): void {
+    this.srv.onCambioProvincia(tipo);
+  }
+  onCambioDistrito(tipo: 'domicilio' | 'nacimiento' | 'procedencia'): void {
+    this.srv.onCambioDistrito(tipo);
+  }
 }

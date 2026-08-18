@@ -30,14 +30,17 @@ export interface ProductoCatalogo {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OrdenService {
   private readonly api = inject(ApiClientService);
 
   async listarPorCuenta(idRegAtencion: number): Promise<OrdenMedica[]> {
     try {
-      const data = await this.api.request<OrdenMedica[]>(`/api/v1/ordenes/cuenta/${idRegAtencion}`, { method: 'GET' });
+      const data = await this.api.request<OrdenMedica[]>(
+        `/api/v1/ordenes/cuenta/${idRegAtencion}`,
+        { method: 'GET' },
+      );
       return data || [];
     } catch (error) {
       console.error('Error al listar ordenes:', error);
@@ -49,7 +52,7 @@ export class OrdenService {
     try {
       await this.api.request('/api/v1/ordenes', {
         method: 'POST',
-        body: JSON.stringify(orden)
+        body: JSON.stringify(orden),
       });
       return true;
     } catch (error) {
@@ -58,10 +61,16 @@ export class OrdenService {
     }
   }
 
-  async buscarProductos(filtro: string, limite = 20): Promise<ProductoCatalogo[]> {
+  async buscarProductos(
+    filtro: string,
+    limite = 20,
+  ): Promise<ProductoCatalogo[]> {
     try {
       const q = encodeURIComponent(filtro);
-      const data = await this.api.request<ProductoCatalogo[]>(`/api/v1/ordenes/productos?q=${q}&limite=${limite}`, { method: 'GET' });
+      const data = await this.api.request<ProductoCatalogo[]>(
+        `/api/v1/ordenes/productos?q=${q}&limite=${limite}`,
+        { method: 'GET' },
+      );
       return data || [];
     } catch (error) {
       console.error('Error al buscar productos:', error);

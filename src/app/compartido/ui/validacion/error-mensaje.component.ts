@@ -1,6 +1,6 @@
-import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AbstractControl, NgModel } from '@angular/forms';
+import { Component, Input } from '@angular/core';
+import { type AbstractControl, NgModel } from '@angular/forms';
 
 @Component({
   selector: 'app-error-mensaje',
@@ -20,11 +20,11 @@ import { AbstractControl, NgModel } from '@angular/forms';
       <!-- Errores personalizados adicionales -->
       <span *ngIf="errors?.['mensajePersonalizado']">{{ errors?.['mensajePersonalizado'] }}</span>
     </div>
-  `
+  `,
 })
 export class ErrorMensajeComponent {
   @Input() control!: AbstractControl | NgModel | null;
-  @Input() forceShow: boolean = false; // Permitir forzar visualización si se intenta guardar
+  @Input() forceShow: boolean = false;
 
   get errors() {
     if (this.control instanceof NgModel) {
@@ -35,13 +35,19 @@ export class ErrorMensajeComponent {
 
   shouldShowErrors(): boolean {
     if (!this.control) return false;
-    
-    // Si es NgModel (Template-driven)
+
     if (this.control instanceof NgModel) {
-      return !!this.control.control.invalid && (this.control.control.touched || this.control.control.dirty || this.forceShow);
+      return (
+        !!this.control.control.invalid &&
+        (this.control.control.touched ||
+          this.control.control.dirty ||
+          this.forceShow)
+      );
     }
-    
-    // Si es AbstractControl (Reactive forms)
-    return !!this.control.invalid && (this.control.touched || this.control.dirty || this.forceShow);
+
+    return (
+      !!this.control.invalid &&
+      (this.control.touched || this.control.dirty || this.forceShow)
+    );
   }
 }

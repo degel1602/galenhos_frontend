@@ -1,17 +1,40 @@
-import { Component, ChangeDetectionStrategy, inject, signal, effect, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { EvolucionService, EvolucionFirma } from '../../servicios/evolucion.service';
-import { BuscadorRangoFechas, CriteriosBusqueda } from '../../../../compartido/ui/buscador-rango-fechas/buscador-rango-fechas';
-import { PaginacionComponent } from '../../../../compartido/ui/paginacion/paginacion';
-import { VerEvolucionComponent } from './ver-evolucion/ver-evolucion';
-import { TablaComponent, ColumnaTabla } from '../../../../compartido/componentes/tabla/tabla.component';
 import { ColumnaTemplateDirective } from '../../../../compartido/componentes/tabla/columna-template.directive';
+import {
+  type ColumnaTabla,
+  TablaComponent,
+} from '../../../../compartido/componentes/tabla/tabla.component';
+import {
+  BuscadorRangoFechas,
+  type CriteriosBusqueda,
+} from '../../../../compartido/ui/buscador-rango-fechas/buscador-rango-fechas';
+import { PaginacionComponent } from '../../../../compartido/ui/paginacion/paginacion';
+import {
+  type EvolucionFirma,
+  EvolucionService,
+} from '../../servicios/evolucion.service';
+import { VerEvolucionComponent } from './ver-evolucion/ver-evolucion';
 
 @Component({
   selector: 'app-bandeja-pacientes',
   standalone: true,
-  imports: [CommonModule, FormsModule, BuscadorRangoFechas, PaginacionComponent, VerEvolucionComponent, TablaComponent, ColumnaTemplateDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    BuscadorRangoFechas,
+    PaginacionComponent,
+    VerEvolucionComponent,
+    TablaComponent,
+    ColumnaTemplateDirective,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col min-h-[calc(100vh-98px)] md:min-h-[calc(100vh-114px)] lg:min-h-[calc(100vh-130px)] -mt-4 md:-mt-6 lg:-mt-8 -mx-4 md:-mx-6 lg:-mx-8">
@@ -182,21 +205,23 @@ import { ColumnaTemplateDirective } from '../../../../compartido/componentes/tab
       </main>
       </div>
     </div>
-  `
+  `,
 })
 export class BandejaPacientesComponent {
   public evolucionService = inject(EvolucionService);
 
   public readonly evolucionesPaciente = signal<EvolucionFirma[]>([]);
   public readonly evolucionesCargando = signal<boolean>(false);
-  public readonly evolucionDetalle = signal<EvolucionFirma | null>(null);
+  public readonly evolucionDetalle = signal<
+    (EvolucionFirma & Record<string, unknown>) | null
+  >(null);
 
   columnasEvoluciones: ColumnaTabla[] = [
     { campo: 'numeroCustom', cabecera: 'N.º' },
     { campo: 'fechaCustom', cabecera: 'Fecha de firma' },
     { campo: 'medicoCustom', cabecera: 'Médico' },
     { campo: 'estadoCustom', cabecera: 'Estado' },
-    { campo: 'accionesCustom', cabecera: 'Acciones' }
+    { campo: 'accionesCustom', cabecera: 'Acciones' },
   ];
 
   constructor() {
@@ -214,7 +239,9 @@ export class BandejaPacientesComponent {
 
     this.evolucionesCargando.set(true);
     try {
-      const evoluciones = await this.evolucionService.listarEvoluciones(paciente.idRegAtencion);
+      const evoluciones = await this.evolucionService.listarEvoluciones(
+        paciente.idRegAtencion,
+      );
       this.evolucionesPaciente.set(evoluciones);
     } finally {
       this.evolucionesCargando.set(false);
@@ -222,9 +249,14 @@ export class BandejaPacientesComponent {
   }
 
   verEvolucion(evolucion: EvolucionFirma): void {
-    const decodificada = this.evolucionService.decodificarEvolucion(evolucion.dataB64);
+    const decodificada = this.evolucionService.decodificarEvolucion(
+      evolucion.dataB64,
+    );
     if (!decodificada) return;
-    this.evolucionDetalle.set(decodificada);
+    this.evolucionDetalle.set({
+      ...evolucion,
+      ...decodificada,
+    } as EvolucionFirma & Record<string, unknown>);
   }
 
   cerrarDetalle(): void {
@@ -232,8 +264,13 @@ export class BandejaPacientesComponent {
   }
 
   obtenerMedico(evolucion: EvolucionFirma): string {
-    const decodificada = this.evolucionService.decodificarEvolucion(evolucion.dataB64);
-    return decodificada?.cabecera?.medicoTratante || `Empleado #${evolucion.idEmpleadoRegistra}`;
+    const decodificada = this.evolucionService.decodificarEvolucion(
+      evolucion.dataB64,
+    );
+    return (
+      (decodificada as { cabecera?: { medicoTratante?: string } })?.cabecera
+        ?.medicoTratante || `Empleado #${evolucion.idEmpleadoRegistra}`
+    );
   }
 
   onBuscar(criterios: CriteriosBusqueda) {

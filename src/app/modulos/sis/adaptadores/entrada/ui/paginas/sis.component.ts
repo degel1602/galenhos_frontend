@@ -1,10 +1,17 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SisApiService, SisAfiliado, SisAfiliacionPayload } from '../../../salida/http/sis.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
-import { IFilaBackend } from '../../../../../../compartido/tipos/api-tipos';
-import { TablaComponent, ColumnaTabla } from '../../../../../../compartido/componentes/tabla/tabla.component';
+import {
+  type ColumnaTabla,
+  TablaComponent,
+} from '../../../../../../compartido/componentes/tabla/tabla.component';
+import type { IFilaBackend } from '../../../../../../compartido/tipos/api-tipos';
+import {
+  type SisAfiliacionPayload,
+  type SisAfiliado,
+  SisApiService,
+} from '../../../salida/http/sis.api.service';
 
 interface FormFiliacion {
   documentoNumero: string;
@@ -18,26 +25,33 @@ interface FormFiliacion {
 }
 
 function formFiliacionVacio(): FormFiliacion {
-  return { documentoNumero: '', paterno: '', materno: '', pNombre: '', oNombres: '', genero: '', fNacimiento: '', codigo: '' };
+  return {
+    documentoNumero: '',
+    paterno: '',
+    materno: '',
+    pNombre: '',
+    oNombres: '',
+    genero: '',
+    fNacimiento: '',
+    codigo: '',
+  };
 }
 
 @Component({
   selector: 'app-sis',
   standalone: true,
   imports: [CommonModule, FormsModule, TablaComponent],
-  templateUrl: './sis.component.html'
+  templateUrl: './sis.component.html',
 })
 export class SisComponent {
   private readonly sisApi = inject(SisApiService);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  // Consulta de afiliado
   dni = '';
   consultando = false;
   afiliado: SisAfiliado | null = null;
   filasAfiliado: { clave: string; valor: string }[] = [];
 
-  // FUA / listados
   idCuentaAtencion = '';
   idAtencion = '';
   idEmpleado = '';
@@ -49,7 +63,6 @@ export class SisComponent {
   fua: IFilaBackend | null = null;
   filasFua: { clave: string; valor: string }[] = [];
 
-  // Filiación
   filiacion = formFiliacionVacio();
   guardandoFiliacion = false;
 
@@ -73,14 +86,20 @@ export class SisComponent {
         .filter(([, v]) => v !== null && v !== undefined && String(v) !== '')
         .map(([clave, valor]) => ({ clave, valor: String(valor) }));
     } catch (err: unknown) {
-      this.error = err instanceof ApiRequestError ? err.message : 'No se pudo consultar el SIS.';
+      this.error =
+        err instanceof ApiRequestError
+          ? err.message
+          : 'No se pudo consultar el SIS.';
     } finally {
       this.consultando = false;
       this.cdr.detectChanges();
     }
   }
 
-  private async ejecutarListado(titulo: string, promesa: Promise<IFilaBackend[]>) {
+  private async ejecutarListado(
+    titulo: string,
+    promesa: Promise<IFilaBackend[]>,
+  ) {
     this.operando = true;
     this.error = '';
     this.resultadoTitulo = '';
@@ -96,10 +115,16 @@ export class SisComponent {
           for (const k of Object.keys(fila)) claves.add(k);
         }
         this.clavesResultados = Array.from(claves);
-        this.columnasTabla = this.clavesResultados.map(c => ({ campo: c, cabecera: c }));
+        this.columnasTabla = this.clavesResultados.map((c) => ({
+          campo: c,
+          cabecera: c,
+        }));
       }
     } catch (err: unknown) {
-      this.error = err instanceof ApiRequestError ? err.message : 'No se pudo ejecutar la operación SIS.';
+      this.error =
+        err instanceof ApiRequestError
+          ? err.message
+          : 'No se pudo ejecutar la operación SIS.';
     } finally {
       this.operando = false;
       this.cdr.detectChanges();
@@ -112,7 +137,10 @@ export class SisComponent {
       this.error = 'Ingrese el id de atención.';
       return;
     }
-    this.ejecutarListado('Diagnósticos de la atención', this.sisApi.listarDiagnosticos(id));
+    this.ejecutarListado(
+      'Diagnósticos de la atención',
+      this.sisApi.listarDiagnosticos(id),
+    );
   }
 
   listarMedicamentos() {
@@ -121,7 +149,10 @@ export class SisComponent {
       this.error = 'Ingrese el id de cuenta de atención.';
       return;
     }
-    this.ejecutarListado('Medicamentos de la cuenta', this.sisApi.listarMedicamentos(id));
+    this.ejecutarListado(
+      'Medicamentos de la cuenta',
+      this.sisApi.listarMedicamentos(id),
+    );
   }
 
   listarProcedimientos() {
@@ -130,7 +161,10 @@ export class SisComponent {
       this.error = 'Ingrese el id de cuenta de atención.';
       return;
     }
-    this.ejecutarListado('Procedimientos de la cuenta', this.sisApi.listarProcedimientos(id));
+    this.ejecutarListado(
+      'Procedimientos de la cuenta',
+      this.sisApi.listarProcedimientos(id),
+    );
   }
 
   listarConsumo() {
@@ -153,9 +187,12 @@ export class SisComponent {
     try {
       await this.sisApi.forzarGuardadoFua(id);
       this.mensajeExito = 'FUA guardado correctamente.';
-      setTimeout(() => this.mensajeExito = '', 5000);
+      setTimeout(() => (this.mensajeExito = ''), 5000);
     } catch (err: unknown) {
-      this.error = err instanceof ApiRequestError ? err.message : 'No se pudo guardar el FUA.';
+      this.error =
+        err instanceof ApiRequestError
+          ? err.message
+          : 'No se pudo guardar el FUA.';
     } finally {
       this.operando = false;
       this.cdr.detectChanges();
@@ -174,9 +211,12 @@ export class SisComponent {
     try {
       const resp = await this.sisApi.agregarFua(id, empleado);
       this.mensajeExito = `FUA agregado (respuesta: ${resp.respuesta}).`;
-      setTimeout(() => this.mensajeExito = '', 5000);
+      setTimeout(() => (this.mensajeExito = ''), 5000);
     } catch (err: unknown) {
-      this.error = err instanceof ApiRequestError ? err.message : 'No se pudo agregar el FUA.';
+      this.error =
+        err instanceof ApiRequestError
+          ? err.message
+          : 'No se pudo agregar el FUA.';
     } finally {
       this.operando = false;
       this.cdr.detectChanges();
@@ -200,7 +240,10 @@ export class SisComponent {
         .filter(([, v]) => v !== null && v !== undefined && String(v) !== '')
         .map(([clave, valor]) => ({ clave, valor: String(valor) }));
     } catch (err: unknown) {
-      this.error = err instanceof ApiRequestError ? err.message : 'No se pudo obtener el FUA para imprimir.';
+      this.error =
+        err instanceof ApiRequestError
+          ? err.message
+          : 'No se pudo obtener el FUA para imprimir.';
     } finally {
       this.operando = false;
       this.cdr.detectChanges();
@@ -220,7 +263,8 @@ export class SisComponent {
     if (f.pNombre.trim()) payload.pNombre = f.pNombre.trim();
     if (f.oNombres.trim()) payload.oNombres = f.oNombres.trim();
     if (f.genero.trim()) payload.genero = f.genero.trim();
-    if (f.fNacimiento) payload.fNacimiento = new Date(`${f.fNacimiento}T00:00:00`).toISOString();
+    if (f.fNacimiento)
+      payload.fNacimiento = new Date(`${f.fNacimiento}T00:00:00`).toISOString();
     if (f.codigo.trim()) payload.codigo = f.codigo.trim();
 
     this.guardandoFiliacion = true;
@@ -229,9 +273,12 @@ export class SisComponent {
       await this.sisApi.gestionarAfiliacion(payload);
       this.filiacion = formFiliacionVacio();
       this.mensajeExito = 'Afiliación SIS guardada correctamente.';
-      setTimeout(() => this.mensajeExito = '', 5000);
+      setTimeout(() => (this.mensajeExito = ''), 5000);
     } catch (err: unknown) {
-      this.error = err instanceof ApiRequestError ? err.message : 'No se pudo guardar la afiliación.';
+      this.error =
+        err instanceof ApiRequestError
+          ? err.message
+          : 'No se pudo guardar la afiliación.';
     } finally {
       this.guardandoFiliacion = false;
       this.cdr.detectChanges();

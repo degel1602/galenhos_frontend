@@ -15,7 +15,7 @@ export interface SintomaSeleccionado {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SintomaService {
   private readonly api = inject(ApiClientService);
@@ -24,7 +24,7 @@ export class SintomaService {
     try {
       const datos = await this.api.request<SintomaCatalogo[]>(
         '/api/v1/sintomas/catalogo',
-        { method: 'GET' }
+        { method: 'GET' },
       );
       return datos ?? [];
     } catch (error) {
@@ -37,7 +37,7 @@ export class SintomaService {
     try {
       await this.api.request('/api/v1/sintomas/catalogo', {
         method: 'POST',
-        body: JSON.stringify({ sistema, sintoma })
+        body: JSON.stringify({ sistema, sintoma }),
       });
       return true;
     } catch (error) {
@@ -46,11 +46,14 @@ export class SintomaService {
     }
   }
 
-  async guardarSintomas(idRegAtencion: number, sintomas: SintomaSeleccionado[]): Promise<boolean> {
+  async guardarSintomas(
+    idRegAtencion: number,
+    sintomas: SintomaSeleccionado[],
+  ): Promise<boolean> {
     try {
       await this.api.request(`/api/v1/evoluciones/${idRegAtencion}/sintomas`, {
         method: 'POST',
-        body: JSON.stringify({ sintomas })
+        body: JSON.stringify({ sintomas }),
       });
       return true;
     } catch (error) {

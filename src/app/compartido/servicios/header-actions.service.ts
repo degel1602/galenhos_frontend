@@ -1,7 +1,7 @@
-import { Injectable, TemplateRef, signal } from '@angular/core';
+import { Injectable, signal, type TemplateRef } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class HeaderActionsService {
   readonly template = signal<TemplateRef<unknown> | null>(null);

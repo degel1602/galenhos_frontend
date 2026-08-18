@@ -12,14 +12,17 @@ export interface Interconsulta {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class InterconsultaService {
   private readonly api = inject(ApiClientService);
 
   async obtenerPorId(id: number): Promise<Interconsulta | null> {
     try {
-      const data = await this.api.request<Interconsulta>(`/api/v1/interconsultas/${id}`, { method: 'GET' });
+      const data = await this.api.request<Interconsulta>(
+        `/api/v1/interconsultas/${id}`,
+        { method: 'GET' },
+      );
       return data;
     } catch (error) {
       console.error('Error al obtener interconsulta:', error);
@@ -29,7 +32,10 @@ export class InterconsultaService {
 
   async listarPorServicio(tipoServicio: string): Promise<Interconsulta[]> {
     try {
-      const data = await this.api.request<Interconsulta[]>(`/api/v1/interconsultas/servicio/${tipoServicio}`, { method: 'GET' });
+      const data = await this.api.request<Interconsulta[]>(
+        `/api/v1/interconsultas/servicio/${tipoServicio}`,
+        { method: 'GET' },
+      );
       return data || [];
     } catch (error) {
       console.error('Error al listar interconsultas:', error);
@@ -39,7 +45,10 @@ export class InterconsultaService {
 
   async listarPorAtencion(idAtencion: number): Promise<Interconsulta[]> {
     try {
-      const data = await this.api.request<Interconsulta[]>(`/api/v1/interconsultas/atencion/${idAtencion}`, { method: 'GET' });
+      const data = await this.api.request<Interconsulta[]>(
+        `/api/v1/interconsultas/atencion/${idAtencion}`,
+        { method: 'GET' },
+      );
       return data || [];
     } catch (error) {
       console.error('Error al listar interconsultas por atenci\u00f3n:', error);
@@ -51,7 +60,7 @@ export class InterconsultaService {
     try {
       await this.api.request('/api/v1/interconsultas', {
         method: 'POST',
-        body: JSON.stringify(interconsulta)
+        body: JSON.stringify(interconsulta),
       });
       return true;
     } catch (error) {
@@ -64,7 +73,7 @@ export class InterconsultaService {
     try {
       await this.api.request(`/api/v1/interconsultas/${id}/estado`, {
         method: 'PUT',
-        body: JSON.stringify({ estado })
+        body: JSON.stringify({ estado }),
       });
       return true;
     } catch (error) {
@@ -77,7 +86,7 @@ export class InterconsultaService {
     try {
       await this.api.request(`/api/v1/interconsultas/${id}/firma`, {
         method: 'POST',
-        body: JSON.stringify({ dataB64 })
+        body: JSON.stringify({ dataB64 }),
       });
       return true;
     } catch (error) {
@@ -88,7 +97,10 @@ export class InterconsultaService {
 
   async listarEspecialidades(): Promise<EspecialidadInterconsulta[]> {
     try {
-      const data = await this.api.request<EspecialidadInterconsulta[]>('/api/v1/interconsultas/especialidades', { method: 'GET' });
+      const data = await this.api.request<EspecialidadInterconsulta[]>(
+        '/api/v1/interconsultas/especialidades',
+        { method: 'GET' },
+      );
       return data || [];
     } catch (error) {
       console.error('Error al listar especialidades de interconsulta:', error);
@@ -96,9 +108,14 @@ export class InterconsultaService {
     }
   }
 
-  async listarMedicosPorEspecialidad(idEspecialidad: number): Promise<MedicoInterconsulta[]> {
+  async listarMedicosPorEspecialidad(
+    idEspecialidad: number,
+  ): Promise<MedicoInterconsulta[]> {
     try {
-      const data = await this.api.request<MedicoInterconsulta[]>(`/api/v1/interconsultas/medicos/${idEspecialidad}`, { method: 'GET' });
+      const data = await this.api.request<MedicoInterconsulta[]>(
+        `/api/v1/interconsultas/medicos/${idEspecialidad}`,
+        { method: 'GET' },
+      );
       return data || [];
     } catch (error) {
       console.error('Error al listar m\u00e9dicos por especialidad:', error);

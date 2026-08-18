@@ -1,10 +1,18 @@
-import { Component, ChangeDetectionStrategy, inject, ViewChild, TemplateRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  type AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  type OnDestroy,
+  type TemplateRef,
+  ViewChild,
+} from '@angular/core';
+import { HeaderActionsService } from '../../../../compartido/servicios/header-actions.service';
+import { AuthService } from '../../../auth/aplicacion/auth.service';
 import { EvolucionService } from '../../servicios/evolucion.service';
 import { BandejaPacientesComponent } from '../bandeja-pacientes/bandeja-pacientes';
 import { FormularioSoapComponent } from '../formulario-soap/formulario-soap';
-import { HeaderActionsService } from '../../../../compartido/servicios/header-actions.service';
-import { AuthService } from '../../../auth/aplicacion/auth.service';
 
 @Component({
   selector: 'app-evolucion-raiz',
@@ -63,13 +71,13 @@ import { AuthService } from '../../../auth/aplicacion/auth.service';
         }
       </div>
     </div>
-  `
+  `,
 })
 export class EvolucionRaizComponent implements AfterViewInit, OnDestroy {
   evolucionService = inject(EvolucionService);
   headerActionsService = inject(HeaderActionsService);
   authService = inject(AuthService);
-  
+
   @ViewChild('headerActions') headerActionsTpl!: TemplateRef<unknown>;
 
   ngAfterViewInit() {

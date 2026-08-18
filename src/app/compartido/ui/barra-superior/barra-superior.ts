@@ -1,5 +1,14 @@
-import { Component, Input, Output, EventEmitter, inject, signal, HostListener, ElementRef } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  inject,
+  Output,
+  signal,
+} from '@angular/core';
 import { HeaderActionsService } from '../../servicios/header-actions.service';
 @Component({
   selector: 'barra-superior',
@@ -36,7 +45,7 @@ import { HeaderActionsService } from '../../servicios/header-actions.service';
               <p class="text-[13px] font-bold text-[#07153a] truncate">{{ username || 'Sesión Activa' }}</p>
             </div>
             <div class="p-1.5">
-              <button (click)="onLogout.emit(); isMenuOpen.set(false)" class="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] font-semibold text-[#ef4444] hover:bg-[#fef2f2] rounded-lg transition-colors cursor-pointer text-left">
+              <button (click)="logoutEvent.emit(); isMenuOpen.set(false)" class="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] font-semibold text-[#ef4444] hover:bg-[#fef2f2] rounded-lg transition-colors cursor-pointer text-left">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                   <polyline points="16 17 21 12 16 7"></polyline>
@@ -50,7 +59,7 @@ import { HeaderActionsService } from '../../servicios/header-actions.service';
       </div>
     </header>
   `,
-  imports: [NgTemplateOutlet]
+  imports: [NgTemplateOutlet],
 })
 export class BarraSuperior {
   headerActions = inject(HeaderActionsService);
@@ -58,12 +67,12 @@ export class BarraSuperior {
 
   @Input() title: string = '';
   @Input() username: string | null = null;
-  @Output() onLogout = new EventEmitter<void>();
+  @Output() logoutEvent = new EventEmitter<void>();
 
   isMenuOpen = signal(false);
 
   toggleMenu() {
-    this.isMenuOpen.update(v => !v);
+    this.isMenuOpen.update((v) => !v);
   }
 
   @HostListener('document:click', ['$event'])

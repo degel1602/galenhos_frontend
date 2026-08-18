@@ -1,13 +1,29 @@
 import { Injectable, inject } from '@angular/core';
-import { MaestrosApiService } from '../../api/maestros.api.service';
-import { PacientesApiService, ActualizarPacientePayload } from '../../../modulos/pacientes/adaptadores/salida/http/pacientes.api.service';
-import { TriajeApiService, RegistroTriajePayload } from '../../../modulos/triaje/adaptadores/salida/http/triaje.api.service';
-import { ApiRequestError } from '../../api-client/api-client.service';
-import { FormRegistroPaciente, formVacio, sanitizar, normalizarNombre, TipoUbigeo } from './registro-paciente.interfaces';
-import { ICatalogoDescripcion, ICatalogoNombre, IFuenteFinanciamiento, RegistroPacientePayload } from '../../tipos/api-tipos';
-
 import { UbigeoService } from '../../../core/servicios/ubigeo.service';
+import {
+  type ActualizarPacientePayload,
+  PacientesApiService,
+} from '../../../modulos/pacientes/adaptadores/salida/http/pacientes.api.service';
+import {
+  type RegistroTriajePayload,
+  TriajeApiService,
+} from '../../../modulos/triaje/adaptadores/salida/http/triaje.api.service';
+import { MaestrosApiService } from '../../api/maestros.api.service';
+import { ApiRequestError } from '../../api-client/api-client.service';
+import type {
+  ICatalogoDescripcion,
+  ICatalogoNombre,
+  IFuenteFinanciamiento,
+  RegistroPacientePayload,
+} from '../../tipos/api-tipos';
 import { ReniecMapper } from '../../utilidades/reniec.mapper';
+import {
+  type FormRegistroPaciente,
+  formVacio,
+  normalizarNombre,
+  sanitizar,
+  type TipoUbigeo,
+} from './registro-paciente.interfaces';
 
 @Injectable()
 export class RegistroPacienteService {
@@ -47,7 +63,7 @@ export class RegistroPacienteService {
   provNacimiento: ICatalogoNombre[] = [];
   distritosNacimiento: ICatalogoNombre[] = [];
   comunidadesNacimiento: ICatalogoNombre[] = [];
-  
+
   depProcedencia: ICatalogoNombre[] = [];
   provProcedencia: ICatalogoNombre[] = [];
   distritosProcedencia: ICatalogoNombre[] = [];
@@ -59,11 +75,6 @@ export class RegistroPacienteService {
   provProcedenciaSel = '';
 
   tabUbigeo: TipoUbigeo = 'domicilio';
-
-  private static readonly CODIGOS_ESTADO_CIVIL: Record<string, string> = {
-    '01': 'SOLTERO', '02': 'CASADO', '03': 'VIUDO', '04': 'DIVORCIADO',
-    '05': 'SEPARADO', '06': 'CONVIVIENTE'
-  };
 
   limpiarEstado(): void {
     Object.assign(this.form, formVacio());
@@ -89,8 +100,20 @@ export class RegistroPacienteService {
   async cargarCatalogos(): Promise<void> {
     if (this.catalogoCargado) return;
     try {
-      const p = (req: Promise<any>) => req.catch(() => []);
-      const [docs, sexos, ec, grados, ocup, etnias, idiomas, paises, deps, ff, el] = await Promise.all([
+      const p = (req: Promise<unknown>) => req.catch(() => []);
+      const [
+        docs,
+        sexos,
+        ec,
+        grados,
+        ocup,
+        etnias,
+        idiomas,
+        paises,
+        deps,
+        ff,
+        el,
+      ] = await Promise.all([
         p(this.maestrosApi.getTiposDocumentos()),
         p(this.maestrosApi.getTiposSexo()),
         p(this.maestrosApi.getEstadosCivil()),
@@ -101,10 +124,11 @@ export class RegistroPacienteService {
         p(this.maestrosApi.getPaises()),
         p(this.maestrosApi.getDepartamentos()),
         p(this.maestrosApi.getFuentesFinanciamiento()),
-        p(this.maestrosApi.getEstadosLlegoPaciente())
+        p(this.maestrosApi.getEstadosLlegoPaciente()),
       ]);
 
-      const asArray = <T>(val: any): T[] => (Array.isArray(val) && val.length ? val : []);
+      const asArray = <T>(val: unknown): T[] =>
+        Array.isArray(val) && val.length ? val : [];
 
       this.tiposDocumento = asArray(docs);
       this.tiposSexo = asArray(sexos);
@@ -132,19 +156,25 @@ export class RegistroPacienteService {
       this.form.idCentroPobladoDomicilio = '';
       this.distritos = [];
       this.comunidades = [];
-      this.provincias = await this.ubigeoService.getProvincias(this.form.idDepartamentoDomicilio);
+      this.provincias = await this.ubigeoService.getProvincias(
+        this.form.idDepartamentoDomicilio,
+      );
     } else if (tipo === 'nacimiento') {
       this.form.idDistritoNacimiento = '';
       this.form.idCentroPobladoNacimiento = '';
       this.distritosNacimiento = [];
       this.comunidadesNacimiento = [];
-      this.provNacimiento = await this.ubigeoService.getProvincias(this.depNacimientoSel);
+      this.provNacimiento = await this.ubigeoService.getProvincias(
+        this.depNacimientoSel,
+      );
     } else if (tipo === 'procedencia') {
       this.form.idDistritoProcedencia = '';
       this.form.idCentroPobladoProcedencia = '';
       this.distritosProcedencia = [];
       this.comunidadesProcedencia = [];
-      this.provProcedencia = await this.ubigeoService.getProvincias(this.depProcedenciaSel);
+      this.provProcedencia = await this.ubigeoService.getProvincias(
+        this.depProcedenciaSel,
+      );
     }
   }
 
@@ -153,30 +183,42 @@ export class RegistroPacienteService {
       this.form.idDistritoDomicilio = '';
       this.form.idCentroPobladoDomicilio = '';
       this.comunidades = [];
-      this.distritos = await this.ubigeoService.getDistritos(this.form.idProvinciaDomicilio);
+      this.distritos = await this.ubigeoService.getDistritos(
+        this.form.idProvinciaDomicilio,
+      );
     } else if (tipo === 'nacimiento') {
       this.form.idDistritoNacimiento = '';
       this.form.idCentroPobladoNacimiento = '';
       this.comunidadesNacimiento = [];
-      this.distritosNacimiento = await this.ubigeoService.getDistritos(this.provNacimientoSel);
+      this.distritosNacimiento = await this.ubigeoService.getDistritos(
+        this.provNacimientoSel,
+      );
     } else if (tipo === 'procedencia') {
       this.form.idDistritoProcedencia = '';
       this.form.idCentroPobladoProcedencia = '';
       this.comunidadesProcedencia = [];
-      this.distritosProcedencia = await this.ubigeoService.getDistritos(this.provProcedenciaSel);
+      this.distritosProcedencia = await this.ubigeoService.getDistritos(
+        this.provProcedenciaSel,
+      );
     }
   }
 
   async onCambioDistrito(tipo: TipoUbigeo): Promise<void> {
     if (tipo === 'domicilio') {
       this.form.idCentroPobladoDomicilio = '';
-      this.comunidades = await this.ubigeoService.getCentrosPoblados(this.form.idDistritoDomicilio);
+      this.comunidades = await this.ubigeoService.getCentrosPoblados(
+        this.form.idDistritoDomicilio,
+      );
     } else if (tipo === 'nacimiento') {
       this.form.idCentroPobladoNacimiento = '';
-      this.comunidadesNacimiento = await this.ubigeoService.getCentrosPoblados(this.form.idDistritoNacimiento);
+      this.comunidadesNacimiento = await this.ubigeoService.getCentrosPoblados(
+        this.form.idDistritoNacimiento,
+      );
     } else if (tipo === 'procedencia') {
       this.form.idCentroPobladoProcedencia = '';
-      this.comunidadesProcedencia = await this.ubigeoService.getCentrosPoblados(this.form.idDistritoProcedencia);
+      this.comunidadesProcedencia = await this.ubigeoService.getCentrosPoblados(
+        this.form.idDistritoProcedencia,
+      );
     }
   }
 
@@ -187,40 +229,62 @@ export class RegistroPacienteService {
       return;
     }
     if (!/^\d{8}$/.test(dni)) {
-      this.error = 'RENIEC solo consulta DNI de 8 dígitos. Verifique el número.';
+      this.error =
+        'RENIEC solo consulta DNI de 8 dígitos. Verifique el número.';
       return;
     }
-    
+
     this.consultandoReniec = true;
     this.error = '';
-    
+
     try {
       const res = await this.maestrosApi.consultarReniec(dni);
       const datos = res?.datos;
-      if (!datos || (!datos.apellidoPaterno && !datos.primerNombre && !datos.nombres)) {
+      if (
+        !datos ||
+        (!datos.apellidoPaterno && !datos.primerNombre && !datos.nombres)
+      ) {
         this.error = 'RENIEC no devolvió datos para ese documento.';
         return;
       }
-      
-      const mapeado = await this.reniecMapper.mapearDatos(datos, this.form, this.tiposSexo, this.estadosCivil);
+
+      const mapeado = await this.reniecMapper.mapearDatos(
+        datos as unknown as Record<string, unknown>,
+        this.form,
+        this.tiposSexo,
+        this.estadosCivil,
+      );
       Object.assign(this.form, mapeado.form);
-      if (mapeado.depNacimientoSel) this.depNacimientoSel = mapeado.depNacimientoSel;
-      if (mapeado.provNacimientoSel) this.provNacimientoSel = mapeado.provNacimientoSel;
+      if (mapeado.depNacimientoSel)
+        this.depNacimientoSel = mapeado.depNacimientoSel;
+      if (mapeado.provNacimientoSel)
+        this.provNacimientoSel = mapeado.provNacimientoSel;
 
       if (this.form.idDepartamentoDomicilio) {
-        this.provincias = await this.ubigeoService.getProvincias(this.form.idDepartamentoDomicilio);
+        this.provincias = await this.ubigeoService.getProvincias(
+          this.form.idDepartamentoDomicilio,
+        );
       }
       if (this.form.idProvinciaDomicilio) {
-        this.distritos = await this.ubigeoService.getDistritos(this.form.idProvinciaDomicilio);
+        this.distritos = await this.ubigeoService.getDistritos(
+          this.form.idProvinciaDomicilio,
+        );
       }
       if (this.depNacimientoSel) {
-        this.provNacimiento = await this.ubigeoService.getProvincias(this.depNacimientoSel);
+        this.provNacimiento = await this.ubigeoService.getProvincias(
+          this.depNacimientoSel,
+        );
       }
       if (this.provNacimientoSel) {
-        this.distritosNacimiento = await this.ubigeoService.getDistritos(this.provNacimientoSel);
+        this.distritosNacimiento = await this.ubigeoService.getDistritos(
+          this.provNacimientoSel,
+        );
       }
     } catch (err: unknown) {
-      this.error = err instanceof ApiRequestError ? err.message : 'No se pudo consultar a RENIEC.';
+      this.error =
+        err instanceof ApiRequestError
+          ? err.message
+          : 'No se pudo consultar a RENIEC.';
     } finally {
       this.consultandoReniec = false;
     }
@@ -233,47 +297,53 @@ export class RegistroPacienteService {
       const detalle = await this.pacientesApi.obtener(pacienteId);
       const d = detalle as unknown as Record<string, unknown>;
       this.detalleOriginal = d;
-      this.form.idDocIdentidad = texto(d['docIdentityId']);
-      this.form.nroDocumento = texto(d['documentNumber']);
-      this.form.apellidoPaterno = texto(d['paternalSurname']);
-      this.form.apellidoMaterno = texto(d['maternalSurname']);
-      this.form.primerNombre = texto(d['firstName']);
-      this.form.segundoNombre = texto(d['secondName']);
-      this.form.tercerNombre = texto(d['thirdName']);
-      if (d['dateOfBirth']) {
-        this.form.fechaNacimiento = texto(d['dateOfBirth']).slice(0, 10);
+      this.form.idDocIdentidad = texto(d.docIdentityId);
+      this.form.nroDocumento = texto(d.documentNumber);
+      this.form.apellidoPaterno = texto(d.paternalSurname);
+      this.form.apellidoMaterno = texto(d.maternalSurname);
+      this.form.primerNombre = texto(d.firstName);
+      this.form.segundoNombre = texto(d.secondName);
+      this.form.tercerNombre = texto(d.thirdName);
+      if (d.dateOfBirth) {
+        this.form.fechaNacimiento = texto(d.dateOfBirth).slice(0, 10);
       }
-      this.form.idTipoSexo = texto(d['sexTypeId']);
-      this.form.telefono = texto(d['phone']);
-      this.form.celular = texto(d['cellphone']);
-      this.form.email = texto(d['email']);
-      this.form.idPaisNacimiento = texto(d['birthCountryId']);
-      this.form.idDistritoNacimiento = texto(d['birthDistrictId']);
-      this.form.idCentroPobladoNacimiento = texto(d['birthCenterId']);
-      this.form.idPaisProcedencia = texto(d['originCountryId']);
-      this.form.idDistritoProcedencia = texto(d['originDistrictId']);
-      this.form.idCentroPobladoProcedencia = texto(d['originCenterId']);
-      this.form.idPaisDomicilio = texto(d['homeCountryId']);
-      this.form.idDistritoDomicilio = texto(d['homeDistrictId']);
-      this.form.idCentroPobladoDomicilio = texto(d['homeCenterId']);
-      this.form.direccionDomicilio = texto(d['homeAddress']);
-      this.form.idEstadoCivil = texto(d['maritalStatusId']);
-      this.form.idGradoInstruccion = texto(d['educationDegreeId']);
-      this.form.idTipoOcupacion = texto(d['occupationTypeId']);
-      this.form.nombrePadre = texto(d['fatherName']);
-      this.form.nombreMadre = texto(d['motherName']);
-      this.form.idEtnia = texto(d['ethnicityId']);
-      this.form.idIdioma = texto(d['languageId']);
-      this.form.discapacidad = texto(d['disabilityId']);
-      this.form.incapacidad = texto(d['incapacityId']);
+      this.form.idTipoSexo = texto(d.sexTypeId);
+      this.form.telefono = texto(d.phone);
+      this.form.celular = texto(d.cellphone);
+      this.form.email = texto(d.email);
+      this.form.idPaisNacimiento = texto(d.birthCountryId);
+      this.form.idDistritoNacimiento = texto(d.birthDistrictId);
+      this.form.idCentroPobladoNacimiento = texto(d.birthCenterId);
+      this.form.idPaisProcedencia = texto(d.originCountryId);
+      this.form.idDistritoProcedencia = texto(d.originDistrictId);
+      this.form.idCentroPobladoProcedencia = texto(d.originCenterId);
+      this.form.idPaisDomicilio = texto(d.homeCountryId);
+      this.form.idDistritoDomicilio = texto(d.homeDistrictId);
+      this.form.idCentroPobladoDomicilio = texto(d.homeCenterId);
+      this.form.direccionDomicilio = texto(d.homeAddress);
+      this.form.idEstadoCivil = texto(d.maritalStatusId);
+      this.form.idGradoInstruccion = texto(d.educationDegreeId);
+      this.form.idTipoOcupacion = texto(d.occupationTypeId);
+      this.form.nombrePadre = texto(d.fatherName);
+      this.form.nombreMadre = texto(d.motherName);
+      this.form.idEtnia = texto(d.ethnicityId);
+      this.form.idIdioma = texto(d.languageId);
+      this.form.discapacidad = texto(d.disabilityId);
+      this.form.incapacidad = texto(d.incapacityId);
     } catch (err: unknown) {
-      this.error = err instanceof ApiRequestError ? err.message : 'No se pudieron cargar los datos del paciente.';
+      this.error =
+        err instanceof ApiRequestError
+          ? err.message
+          : 'No se pudieron cargar los datos del paciente.';
     } finally {
       this.cargandoDetalle = false;
     }
   }
 
-  async guardar(pacienteId: number | string | null, modo: 'paciente' | 'triaje'): Promise<string | null> {
+  async guardar(
+    pacienteId: number | string | null,
+    modo: 'paciente' | 'triaje',
+  ): Promise<string | null> {
     const errorValidacion = this.validarGuardado();
     if (errorValidacion) {
       this.error = errorValidacion;
@@ -293,7 +363,10 @@ export class RegistroPacienteService {
       }
       return `${normalizarNombre(this.form.apellidoPaterno)} ${normalizarNombre(this.form.apellidoMaterno)}, ${normalizarNombre(this.form.primerNombre)} ${normalizarNombre(this.form.segundoNombre)}`.trim();
     } catch (err: unknown) {
-      this.error = err instanceof ApiRequestError ? err.message : 'No se pudo registrar el paciente.';
+      this.error =
+        err instanceof ApiRequestError
+          ? err.message
+          : 'No se pudo registrar el paciente.';
       return null;
     } finally {
       this.guardando = false;
@@ -309,7 +382,10 @@ export class RegistroPacienteService {
       return 'Complete al menos documento, apellido paterno y primer nombre.';
     }
     const email = sanitizar(f.email);
-    if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+    if (
+      email &&
+      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)
+    ) {
       return 'El correo electrónico no tiene un formato válido.';
     }
     if (f.fechaNacimiento) {
@@ -329,12 +405,16 @@ export class RegistroPacienteService {
     return null;
   }
 
-  private construirPayload(base: Partial<any>): any {
+  private construirPayload(
+    base: Record<string, unknown>,
+  ): Record<string, unknown> {
     const f = this.form;
-    const name = (v: string | undefined | null) => normalizarNombre(v || '') || undefined;
-    const san = (v: string | undefined | null) => sanitizar(v || '') || undefined;
+    const name = (v: string | undefined | null) =>
+      normalizarNombre(v || '') || undefined;
+    const san = (v: string | undefined | null) =>
+      sanitizar(v || '') || undefined;
 
-    const p: Record<string, any> = {
+    const p: Record<string, unknown> = {
       ...base,
       nroDocumento: san(f.nroDocumento),
       apellidoPaterno: name(f.apellidoPaterno),
@@ -342,13 +422,17 @@ export class RegistroPacienteService {
       apellidoMaterno: name(f.apellidoMaterno),
       segundoNombre: name(f.segundoNombre),
       tercerNombre: name(f.tercerNombre),
-      fechaNacimiento: f.fechaNacimiento ? new Date(`${f.fechaNacimiento}T00:00:00`).toISOString() : undefined,
+      fechaNacimiento: f.fechaNacimiento
+        ? new Date(`${f.fechaNacimiento}T00:00:00`).toISOString()
+        : undefined,
       email: san(f.email),
       telefono: san(f.telefono),
-      celular: san(f.celular)
+      celular: san(f.celular),
     };
-    
-    Object.keys(p).forEach(k => p[k] === undefined && delete p[k]);
+
+    Object.keys(p).forEach((k) => {
+      if (p[k] === undefined) delete p[k];
+    });
     return p;
   }
 
@@ -363,11 +447,14 @@ export class RegistroPacienteService {
       idDistritoDomicilio: num(f.idDistritoDomicilio),
       idComunidadDomicilio: num(f.idCentroPobladoDomicilio),
       idFuenteFinanciamiento: num(f.idFuenteFinanciamiento),
-      idEsAccidenteTransito: f.idEsAccidenteTransito !== '' ? num(f.idEsAccidenteTransito) : undefined,
+      idEsAccidenteTransito:
+        f.idEsAccidenteTransito !== ''
+          ? num(f.idEsAccidenteTransito)
+          : undefined,
       idEstadollego: num(f.idEstadollego),
       gestante: f.gestante !== '' ? num(f.gestante) : undefined,
       direccion: sanitizar(f.direccionDomicilio) || undefined,
-      motivo: sanitizar(f.motivo) || undefined
+      motivo: sanitizar(f.motivo) || undefined,
     });
     await this.triajeApi.registrar(payload as RegistroTriajePayload);
   }
@@ -395,56 +482,82 @@ export class RegistroPacienteService {
       idIdioma: num(f.idIdioma),
       direccionDomicilio: sanitizar(f.direccionDomicilio) || undefined,
       discapacidad: f.discapacidad !== '' ? num(f.discapacidad) : undefined,
-      incapacidad: f.incapacidad !== '' ? num(f.incapacidad) : undefined
+      incapacidad: f.incapacidad !== '' ? num(f.incapacidad) : undefined,
     });
-    await this.pacientesApi.registrar(payload as RegistroPacientePayload);
+    await this.pacientesApi.registrar(
+      payload as unknown as RegistroPacientePayload,
+    );
   }
 
   private async actualizarPaciente(pacienteId: number | string): Promise<void> {
     const f = this.form;
     const d = this.detalleOriginal ?? {};
-    const name = (v: string | undefined | null) => normalizarNombre(v || '') || undefined;
-    
+    const name = (v: string | undefined | null) =>
+      normalizarNombre(v || '') || undefined;
+
     const payload: ActualizarPacientePayload = {
       documentNumber: sanitizar(f.nroDocumento),
       paternalSurname: normalizarNombre(f.apellidoPaterno),
       firstName: normalizarNombre(f.primerNombre),
-      birthCountryId: num(f.idPaisNacimiento) ?? num(texto(d['birthCountryId'])),
-      maternalSurname: name(f.apellidoMaterno) ?? name(texto(d['maternalSurname'])),
-      homeAddress: sanitizar(f.direccionDomicilio) || sanitizar(texto(d['homeAddress'])) || undefined,
-      originCountryId: num(f.idPaisProcedencia) ?? num(texto(d['originCountryId'])),
-      secondName: name(f.segundoNombre) ?? name(texto(d['secondName'])),
-      thirdName: name(f.tercerNombre) ?? name(texto(d['thirdName'])),
-      dateOfBirth: f.fechaNacimiento ? new Date(`${f.fechaNacimiento}T00:00:00`).toISOString() : undefined,
-      phone: sanitizar(f.telefono) || sanitizar(texto(d['phone'])) || undefined,
-      cellphone: sanitizar(f.celular) || sanitizar(texto(d['cellphone'])) || undefined,
-      autoGenerated: texto(d['autoGenerated']) || undefined,
-      sexTypeId: num(f.idTipoSexo) ?? num(texto(d['sexTypeId'])),
-      originId: num(texto(d['originId'])),
-      educationDegreeId: num(f.idGradoInstruccion) ?? num(texto(d['educationDegreeId'])),
-      maritalStatusId: num(f.idEstadoCivil) ?? num(texto(d['maritalStatusId'])),
-      docIdentityId: num(f.idDocIdentidad) ?? num(texto(d['docIdentityId'])),
-      occupationTypeId: num(f.idTipoOcupacion) ?? num(texto(d['occupationTypeId'])),
-      homeCenterId: num(f.idCentroPobladoDomicilio) ?? num(texto(d['homeCenterId'])),
-      fatherName: name(f.nombrePadre) ?? name(texto(d['fatherName'])),
-      motherName: name(f.nombreMadre) ?? name(texto(d['motherName'])),
-      homeCountryId: num(f.idPaisDomicilio) ?? num(texto(d['homeCountryId'])),
-      birthCenterId: num(f.idCentroPobladoNacimiento) ?? num(texto(d['birthCenterId'])),
-      originCenterId: num(f.idCentroPobladoProcedencia) ?? num(texto(d['originCenterId'])),
-      originDistrictId: num(f.idDistritoProcedencia) ?? num(texto(d['originDistrictId'])),
-      homeDistrictId: num(f.idDistritoDomicilio) ?? num(texto(d['homeDistrictId'])),
-      birthDistrictId: num(f.idDistritoNacimiento) ?? num(texto(d['birthDistrictId'])),
-      ethnicityId: f.idEtnia || texto(d['ethnicityId']) || undefined,
-      languageId: num(f.idIdioma) ?? num(texto(d['languageId'])),
-      email: sanitizar(f.email) || sanitizar(texto(d['email'])) || undefined,
-      disabilityId: f.discapacidad === '' ? num(texto(d['disabilityId'])) : num(f.discapacidad),
-      incapacityId: f.incapacidad === '' ? num(texto(d['incapacityId'])) : num(f.incapacidad)
+      birthCountryId: num(f.idPaisNacimiento) ?? num(texto(d.birthCountryId)),
+      maternalSurname:
+        name(f.apellidoMaterno) ?? name(texto(d.maternalSurname)),
+      homeAddress:
+        sanitizar(f.direccionDomicilio) ||
+        sanitizar(texto(d.homeAddress)) ||
+        undefined,
+      originCountryId:
+        num(f.idPaisProcedencia) ?? num(texto(d.originCountryId)),
+      secondName: name(f.segundoNombre) ?? name(texto(d.secondName)),
+      thirdName: name(f.tercerNombre) ?? name(texto(d.thirdName)),
+      dateOfBirth: f.fechaNacimiento
+        ? new Date(`${f.fechaNacimiento}T00:00:00`).toISOString()
+        : undefined,
+      phone: sanitizar(f.telefono) || sanitizar(texto(d.phone)) || undefined,
+      cellphone:
+        sanitizar(f.celular) || sanitizar(texto(d.cellphone)) || undefined,
+      autoGenerated: texto(d.autoGenerated) || undefined,
+      sexTypeId: num(f.idTipoSexo) ?? num(texto(d.sexTypeId)),
+      originId: num(texto(d.originId)),
+      educationDegreeId:
+        num(f.idGradoInstruccion) ?? num(texto(d.educationDegreeId)),
+      maritalStatusId: num(f.idEstadoCivil) ?? num(texto(d.maritalStatusId)),
+      docIdentityId: num(f.idDocIdentidad) ?? num(texto(d.docIdentityId)),
+      occupationTypeId:
+        num(f.idTipoOcupacion) ?? num(texto(d.occupationTypeId)),
+      homeCenterId:
+        num(f.idCentroPobladoDomicilio) ?? num(texto(d.homeCenterId)),
+      fatherName: name(f.nombrePadre) ?? name(texto(d.fatherName)),
+      motherName: name(f.nombreMadre) ?? name(texto(d.motherName)),
+      homeCountryId: num(f.idPaisDomicilio) ?? num(texto(d.homeCountryId)),
+      birthCenterId:
+        num(f.idCentroPobladoNacimiento) ?? num(texto(d.birthCenterId)),
+      originCenterId:
+        num(f.idCentroPobladoProcedencia) ?? num(texto(d.originCenterId)),
+      originDistrictId:
+        num(f.idDistritoProcedencia) ?? num(texto(d.originDistrictId)),
+      homeDistrictId:
+        num(f.idDistritoDomicilio) ?? num(texto(d.homeDistrictId)),
+      birthDistrictId:
+        num(f.idDistritoNacimiento) ?? num(texto(d.birthDistrictId)),
+      ethnicityId: f.idEtnia || texto(d.ethnicityId) || undefined,
+      languageId: num(f.idIdioma) ?? num(texto(d.languageId)),
+      email: sanitizar(f.email) || sanitizar(texto(d.email)) || undefined,
+      disabilityId:
+        f.discapacidad === ''
+          ? num(texto(d.disabilityId))
+          : num(f.discapacidad),
+      incapacityId:
+        f.incapacidad === '' ? num(texto(d.incapacityId)) : num(f.incapacidad),
     };
-    const hc = Number(texto(d['historyNumber']));
+    const hc = Number(texto(d.historyNumber));
     if (!Number.isNaN(hc)) payload.historyNumber = hc;
-    
-    Object.keys(payload).forEach(k => payload[k as keyof typeof payload] === undefined && delete payload[k as keyof typeof payload]);
-    
+
+    Object.keys(payload).forEach((k) => {
+      if (payload[k as keyof typeof payload] === undefined)
+        delete payload[k as keyof typeof payload];
+    });
+
     await this.pacientesApi.actualizar(pacienteId, payload);
   }
 }

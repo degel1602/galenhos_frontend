@@ -3,7 +3,7 @@ import { Injectable, signal } from '@angular/core';
 export type TipoModalGlobal = 'confirmar' | 'exito' | 'error' | 'info';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ModalGlobalService {
   public readonly abierto = signal<boolean>(false);
@@ -14,8 +14,12 @@ export class ModalGlobalService {
 
   private resolverConfirmacion: ((resultado: boolean) => void) | null = null;
 
-  confirmar(mensaje: string, titulo = 'Confirmación', etiquetaConfirmar = 'Confirmar'): Promise<boolean> {
-    return new Promise<boolean>(resolve => {
+  confirmar(
+    mensaje: string,
+    titulo = 'Confirmación',
+    etiquetaConfirmar = 'Confirmar',
+  ): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
       this.resolverConfirmacion = resolve;
       this.tipo.set('confirmar');
       this.titulo.set(titulo);

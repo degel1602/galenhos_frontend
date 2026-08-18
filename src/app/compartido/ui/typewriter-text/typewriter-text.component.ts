@@ -1,5 +1,12 @@
-import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  inject,
+  type OnDestroy,
+  type OnInit,
+} from '@angular/core';
 
 @Component({
   selector: 'app-typewriter-text',
@@ -34,7 +41,8 @@ import { CommonModule } from '@angular/common';
       </span>
     </div>
   `,
-  styles: [`
+  styles: [
+    `
     .typewriter-container {
       width: 100%;
       height: 100%;
@@ -60,7 +68,8 @@ import { CommonModule } from '@angular/common';
       white-space: nowrap;
       border: 0;
     }
-  `]
+  `,
+  ],
 })
 export class TypewriterTextComponent implements OnInit, OnDestroy {
   @Input() prefix = '';
@@ -74,7 +83,7 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
   @Input() deletingSpeed = 32;
   @Input() typingSpeed = 55;
   @Input() holdDuration = 1800;
-  
+
   @Input() fontFamily = 'Inter, system-ui, sans-serif';
   @Input() fontWeight: string | number = 700;
   @Input() fontSize = '75px';
@@ -87,8 +96,8 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
   phase: 'typing' | 'holding' | 'deleting' = 'typing';
   cursorOn = true;
 
-  private timer: any;
-  private cursorInterval: any;
+  private timer: ReturnType<typeof setTimeout> | undefined;
+  private cursorInterval: ReturnType<typeof setInterval> | undefined;
 
   get currentText(): string {
     return this.texts[this.textIndex] || '';
@@ -98,7 +107,7 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
     return this.currentText.slice(0, this.charIndex);
   }
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.startCursorBlink();
@@ -123,10 +132,10 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
 
   getCursorStyles() {
     return {
-      width: this.cursorWidth + 'px',
-      height: this.cursorHeight + 'px',
+      width: `${this.cursorWidth}px`,
+      height: `${this.cursorHeight}px`,
       backgroundColor: this.cursorColor,
-      border: '1.5px solid ' + this.cursorBorderColor,
+      border: `1.5px solid ${this.cursorBorderColor}`,
     };
   }
 
@@ -145,8 +154,10 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
   }
 
   private scheduleNextTick() {
-    // Manejo de animaciones seguras para accesibilidad
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
       this.charIndex = this.currentText.length;
       this.phase = 'holding';
       this.cdr.markForCheck();

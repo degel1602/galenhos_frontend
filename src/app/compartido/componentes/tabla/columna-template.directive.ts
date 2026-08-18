@@ -1,11 +1,11 @@
-import { Directive, Input, TemplateRef } from '@angular/core';
+import { Directive, Input, inject, TemplateRef } from '@angular/core';
 
 @Directive({
   selector: '[appColumnaTemplate]',
-  standalone: true
+  standalone: true,
 })
 export class ColumnaTemplateDirective {
   @Input('appColumnaTemplate') nombreColumna!: string;
 
-  constructor(public template: TemplateRef<any>) {}
+  public template = inject(TemplateRef<unknown>);
 }

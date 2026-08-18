@@ -20,7 +20,7 @@
 
   <div class="flex items-center gap-2">
     <label class="inline-flex items-center gap-2 text-[12.5px] font-medium text-slate-600 border border-slate-300 hover:border-teal-500 hover:text-teal-700 rounded-md px-3 py-1.5 cursor-pointer transition-colors">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
       </svg>
       Subir imagen de firma
@@ -28,7 +28,7 @@
     </label>
     @if (tieneFirma()) {
       <button type="button" (click)="limpiar()" class="inline-flex items-center gap-2 text-[12.5px] font-medium text-red-600 hover:text-red-800 rounded-md px-3 py-1.5 transition-colors cursor-pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
         </svg>
         Limpiar firma

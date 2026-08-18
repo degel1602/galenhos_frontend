@@ -1,9 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiClientService } from '../../../../../compartido/api-client/api-client.service';
-import { IPageResponse, IPatient } from '../../../../../compartido/tipos/tipos';
+import type {
+  IPageResponse,
+  IPatient,
+} from '../../../../../compartido/tipos/tipos';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DashboardApiService {
   private apiClient = inject(ApiClientService);
@@ -12,7 +15,12 @@ export class DashboardApiService {
     return this.apiClient.getApiBaseUrl();
   }
 
-  listPacientes(page: number, pageSize: number): Promise<IPageResponse<IPatient>> {
-    return this.apiClient.request<IPageResponse<IPatient>>(`/api/v1/pacientes?page=${page}&pageSize=${pageSize}`);
+  listPacientes(
+    page: number,
+    pageSize: number,
+  ): Promise<IPageResponse<IPatient>> {
+    return this.apiClient.request<IPageResponse<IPatient>>(
+      `/api/v1/pacientes?page=${page}&pageSize=${pageSize}`,
+    );
   }
 }

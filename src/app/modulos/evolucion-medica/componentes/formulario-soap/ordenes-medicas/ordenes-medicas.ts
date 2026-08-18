@@ -1,22 +1,40 @@
-import { Component, Input, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, Validators } from '@angular/forms';
-import { OrdenService, OrdenMedica, ProductoCatalogo } from '../../../servicios/orden.service';
-import { EvolucionService } from '../../../servicios/evolucion.service';
-import { AuthService } from '../../../../auth/aplicacion/auth.service';
-import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
-import { TablaComponent, ColumnaTabla } from '../../../../../compartido/componentes/tabla/tabla.component';
+import { Component, Input, inject, type OnInit, signal } from '@angular/core';
+import {
+  type FormArray,
+  FormBuilder,
+  type FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ColumnaTemplateDirective } from '../../../../../compartido/componentes/tabla/columna-template.directive';
+import {
+  type ColumnaTabla,
+  TablaComponent,
+} from '../../../../../compartido/componentes/tabla/tabla.component';
+import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
+import { AuthService } from '../../../../auth/aplicacion/auth.service';
+import { EvolucionService } from '../../../servicios/evolucion.service';
+import {
+  type OrdenMedica,
+  OrdenService,
+  type ProductoCatalogo,
+} from '../../../servicios/orden.service';
 
 @Component({
   selector: 'app-ordenes-medicas',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent, TablaComponent, ColumnaTemplateDirective],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ErrorMensajeComponent,
+    TablaComponent,
+    ColumnaTemplateDirective,
+  ],
   templateUrl: './ordenes-medicas.html',
-  // No usamos OnPush porque cargamos datos de API asíncronamente
 })
 export class OrdenesMedicasComponent implements OnInit {
-  @Input({ required: true }) formGroup!: FormGroup; // The parent will pass the root form or a subset. We assume root form.
+  @Input({ required: true }) formGroup!: FormGroup;
 
   private readonly ordenService = inject(OrdenService);
   private readonly evolucionService = inject(EvolucionService);
@@ -30,20 +48,25 @@ export class OrdenesMedicasComponent implements OnInit {
   public readonly successMessage = signal<string>('');
 
   public readonly sugerencias = signal<ProductoCatalogo[]>([]);
-  private debounceTimer: any;
+  private debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
   columnasPrescripcion: ColumnaTabla[] = [
     { campo: 'medicamentoCustom', cabecera: 'Medicamento y Presentación' },
     { campo: 'cantidadCustom', cabecera: 'Cantidad', ancho: '100px' },
     { campo: 'indicacionesCustom', cabecera: 'Indicaciones para el paciente' },
-    { campo: 'accionesCustom', cabecera: '', alineacion: 'center', ancho: '60px' }
+    {
+      campo: 'accionesCustom',
+      cabecera: '',
+      alineacion: 'center',
+      ancho: '60px',
+    },
   ];
 
   columnasHistorial: ColumnaTabla[] = [
     { campo: 'fechaCustom', cabecera: 'Fecha' },
     { campo: 'medicoCustom', cabecera: 'Médico' },
     { campo: 'observacionCustom', cabecera: 'Observación General' },
-    { campo: 'itemsCustom', cabecera: 'Items de Receta' }
+    { campo: 'itemsCustom', cabecera: 'Items de Receta' },
   ];
 
   ngOnInit() {
@@ -58,7 +81,9 @@ export class OrdenesMedicasComponent implements OnInit {
     this.errorMessage.set('');
 
     try {
-      const datos = await this.ordenService.listarPorCuenta(paciente.idRegAtencion);
+      const datos = await this.ordenService.listarPorCuenta(
+        paciente.idRegAtencion,
+      );
       this.ordenesPrevias.set(datos);
     } catch (error) {
       console.error('Error al cargar órdenes:', error);
@@ -75,18 +100,23 @@ export class OrdenesMedicasComponent implements OnInit {
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    // Extraer datos del formulario
     const detallesForm = this.prescripcionArray.value;
     const ordenData = this.ordenesGroup.value;
-    
+
     if (!ordenData.detalle && detallesForm.length === 0) {
-      this.errorMessage.set('Debe ingresar detalles de la orden o añadir prescripciones médicas.');
+      this.errorMessage.set(
+        'Debe ingresar detalles de la orden o añadir prescripciones médicas.',
+      );
       return;
     }
 
-    const detalles = detallesForm.filter((d: any) => d.idProducto);
+    const detalles = detallesForm.filter(
+      (d: Record<string, unknown>) => d.idProducto,
+    );
     if (detallesForm.length > 0 && detalles.length === 0) {
-      this.errorMessage.set('Seleccione cada medicamento desde el catálogo (escriba y elija el producto real).');
+      this.errorMessage.set(
+        'Seleccione cada medicamento desde el catálogo (escriba y elija el producto real).',
+      );
       return;
     }
 
@@ -94,12 +124,12 @@ export class OrdenesMedicasComponent implements OnInit {
 
     const request: OrdenMedica = {
       idRegAtencion: paciente.idRegAtencion,
-      observacion: `${ordenData.orden ? '[' + ordenData.orden + '] ' : ''}${ordenData.detalle || ''}`,
-      detalles: detalles.map((d: any) => ({
+      observacion: `${ordenData.orden ? `[${ordenData.orden}] ` : ''}${ordenData.detalle || ''}`,
+      detalles: detalles.map((d: Record<string, unknown>) => ({
         idProducto: d.idProducto,
         cantidad: d.cantidad || 1,
-        indicaciones: d.indicaciones || ''
-      }))
+        indicaciones: d.indicaciones || '',
+      })),
     };
 
     const success = await this.ordenService.crearOrden(request);
@@ -110,12 +140,13 @@ export class OrdenesMedicasComponent implements OnInit {
       this.ordenesGroup.reset();
       this.prescripcionArray.clear();
       this.agregarPrescripcion();
-      await this.cargarOrdenes(); // Refrescar historial
-      
-      // Limpiar mensaje de éxito después de 4 segundos
+      await this.cargarOrdenes();
+
       setTimeout(() => this.successMessage.set(''), 4000);
     } else {
-      this.errorMessage.set('Hubo un error al crear la orden médica. Inténtalo nuevamente.');
+      this.errorMessage.set(
+        'Hubo un error al crear la orden médica. Inténtalo nuevamente.',
+      );
     }
   }
 
@@ -128,12 +159,14 @@ export class OrdenesMedicasComponent implements OnInit {
   }
 
   agregarPrescripcion() {
-    this.prescripcionArray.push(this.fb.group({
-      idProducto: [null],
-      medicamento: ['', Validators.required],
-      cantidad: [null, Validators.required],
-      indicaciones: ['']
-    }));
+    this.prescripcionArray.push(
+      this.fb.group({
+        idProducto: [null],
+        medicamento: ['', Validators.required],
+        cantidad: [null, Validators.required],
+        indicaciones: [''],
+      }),
+    );
   }
 
   removerPrescripcion(index: number) {
@@ -164,7 +197,7 @@ export class OrdenesMedicasComponent implements OnInit {
     const grupo = this.getPrescripcionGroup(index);
     grupo.patchValue({
       idProducto: producto.idProducto,
-      medicamento: `${producto.nombre}${producto.presentacion ? ' - ' + producto.presentacion : ''}`
+      medicamento: `${producto.nombre}${producto.presentacion ? ` - ${producto.presentacion}` : ''}`,
     });
     this.sugerencias.set([]);
   }

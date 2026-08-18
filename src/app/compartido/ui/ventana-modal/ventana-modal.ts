@@ -1,7 +1,8 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'ventana-modal',
+  standalone: true,
   template: `
     <div class="fixed inset-0 bg-[#07153a]/45 flex items-center justify-center p-6 z-[100] animate-in fade-in duration-200" (click)="cerrar()">
       <div 
@@ -31,7 +32,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class VentanaModal {
   @Input() titulo: string = '';

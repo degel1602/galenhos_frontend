@@ -5,7 +5,7 @@ import { ModalGlobalComponent } from '../compartido/ui/modal-global/modal-global
 @Component({
   selector: 'componente-raiz',
   imports: [RouterOutlet, ModalGlobalComponent],
-  templateUrl: './componente-raiz.html'
+  templateUrl: './componente-raiz.html',
 })
 export class ComponenteRaiz {
   title = 'front-galenos';

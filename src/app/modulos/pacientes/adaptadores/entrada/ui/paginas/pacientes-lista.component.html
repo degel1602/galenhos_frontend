@@ -12,12 +12,12 @@
     </div>
   }
 
-  <!-- Cabecera y Acciones -->
+  
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 
     @if (authService.hasPermission('agregar')) {
-      <button (click)="abrirNuevoPaciente()" class="inline-flex items-center justify-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition-colors w-full md:w-auto">
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button type="button" (click)="abrirNuevoPaciente()" class="inline-flex items-center justify-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition-colors w-full md:w-auto">
+        <svg aria-hidden="true" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
         </svg>
         Nuevo Paciente
@@ -25,7 +25,7 @@
     }
   </div>
 
-  <!-- Zona de Búsqueda (Sin caja) -->
+  
   <div class="flex flex-col gap-3">
     <div class="text-sm font-medium text-slate-500">Filtros de búsqueda</div>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -57,9 +57,9 @@
     </div>
 
     <div class="flex gap-3 justify-start mt-2">
-      <button (click)="buscarPacientes()" [disabled]="cargando" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center min-w-[100px]">
+      <button type="button" (click)="buscarPacientes()" [disabled]="cargando" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center min-w-[100px]">
         @if (cargando) {
-          <svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg aria-hidden="true" class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
@@ -68,13 +68,13 @@
           Buscar
         }
       </button>
-      <button (click)="limpiarFiltros()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-semibold transition-colors">
+      <button type="button" (click)="limpiarFiltros()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-semibold transition-colors">
         Limpiar
       </button>
     </div>
   </div>
 
-  <!-- Tabla Desnuda -->
+  
   <div class="mt-4">
     <div class="overflow-x-auto">
       <app-tabla [columnas]="columnasTabla" [datos]="pacientes" [cargando]="cargando" mensajeCargando="Cargando resultados..."
@@ -97,9 +97,9 @@
 
         <ng-template appColumnaTemplate="sexoCustom" let-p>
           @if (p['sexTypeId'] == 1 || p['sexTypeId'] == '1') {
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Varón" class="mx-auto"><circle cx="10" cy="14" r="5"></circle><path d="M13.5 10.5 21 3"></path><path d="M16 3h5v5"></path></svg>
+            <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Varón" class="mx-auto"><circle cx="10" cy="14" r="5"></circle><path d="M13.5 10.5 21 3"></path><path d="M16 3h5v5"></path></svg>
           } @else if (p['sexTypeId'] == 2 || p['sexTypeId'] == '2') {
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Mujer" class="mx-auto"><circle cx="12" cy="10" r="5"></circle><path d="M12 15v7"></path><path d="M9 19h6"></path></svg>
+            <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Mujer" class="mx-auto"><circle cx="12" cy="10" r="5"></circle><path d="M12 15v7"></path><path d="M9 19h6"></path></svg>
           } @else {
             <span class="text-slate-400">—</span>
           }
@@ -112,15 +112,15 @@
         <ng-template appColumnaTemplate="accionesCustom" let-p>
           <div class="flex justify-end gap-2">
             @if (authService.hasPermission('modificar')) {
-              <button (click)="abrirEdicion(p)" class="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded transition-colors" title="Editar paciente">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button type="button" (click)="abrirEdicion(p)" class="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded transition-colors" title="Editar paciente">
+                <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                 </svg>
               </button>
             }
             @if (authService.hasPermission('eliminar')) {
-              <button (click)="eliminarPaciente(p)" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Eliminar paciente">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button type="button" (click)="eliminarPaciente(p)" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Eliminar paciente">
+                <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                 </svg>
               </button>
@@ -131,7 +131,7 @@
       </app-tabla>
     </div>
 
-    <!-- Paginación -->
+    
     <app-paginacion
       [page]="paginaActual"
       [totalPages]="totalPaginas"
@@ -140,7 +140,7 @@
     />
   </div>
 
-  <!-- Modal global de registro/edición de paciente -->
+  
   <registro-paciente-modal
     [abierto]="modalAbierto"
     [modo]="'paciente'"

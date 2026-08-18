@@ -1,18 +1,32 @@
-import { Component, Input, Output, EventEmitter, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  inject,
+  type OnInit,
+  Output,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { VentanaModal } from '../../../../../../../compartido/ui/ventana-modal/ventana-modal';
-import { RegistroTriajeService } from './registro-triaje.service';
-import { ReporteTriajeComponent } from '../reporte-triaje/reporte-triaje.component';
 import { ErrorMensajeComponent } from '../../../../../../../compartido/ui/validacion/error-mensaje.component';
+import { VentanaModal } from '../../../../../../../compartido/ui/ventana-modal/ventana-modal';
+import { ReporteTriajeComponent } from '../reporte-triaje/reporte-triaje.component';
+import { RegistroTriajeService } from './registro-triaje.service';
 
 @Component({
   selector: 'app-registro-triaje-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, VentanaModal, ReporteTriajeComponent, ErrorMensajeComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    VentanaModal,
+    ReporteTriajeComponent,
+    ErrorMensajeComponent,
+  ],
   providers: [RegistroTriajeService],
   templateUrl: './registro-triaje-modal.html',
-  styles: [`@keyframes spin { to { transform: rotate(360deg); } }`]
+  styles: [`@keyframes spin { to { transform: rotate(360deg); } }`],
 })
 export class RegistroTriajeModal implements OnInit {
   @Input() abierto = false;
@@ -44,7 +58,7 @@ export class RegistroTriajeModal implements OnInit {
     this.cdr.detectChanges();
   }
 
-  onEnterDocumento(event: Event): void {
+  onEnterDocumento(_event: Event): void {
     if (!this.srv.buscando && !this.srv.formulario.pacienteNn) {
       this.buscarPaciente();
     }
@@ -57,7 +71,9 @@ export class RegistroTriajeModal implements OnInit {
     this.srv.sisActivo = false;
     this.srv.sisGuardado = false;
     if (checked) {
-      const sd = this.srv.tiposDocumentos.find(t => (t.descripcion || '').toUpperCase() === 'SD');
+      const sd = this.srv.tiposDocumentos.find(
+        (t) => (t.descripcion || '').toUpperCase() === 'SD',
+      );
       this.srv.formulario.idDocIdentidad = sd ? String(sd.id) : '';
       this.srv.formulario.nroDocumento = '';
       this.srv.formulario.apellidoPaterno = 'NN';
@@ -107,12 +123,13 @@ export class RegistroTriajeModal implements OnInit {
       this.imc = '';
       return;
     }
-    const result = p / Math.pow(t / 100, 2);
+    const result = p / (t / 100) ** 2;
     this.imc = result.toFixed(1);
   }
 
   toggleAccidente(): void {
-    this.srv.formulario.esAccidenteTransito = !this.srv.formulario.esAccidenteTransito;
+    this.srv.formulario.esAccidenteTransito =
+      !this.srv.formulario.esAccidenteTransito;
     this.srv.actualizarIafaAutomatico();
     this.cdr.detectChanges();
   }
@@ -120,13 +137,14 @@ export class RegistroTriajeModal implements OnInit {
   obtenerSexo(): string {
     const id = this.srv.formulario.idTipoSexo;
     if (!id) return '—';
-    const sexo = this.srv.tiposSexo.find(s => String(s.id) === String(id));
+    const sexo = this.srv.tiposSexo.find((s) => String(s.id) === String(id));
     return sexo ? (sexo.descripcion ?? '—') : '—';
   }
 
   continuar(): void {
     if (!this.srv.pacienteEncontrado) {
-      this.srv.mensajeError = 'Busque el documento del paciente antes de continuar.';
+      this.srv.mensajeError =
+        'Busque el documento del paciente antes de continuar.';
       this.cdr.detectChanges();
       return;
     }

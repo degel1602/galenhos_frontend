@@ -1,9 +1,13 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { IMenu, IMenuPermiso, IAuthMenus } from '../../../compartido/tipos/tipos';
+import type {
+  IAuthMenus,
+  IMenu,
+  IMenuPermiso,
+} from '../../../compartido/tipos/tipos';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private readonly router = inject(Router);
@@ -12,7 +16,6 @@ export class AuthService {
   private readonly MENUS_KEY = 'galenos.menus';
   private readonly PERMISOS_KEY = 'galenos.permisos';
 
-  // UI State Signals
   readonly isAuthenticated = signal<boolean>(!!this.getToken());
   readonly username = signal<string | null>(this.getStoredUsername());
   readonly menus = signal<IMenu[]>(this.getStoredMenus());
@@ -82,23 +85,32 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  /**
-   * Verifica si el usuario tiene un permiso específico en una ruta.
-   * Si no se proporciona la ruta, usa la ruta actual del router.
-   */
-  hasPermission(action: 'agregar' | 'modificar' | 'eliminar' | 'ver' | 'imprimir', path?: string): boolean {
+  hasPermission(
+    action: 'agregar' | 'modificar' | 'eliminar' | 'ver' | 'imprimir',
+    path?: string,
+  ): boolean {
     const targetPath = path || this.router.url;
-    // Buscar el permiso que coincida con la ruta actual
-    const currentPermiso = this.permisos().find(p => targetPath.includes(p.claveWeb) && p.claveWeb !== '');
-    
+
+    const currentPermiso = this.permisos().find(
+      (p) => targetPath.includes(p.claveWeb) && p.claveWeb !== '',
+    );
+
     if (!currentPermiso) {
-      return false; // Si no hay configuración de permisos para esta ruta, denegar por defecto
+      return false;
     }
 
     if (action === 'ver' || action === 'imprimir') {
-      return (currentPermiso as any)[action] === true || currentPermiso.agregar || currentPermiso.modificar || currentPermiso.eliminar;
+      return (
+        (currentPermiso as unknown as Record<string, unknown>)[action] ===
+          true ||
+        currentPermiso.agregar ||
+        currentPermiso.modificar ||
+        currentPermiso.eliminar
+      );
     }
 
-    return (currentPermiso as any)[action] === true;
+    return (
+      (currentPermiso as unknown as Record<string, unknown>)[action] === true
+    );
   }
 }

@@ -1,18 +1,18 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
+import { TypewriterTextComponent } from '../../../../../../compartido/ui/typewriter-text/typewriter-text.component';
 import { AuthService } from '../../../../aplicacion/auth.service';
 import { AuthApiService } from '../../../salida/http/auth.api.service';
-import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
-
-import { TypewriterTextComponent } from '../../../../../../compartido/ui/typewriter-text/typewriter-text.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [FormsModule, TypewriterTextComponent],
   templateUrl: './login.component.html',
-  styles: [`
+  styles: [
+    `
     .slideshow-bg {
       position: absolute;
       inset: 0;
@@ -33,7 +33,8 @@ import { TypewriterTextComponent } from '../../../../../../compartido/ui/typewri
       35% { opacity: 0; transform: scale(1); }
       100% { opacity: 0; transform: scale(1); }
     }
-  `]
+  `,
+  ],
 })
 export class LoginComponent {
   private authService = inject(AuthService);
@@ -52,7 +53,7 @@ export class LoginComponent {
     'Para todo el equipo de salud.',
     'Innovación en cada consulta.',
     'Para nuestro aliado en Seguridad.',
-    'El futuro de la atención médica en tus manos.'
+    'El futuro de la atención médica en tus manos.',
   ];
 
   async handleLogin() {
@@ -71,10 +72,14 @@ export class LoginComponent {
       this.authService.setMenus(authMenus);
       this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
-      if (err instanceof ApiRequestError && err.code === 'INVALID_CREDENTIALS') {
+      if (
+        err instanceof ApiRequestError &&
+        err.code === 'INVALID_CREDENTIALS'
+      ) {
         this.error = 'Usuario o contraseña incorrectos.';
       } else if (err instanceof ApiRequestError && err.status === 0) {
-        this.error = 'No se pudo conectar con el servidor. Verifique la URL de la API.';
+        this.error =
+          'No se pudo conectar con el servidor. Verifique la URL de la API.';
       } else if (err instanceof ApiRequestError) {
         this.error = err.message;
       } else {

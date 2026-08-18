@@ -20,7 +20,11 @@ export interface ITimeSlot {
   endsAt: string;
 }
 
-export type AppointmentStatus = 'SCHEDULED' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
+export type AppointmentStatus =
+  | 'SCHEDULED'
+  | 'CONFIRMED'
+  | 'CANCELLED'
+  | 'COMPLETED';
 
 export interface IAppointment {
   id: string;

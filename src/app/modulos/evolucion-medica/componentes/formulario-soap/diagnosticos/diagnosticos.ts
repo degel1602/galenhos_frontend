@@ -1,6 +1,17 @@
-import { Component, ChangeDetectionStrategy, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  inject,
+} from '@angular/core';
+import {
+  type FormArray,
+  FormBuilder,
+  type FormControl,
+  type FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { AuthService } from '../../../../auth/aplicacion/auth.service';
 
 export interface DxForm {
@@ -11,14 +22,23 @@ export interface DxForm {
   estado: FormControl<string | null>;
 }
 
-import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
-import { TablaComponent, ColumnaTabla } from '../../../../../compartido/componentes/tabla/tabla.component';
 import { ColumnaTemplateDirective } from '../../../../../compartido/componentes/tabla/columna-template.directive';
+import {
+  type ColumnaTabla,
+  TablaComponent,
+} from '../../../../../compartido/componentes/tabla/tabla.component';
+import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
 
 @Component({
   selector: 'app-diagnosticos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent, TablaComponent, ColumnaTemplateDirective],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ErrorMensajeComponent,
+    TablaComponent,
+    ColumnaTemplateDirective,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mb-8">
@@ -93,10 +113,10 @@ import { ColumnaTemplateDirective } from '../../../../../compartido/componentes/
         </button>
       }
     </div>
-  `
+  `,
 })
 export class DiagnosticosComponent {
-  @Input({required: true}) formArray!: FormArray<FormGroup<DxForm>>;
+  @Input({ required: true }) formArray!: FormArray<FormGroup<DxForm>>;
   private readonly fb = inject(FormBuilder);
   public readonly authService = inject(AuthService);
 
@@ -106,17 +126,24 @@ export class DiagnosticosComponent {
     { campo: 'tipoCustom', cabecera: 'Tipo' },
     { campo: 'condicionCustom', cabecera: 'Condición' },
     { campo: 'estadoCustom', cabecera: 'Estado' },
-    { campo: 'accionesCustom', cabecera: '', alineacion: 'center', ancho: '40px' }
+    {
+      campo: 'accionesCustom',
+      cabecera: '',
+      alineacion: 'center',
+      ancho: '40px',
+    },
   ];
 
   agregarDx() {
-    this.formArray.push(this.fb.group({
-      cie10: [''],
-      descripcion: [''],
-      tipo: ['Presuntivo'],
-      condicion: ['Secundario'],
-      estado: ['Activo']
-    }) as FormGroup<DxForm>);
+    this.formArray.push(
+      this.fb.group({
+        cie10: [''],
+        descripcion: [''],
+        tipo: ['Presuntivo'],
+        condicion: ['Secundario'],
+        estado: ['Activo'],
+      }) as FormGroup<DxForm>,
+    );
   }
 
   removerDx(index: number) {

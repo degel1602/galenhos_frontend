@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { computed, Injectable, inject, signal } from '@angular/core';
 import { ApiClientService } from '../../../compartido/api-client/api-client.service';
 
 export type ViewMode = 'tray' | 'form';
@@ -32,18 +32,16 @@ export interface EvolucionFirma {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class EvolucionService {
   private readonly api = inject(ApiClientService);
 
-  // Estado base con Signals
   public readonly viewMode = signal<ViewMode>('tray');
   public readonly patientSearch = signal<string>('');
   public readonly fechaDesde = signal<string>('');
   public readonly fechaHasta = signal<string>('');
-  
-  // Datos reales para la bandeja
+
   public readonly pacientes = signal<PacienteItem[]>([]);
   public readonly isLoading = signal<boolean>(false);
   public readonly page = signal<number>(1);
@@ -53,16 +51,16 @@ export class EvolucionService {
 
   public readonly activePatient = signal<PacienteItem | null>(null);
 
-  // Derivados (Computed)
   public readonly filteredPacientes = computed(() => {
     const term = this.patientSearch().toLowerCase();
     if (!term) return this.pacientes();
-    return this.pacientes().filter(p => 
-      p.nombre.toLowerCase().includes(term) || p.historia.toLowerCase().includes(term)
+    return this.pacientes().filter(
+      (p) =>
+        p.nombre.toLowerCase().includes(term) ||
+        p.historia.toLowerCase().includes(term),
     );
   });
 
-  // Acciones
   public async cargarPacientes(resetPage = true) {
     if (resetPage) this.page.set(1);
     this.isLoading.set(true);
@@ -79,20 +77,19 @@ export class EvolucionService {
       params.append('page', this.page().toString());
       params.append('pageSize', this.pageSize().toString());
       const qs = params.toString();
-      const url = '/api/v1/evoluciones/pacientes?' + qs;
-      const data = await this.api.request<PaginaResponse<PacienteItem>>(
-        url,
-        { method: 'GET' }
-      );
+      const url = `/api/v1/evoluciones/pacientes?${qs}`;
+      const data = await this.api.request<PaginaResponse<PacienteItem>>(url, {
+        method: 'GET',
+      });
       if (data) {
-        this.pacientes.set(data.items ?? data as unknown as PacienteItem[]);
+        this.pacientes.set(data.items ?? (data as unknown as PacienteItem[]));
         if (Array.isArray(data)) {
           this.totalPages.set(1);
           this.totalItems.set(data.length);
         } else {
           this.page.set(data.page ?? 1);
           this.totalPages.set(data.totalPages ?? 1);
-          this.totalItems.set(data.totalItems ?? (data.items?.length ?? 0));
+          this.totalItems.set(data.totalItems ?? data.items?.length ?? 0);
         }
       }
     } catch (error) {
@@ -103,27 +100,34 @@ export class EvolucionService {
   }
 
   public irAPagina(pagina: number) {
-    if (pagina < 1 || pagina > this.totalPages() || pagina === this.page()) return;
+    if (pagina < 1 || pagina > this.totalPages() || pagina === this.page())
+      return;
     this.page.set(pagina);
     this.cargarPacientes(false);
   }
 
-  async guardarEvolucion(dataB64: string): Promise<{ ipCliente: string; fecha: string; hora: string } | null> {
+  async guardarEvolucion(
+    dataB64: string,
+  ): Promise<{ ipCliente: string; fecha: string; hora: string } | null> {
     const paciente = this.activePatient();
     if (!paciente) return null;
 
     try {
-      const data = await this.api.request<{ ipCliente?: string; fecha?: string; hora?: string }>('/api/v1/evoluciones', {
+      const data = await this.api.request<{
+        ipCliente?: string;
+        fecha?: string;
+        hora?: string;
+      }>('/api/v1/evoluciones', {
         method: 'POST',
         body: JSON.stringify({
           idRegAtencion: paciente.idRegAtencion,
-          dataB64: dataB64
-        })
+          dataB64: dataB64,
+        }),
       });
       return {
         ipCliente: data?.ipCliente ?? '',
         fecha: data?.fecha ?? '',
-        hora: data?.hora ?? ''
+        hora: data?.hora ?? '',
       };
     } catch (error) {
       console.error('Error guardando evolución:', error);
@@ -133,7 +137,10 @@ export class EvolucionService {
 
   async listarEvoluciones(idRegAtencion: number): Promise<EvolucionFirma[]> {
     try {
-      const data = await this.api.request<EvolucionFirma[]>(`/api/v1/evoluciones/paciente/${idRegAtencion}`, { method: 'GET' });
+      const data = await this.api.request<EvolucionFirma[]>(
+        `/api/v1/evoluciones/paciente/${idRegAtencion}`,
+        { method: 'GET' },
+      );
       return data ?? [];
     } catch (error) {
       console.error('Error listando evoluciones del paciente:', error);
@@ -141,13 +148,14 @@ export class EvolucionService {
     }
   }
 
-  decodificarEvolucion(dataB64: string): any | null {
+  decodificarEvolucion(dataB64: string): Record<string, unknown> | null {
     try {
       const binario = atob(dataB64);
       let texto = '';
       for (let i = 0; i < binario.length; i++) {
         const code = binario.charCodeAt(i);
-        texto += code > 127 ? `%${code.toString(16).padStart(2, '0')}` : binario[i];
+        texto +=
+          code > 127 ? `%${code.toString(16).padStart(2, '0')}` : binario[i];
       }
       return JSON.parse(decodeURIComponent(texto));
     } catch (error) {
@@ -160,11 +168,11 @@ export class EvolucionService {
     this.viewMode.set(mode);
   }
 
-  // Normaliza una edad "32 años, 8 meses, -4 días" a valores coherentes,
-  // pidiendo prestado un mes/día cuando el SP devuelve valores negativos.
   public normalizarEdad(edad: string): string {
     if (!edad) return 'N/A';
-    const match = edad.match(/(-?\d+)\s*años?[,\s]+(-?\d+)\s*meses?[,\s]+(-?\d+)\s*días?/i);
+    const match = edad.match(
+      /(-?\d+)\s*años?[,\s]+(-?\d+)\s*meses?[,\s]+(-?\d+)\s*días?/i,
+    );
     if (!match) return edad;
 
     let anios = Number(match[1]);
@@ -190,7 +198,6 @@ export class EvolucionService {
   public clearSelection() {
     this.activePatient.set(null);
     this.setViewMode('tray');
-    this.cargarPacientes(); // Reload on back
+    this.cargarPacientes();
   }
 }
-

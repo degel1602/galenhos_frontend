@@ -1,11 +1,19 @@
-import { Component, ElementRef, ViewChild, Output, EventEmitter, signal, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  type AfterViewInit,
+  Component,
+  type ElementRef,
+  EventEmitter,
+  Output,
+  signal,
+  ViewChild,
+} from '@angular/core';
 
 @Component({
   selector: 'app-firma-digital',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './firma-digital.html'
+  templateUrl: './firma-digital.html',
 })
 export class FirmaDigitalComponent implements AfterViewInit {
   @ViewChild('canvasFirma') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -18,14 +26,14 @@ export class FirmaDigitalComponent implements AfterViewInit {
 
   private ctx!: CanvasRenderingContext2D;
   private trazando = false;
-  private ultimoX = 0;
-  private ultimoY = 0;
 
   ngAfterViewInit(): void {
     const canvas = this.canvasRef.nativeElement;
     canvas.width = 600;
     canvas.height = 220;
-    this.ctx = canvas.getContext('2d')!;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    this.ctx = ctx;
     this.ctx.lineWidth = 2.5;
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
@@ -39,8 +47,6 @@ export class FirmaDigitalComponent implements AfterViewInit {
     this.trazando = true;
     this.dibujando.set(true);
     const pos = this.obtenerPosicion(event);
-    this.ultimoX = pos.x;
-    this.ultimoY = pos.y;
     this.ctx.beginPath();
     this.ctx.moveTo(pos.x, pos.y);
   }
@@ -50,17 +56,17 @@ export class FirmaDigitalComponent implements AfterViewInit {
     const pos = this.obtenerPosicion(event);
     this.ctx.lineTo(pos.x, pos.y);
     this.ctx.stroke();
-    this.ultimoX = pos.x;
-    this.ultimoY = pos.y;
     this.tieneFirma.set(true);
     this.firmaCambio.emit(this.canvasRef.nativeElement.toDataURL('image/png'));
   }
 
-  onPointerUp(event: PointerEvent): void {
+  onPointerUp(_event: PointerEvent): void {
     this.trazando = false;
     this.dibujando.set(false);
     if (this.tieneFirma()) {
-      this.firmaCambio.emit(this.canvasRef.nativeElement.toDataURL('image/png'));
+      this.firmaCambio.emit(
+        this.canvasRef.nativeElement.toDataURL('image/png'),
+      );
     }
   }
 
@@ -71,7 +77,7 @@ export class FirmaDigitalComponent implements AfterViewInit {
     const escalaY = canvas.height / rect.height;
     return {
       x: (event.clientX - rect.left) * escalaX,
-      y: (event.clientY - rect.top) * escalaY
+      y: (event.clientY - rect.top) * escalaY,
     };
   }
 

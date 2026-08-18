@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { MaestrosApiService } from '../../compartido/api/maestros.api.service';
-import { ICatalogoNombre } from '../../compartido/tipos/api-tipos';
+import type { ICatalogoNombre } from '../../compartido/tipos/api-tipos';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UbigeoService {
   private readonly maestrosApi = inject(MaestrosApiService);
@@ -71,10 +71,13 @@ export class UbigeoService {
     }
   }
 
-  buscarEnCatalogo(lista: ICatalogoNombre[], nombre: string): ICatalogoNombre | undefined {
+  buscarEnCatalogo(
+    lista: ICatalogoNombre[],
+    nombre: string,
+  ): ICatalogoNombre | undefined {
     const n = this.normalizarTexto(nombre);
     if (!n) return undefined;
-    return lista.find(x => {
+    return lista.find((x) => {
       const d = this.normalizarTexto(x.nombre);
       return d === n || (n.length >= 5 && (d.includes(n) || n.includes(d)));
     });
@@ -82,6 +85,10 @@ export class UbigeoService {
 
   private normalizarTexto(t: string | undefined | null): string {
     if (!t) return '';
-    return t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+    return t
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toUpperCase();
   }
 }

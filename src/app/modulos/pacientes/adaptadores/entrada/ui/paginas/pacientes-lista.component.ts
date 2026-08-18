@@ -1,14 +1,22 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  type OnInit,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { PacientesApiService } from '../../../salida/http/pacientes.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
-import { IPaciente } from '../../../../../../compartido/tipos/api-tipos';
-import { RegistroPacienteModal } from '../../../../../../compartido/ui/registro-paciente/registro-paciente-modal';
-import { PaginacionComponent } from '../../../../../../compartido/ui/paginacion/paginacion';
-import { AuthService } from '../../../../../auth/aplicacion/auth.service';
-import { TablaComponent, ColumnaTabla } from '../../../../../../compartido/componentes/tabla/tabla.component';
 import { ColumnaTemplateDirective } from '../../../../../../compartido/componentes/tabla/columna-template.directive';
+import {
+  type ColumnaTabla,
+  TablaComponent,
+} from '../../../../../../compartido/componentes/tabla/tabla.component';
+import type { IPaciente } from '../../../../../../compartido/tipos/api-tipos';
+import { PaginacionComponent } from '../../../../../../compartido/ui/paginacion/paginacion';
+import { RegistroPacienteModal } from '../../../../../../compartido/ui/registro-paciente/registro-paciente-modal';
+import { AuthService } from '../../../../../auth/aplicacion/auth.service';
+import { PacientesApiService } from '../../../salida/http/pacientes.api.service';
 
 interface Filtros {
   documento: string;
@@ -21,8 +29,15 @@ interface Filtros {
 @Component({
   selector: 'app-pacientes-lista',
   standalone: true,
-  imports: [CommonModule, FormsModule, RegistroPacienteModal, PaginacionComponent, TablaComponent, ColumnaTemplateDirective],
-  templateUrl: './pacientes-lista.component.html'
+  imports: [
+    CommonModule,
+    FormsModule,
+    RegistroPacienteModal,
+    PaginacionComponent,
+    TablaComponent,
+    ColumnaTemplateDirective,
+  ],
+  templateUrl: './pacientes-lista.component.html',
 })
 export class PacientesListaComponent implements OnInit {
   private readonly pacientesApi = inject(PacientesApiService);
@@ -34,7 +49,7 @@ export class PacientesListaComponent implements OnInit {
     historiaClinica: '',
     apellidoPaterno: '',
     apellidoMaterno: '',
-    nombres: ''
+    nombres: '',
   };
 
   pacientes: IPaciente[] = [];
@@ -50,10 +65,9 @@ export class PacientesListaComponent implements OnInit {
     { campo: 'pacienteCustom', cabecera: 'Paciente' },
     { campo: 'sexoCustom', cabecera: 'Sexo', alineacion: 'center' },
     { campo: 'fNacimientoCustom', cabecera: 'F. Nacimiento' },
-    { campo: 'accionesCustom', cabecera: 'Acciones', alineacion: 'right' }
+    { campo: 'accionesCustom', cabecera: 'Acciones', alineacion: 'right' },
   ];
 
-  // Paginación
   paginaActual = 1;
   totalPaginas = 1;
   totalRegistros = 0;
@@ -96,10 +110,21 @@ export class PacientesListaComponent implements OnInit {
     }
   }
 
-  private validarFiltros(doc: string, hc: string, pat: string, mat: string, nom: string): boolean {
+  private validarFiltros(
+    doc: string,
+    hc: string,
+    pat: string,
+    mat: string,
+    nom: string,
+  ): boolean {
     if (!doc && !hc) {
-      if ((pat && pat.length < 3) || (mat && mat.length < 3) || (nom && nom.length < 3)) {
-        this.error = 'Para búsquedas por nombre o apellido, ingrese al menos 3 caracteres.';
+      if (
+        (pat && pat.length < 3) ||
+        (mat && mat.length < 3) ||
+        (nom && nom.length < 3)
+      ) {
+        this.error =
+          'Para búsquedas por nombre o apellido, ingrese al menos 3 caracteres.';
         return false;
       }
     } else if (doc && doc.length < 4) {
@@ -109,14 +134,20 @@ export class PacientesListaComponent implements OnInit {
     return true;
   }
 
-  private async realizarBusquedaAvanzada(doc: string, hc: string, pat: string, mat: string, nom: string) {
+  private async realizarBusquedaAvanzada(
+    doc: string,
+    hc: string,
+    pat: string,
+    mat: string,
+    nom: string,
+  ) {
     const query = new URLSearchParams();
     if (doc) query.append('documento', doc);
     if (hc) query.append('hc', hc);
     if (pat) query.append('paterno', pat);
     if (mat) query.append('materno', mat);
     if (nom) query.append('nombres', nom);
-    
+
     const res = await this.pacientesApi.buscar(query.toString());
     this.pacientes = res || [];
     this.paginaActual = 1;
@@ -150,7 +181,7 @@ export class PacientesListaComponent implements OnInit {
       historiaClinica: '',
       apellidoPaterno: '',
       apellidoMaterno: '',
-      nombres: ''
+      nombres: '',
     };
     this.buscarPacientes();
   }
@@ -179,25 +210,28 @@ export class PacientesListaComponent implements OnInit {
 
   onPacienteRegistrado(nombre: string) {
     this.mensajeExito = `Paciente ${nombre} registrado correctamente.`;
-    setTimeout(() => this.mensajeExito = '', 5000);
+    setTimeout(() => (this.mensajeExito = ''), 5000);
     this.buscarPacientes();
   }
 
   onPacienteActualizado(nombre: string) {
     this.mensajeExito = `Paciente ${nombre} actualizado correctamente.`;
-    setTimeout(() => this.mensajeExito = '', 5000);
+    setTimeout(() => (this.mensajeExito = ''), 5000);
     this.buscarPacientes();
   }
 
   async eliminarPaciente(paciente: IPaciente) {
-    const nombre = `${paciente.paternalSurname} ${paciente.maternalSurname}, ${paciente.firstName}`.trim();
-    const confirmar = window.confirm(`¿Eliminar al paciente ${nombre}?\nEsta acción no se puede deshacer.`);
+    const nombre =
+      `${paciente.paternalSurname} ${paciente.maternalSurname}, ${paciente.firstName}`.trim();
+    const confirmar = window.confirm(
+      `¿Eliminar al paciente ${nombre}?\nEsta acción no se puede deshacer.`,
+    );
     if (!confirmar) return;
     this.error = '';
     try {
       await this.pacientesApi.eliminar(paciente.patientId);
       this.mensajeExito = `Paciente ${nombre} eliminado correctamente.`;
-      setTimeout(() => this.mensajeExito = '', 5000);
+      setTimeout(() => (this.mensajeExito = ''), 5000);
       this.buscarPacientes();
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) {

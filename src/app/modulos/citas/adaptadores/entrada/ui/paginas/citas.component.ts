@@ -1,16 +1,18 @@
+import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { CitasApiService } from '../../../salida/http/citas.api.service';
-import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
-import { IAppointment } from '../../../../../../compartido/tipos/tipos';
+import type { IAppointment } from '../../../../../../compartido/tipos/tipos';
 import { Etiqueta } from '../../../../../../compartido/ui/etiqueta/etiqueta';
+import { AuthService } from '../../../../../auth/aplicacion/auth.service';
+import { CitasApiService } from '../../../salida/http/citas.api.service';
 
 const errorMessages: Record<string, string> = {
-  INVALID_APPOINTMENT: 'Los datos de la cita no son válidos. Revise pacienteId, doctorId, fechas y motivo.',
-  DOCTOR_NOT_AVAILABLE: 'El médico no tiene disponibilidad en el horario solicitado.',
-  APPOINTMENT_NOT_FOUND: 'No existe ninguna cita con ese id.'
+  INVALID_APPOINTMENT:
+    'Los datos de la cita no son válidos. Revise pacienteId, doctorId, fechas y motivo.',
+  DOCTOR_NOT_AVAILABLE:
+    'El médico no tiene disponibilidad en el horario solicitado.',
+  APPOINTMENT_NOT_FOUND: 'No existe ninguna cita con ese id.',
 };
 
 function friendlyError(err: unknown, fallback: string): string {
@@ -24,7 +26,7 @@ function friendlyError(err: unknown, fallback: string): string {
   selector: 'app-citas',
   standalone: true,
   imports: [FormsModule, CommonModule, Etiqueta],
-  templateUrl: './citas.component.html'
+  templateUrl: './citas.component.html',
 })
 export class CitasComponent {
   private readonly citasApi = inject(CitasApiService);
@@ -38,14 +40,14 @@ export class CitasComponent {
     reason: '',
     loading: false,
     error: '',
-    created: null as IAppointment | null
+    created: null as IAppointment | null,
   };
 
   buscarState = {
     id: '',
     loading: false,
     error: '',
-    appointment: null as IAppointment | null
+    appointment: null as IAppointment | null,
   };
 
   async handleAgendarSubmit() {
@@ -64,7 +66,7 @@ export class CitasComponent {
         doctorId: s.doctorId,
         startsAt: new Date(s.startsAt).toISOString(),
         endsAt: new Date(s.endsAt).toISOString(),
-        reason: s.reason
+        reason: s.reason,
       });
     } catch (err: unknown) {
       s.error = friendlyError(err, 'No se pudo agendar la cita.');
@@ -92,13 +94,20 @@ export class CitasComponent {
     }
   }
 
-  getStatusBadgeType(status: string): 'success' | 'warning' | 'danger' | 'neutral' {
+  getStatusBadgeType(
+    status: string,
+  ): 'success' | 'warning' | 'danger' | 'neutral' {
     switch (status) {
-      case 'SCHEDULED': return 'neutral';
-      case 'CONFIRMED': return 'success';
-      case 'CANCELLED': return 'danger';
-      case 'COMPLETED': return 'success';
-      default: return 'neutral';
+      case 'SCHEDULED':
+        return 'neutral';
+      case 'CONFIRMED':
+        return 'success';
+      case 'CANCELLED':
+        return 'danger';
+      case 'COMPLETED':
+        return 'success';
+      default:
+        return 'neutral';
     }
   }
 }

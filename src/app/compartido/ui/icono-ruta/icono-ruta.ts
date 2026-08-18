@@ -142,53 +142,134 @@ import { Component, Input } from '@angular/core';
         }
       }
     </svg>
-  `
+  `,
 })
 export class IconoRuta {
   @Input() ruta: string = '';
   @Input() idGrupo: number = 0;
 
-  // Grupos del menú (ListBarGrupos); los ids son estables en la BD.
   categoriaDeGrupo(id: number): string {
     switch (id) {
-      case 100: return 'usuario';            // Consulta externa
-      case 200: return 'cruz';               // Emergencia
-      case 300: return 'cama';               // Hospitalización
-      case 400: return 'calendario';         // Programación General
-      case 700: return 'dolar';              // Caja
-      case 800: return 'pastilla';           // Farmacia
-      case 1200: return 'clipboard';         // General
-      case 1300: return 'escudo';            // Seguridad
-      case 1500: return 'recibo';            // Facturación
-      case 1700: return 'engranaje';         // Fact - Config
-      case 1800: return 'microscopio';       // Laboratorio
-      case 1900: return 'imagen';            // Imagenología
-      case 2000: return 'escudo';            // Seguros
-      case 2003: return 'escalpelo';         // Centro Quirúrgico
-      case 2100: return 'video';             // TeleMedicina
-      case 2101: return 'pulso';             // Epidemiología
-      case 2103: return 'tablero';           // BSC
-      case 2104: return 'engranaje';         // Configuración
-      case 2105: return 'casa';              // ADOGE
-      default: return 'generico';
+      case 100:
+        return 'usuario';
+      case 200:
+        return 'cruz';
+      case 300:
+        return 'cama';
+      case 400:
+        return 'calendario';
+      case 700:
+        return 'dolar';
+      case 800:
+        return 'pastilla';
+      case 1200:
+        return 'clipboard';
+      case 1300:
+        return 'escudo';
+      case 1500:
+        return 'recibo';
+      case 1700:
+        return 'engranaje';
+      case 1800:
+        return 'microscopio';
+      case 1900:
+        return 'imagen';
+      case 2000:
+        return 'escudo';
+      case 2003:
+        return 'escalpelo';
+      case 2100:
+        return 'video';
+      case 2101:
+        return 'pulso';
+      case 2103:
+        return 'tablero';
+      case 2104:
+        return 'engranaje';
+      case 2105:
+        return 'casa';
+      default:
+        return 'generico';
     }
   }
 
-  // Mapa ruta -> categoría de icono. Las rutas (claveWeb) vienen de la API
-  // de menús y no cambian de nombre, por lo que el mapa es estable.
   categoriaDeRuta(ruta: string): string {
     const r = ruta.toLowerCase().replace(/\//g, '_');
-    if (['pacientes', 'paciente', 'empleados', 'impfuasproc', 'judicial', 'descansomedico', 'listar_referencias', 'usuarios'].includes(r)) return 'usuario';
-    if (['citas', 'citasbiopsia', 'programacion', 'cajas', 'servicios', 'progra_image'].includes(r)) return 'calendario';
-    if (['triajes', 'atenciones', 'atencionesbi', 'atencionesprebi', 'atenciontel', 'bandejalab', 'laboratorio_patologia_clinica', 'aprobancionrecetas', 'fichaoperatoria', 'solicitudqx', 'templates'].includes(r)) return 'clipboard';
+    if (
+      [
+        'pacientes',
+        'paciente',
+        'empleados',
+        'impfuasproc',
+        'judicial',
+        'descansomedico',
+        'listar_referencias',
+        'usuarios',
+      ].includes(r)
+    )
+      return 'usuario';
+    if (
+      [
+        'citas',
+        'citasbiopsia',
+        'programacion',
+        'cajas',
+        'servicios',
+        'progra_image',
+      ].includes(r)
+    )
+      return 'calendario';
+    if (
+      [
+        'triajes',
+        'atenciones',
+        'atencionesbi',
+        'atencionesprebi',
+        'atenciontel',
+        'bandejalab',
+        'laboratorio_patologia_clinica',
+        'aprobancionrecetas',
+        'fichaoperatoria',
+        'solicitudqx',
+        'templates',
+      ].includes(r)
+    )
+      return 'clipboard';
     if (['estadocuenta', 'consumoservicio'].includes(r)) return 'recibo';
     if (['camasobservacion'].includes(r)) return 'cama';
-    if (['emer_interconsulta', 'hosp_interconsulta'].includes(r)) return 'mensaje';
-    if (['hospitalizacion', 'emergencia_triaje', 'ficha_cancer', 'ficha_diabetes'].includes(r)) return 'pulso';
-    if (['farmacia_ventas', 'inventario', 'notas_de_ingreso_al', 'notas_de_salida_al'].includes(r)) return 'pastilla';
+    if (['emer_interconsulta', 'hosp_interconsulta'].includes(r))
+      return 'mensaje';
+    if (
+      [
+        'hospitalizacion',
+        'emergencia_triaje',
+        'ficha_cancer',
+        'ficha_diabetes',
+      ].includes(r)
+    )
+      return 'pulso';
+    if (
+      [
+        'farmacia_ventas',
+        'inventario',
+        'notas_de_ingreso_al',
+        'notas_de_salida_al',
+      ].includes(r)
+    )
+      return 'pastilla';
     if (['paquetes'].includes(r)) return 'paquete';
     if (['anatomiapatologica'].includes(r)) return 'microscopio';
-    if (['imgecografiac', 'imgecografiao', 'imagrayosx', 'bandejaimagen', 'imagtomografia', 'mamografiao'].includes(r)) return 'imagen';
+    if (
+      [
+        'imgecografiac',
+        'imgecografiao',
+        'imagrayosx',
+        'bandejaimagen',
+        'imagtomografia',
+        'mamografiao',
+      ].includes(r)
+    )
+      return 'imagen';
     if (['imagtomoplaca'].includes(r)) return 'camara';
     if (['fuas', 'bandejafuas', 'fuaobs'].includes(r)) return 'escudo';
     if (['impresoras'].includes(r)) return 'impresora';

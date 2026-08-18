@@ -1,21 +1,39 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
-import { EvolucionService } from '../../servicios/evolucion.service';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  type OnInit,
+  signal,
+} from '@angular/core';
+import {
+  type FormArray,
+  FormBuilder,
+  type FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { ModalGlobalService } from '../../../../compartido/ui/modal-global/modal-global.service';
 import { AuthService } from '../../../auth/aplicacion/auth.service';
-import { SintomaService, SintomaCatalogo, SintomaSeleccionado } from '../../servicios/sintoma.service';
-import { SignosVitalesComponent } from './signos-vitales/signos-vitales';
+import { EvolucionService } from '../../servicios/evolucion.service';
+import {
+  type SintomaCatalogo,
+  type SintomaSeleccionado,
+  SintomaService,
+} from '../../servicios/sintoma.service';
+import { AdjuntosComponent } from './adjuntos/adjuntos';
 import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
 import { ExamenFisicoComponent } from './examen-fisico/examen-fisico';
-import { ResultadosComponent } from './resultados/resultados';
-import { PlanTratamientoComponent } from './plan-tratamiento/plan-tratamiento';
-import { OrdenesMedicasComponent } from './ordenes-medicas/ordenes-medicas';
-import { ProcedimientosCertificadosComponent } from './procedimientos-certificados/procedimientos-certificados';
-import { AdjuntosComponent } from './adjuntos/adjuntos';
+import { FirmaDigitalComponent } from './firma-digital/firma-digital';
 import { InterconsultasComponent } from './interconsultas/interconsultas';
 import { MotivoComponent } from './motivo/motivo';
-import { FirmaDigitalComponent } from './firma-digital/firma-digital';
-import { ModalGlobalService } from '../../../../compartido/ui/modal-global/modal-global.service';
+import { OrdenesMedicasComponent } from './ordenes-medicas/ordenes-medicas';
+import { PlanTratamientoComponent } from './plan-tratamiento/plan-tratamiento';
+import { ProcedimientosCertificadosComponent } from './procedimientos-certificados/procedimientos-certificados';
+import { ResultadosComponent } from './resultados/resultados';
+import { SignosVitalesComponent } from './signos-vitales/signos-vitales';
 
 @Component({
   selector: 'app-formulario-soap',
@@ -34,10 +52,10 @@ import { ModalGlobalService } from '../../../../compartido/ui/modal-global/modal
     AdjuntosComponent,
     InterconsultasComponent,
     MotivoComponent,
-    FirmaDigitalComponent
+    FirmaDigitalComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './formulario-soap.html'
+  templateUrl: './formulario-soap.html',
 })
 export class FormularioSoapComponent implements OnInit {
   public readonly evolucionService = inject(EvolucionService);
@@ -49,24 +67,24 @@ export class FormularioSoapComponent implements OnInit {
   public readonly openGroup = signal<string>('encuentro');
   public readonly isSaving = signal<boolean>(false);
 
-
-  // Franja superior: datos de cabecera de la evolución (editables)
   public fechaEvolucion = new Date().toISOString().slice(0, 10);
   public horaEvolucion = new Date().toTimeString().slice(0, 5);
   public tipoAtencion = 'Emergencia';
   public estadoAtencion = 'Pendiente';
 
-  // Registro de auditoría real tras firmar
-  public readonly auditoria = signal<{ fecha: string; hora: string; usuario: string; ip: string } | null>(null);
+  public readonly auditoria = signal<{
+    fecha: string;
+    hora: string;
+    usuario: string;
+    ip: string;
+  } | null>(null);
 
-  // Firma digital (dibujada en canvas o imagen subida, en base64)
   public readonly firmaDigital = signal<string | null>(null);
 
   onFirmaCambio(dataUrl: string | null): void {
     this.firmaDigital.set(dataUrl);
   }
 
-  // Síntomas referidos (catálogo + selección)
   public readonly sintomasCatalogo = signal<SintomaCatalogo[]>([]);
   public readonly sintomasSeleccionados = signal<Set<number>>(new Set());
   public readonly sintomasCargando = signal<boolean>(false);
@@ -79,11 +97,15 @@ export class FormularioSoapComponent implements OnInit {
     'respiratorio-cv': 'Respiratorio / Cardiovascular',
     gastrointestinal: 'Gastrointestinal',
     neurologico: 'Neurológico',
-    otros: 'Otros'
+    otros: 'Otros',
   };
 
   readonly sintomasPorSistema = computed(() => {
-    const grupos: { clave: string; etiqueta: string; sintomas: SintomaCatalogo[] }[] = [];
+    const grupos: {
+      clave: string;
+      etiqueta: string;
+      sintomas: SintomaCatalogo[];
+    }[] = [];
     const mapa = new Map<string, SintomaCatalogo[]>();
     for (const s of this.sintomasCatalogo()) {
       const arr = mapa.get(s.sistema) ?? [];
@@ -94,13 +116,15 @@ export class FormularioSoapComponent implements OnInit {
       grupos.push({
         clave,
         etiqueta: FormularioSoapComponent.ETIQUETAS_SISTEMA[clave] ?? clave,
-        sintomas: [...lista].sort((a, b) => a.orden - b.orden)
+        sintomas: [...lista].sort((a, b) => a.orden - b.orden),
       });
     }
     return grupos;
   });
 
-  readonly totalSintomasSeleccionados = computed(() => this.sintomasSeleccionados().size);
+  readonly totalSintomasSeleccionados = computed(
+    () => this.sintomasSeleccionados().size,
+  );
 
   ngOnInit() {
     const paciente = this.evolucionService.activePatient();
@@ -119,7 +143,9 @@ export class FormularioSoapComponent implements OnInit {
 
   contarSintomasSistema(clave: string): number {
     const sel = this.sintomasSeleccionados();
-    return this.sintomasCatalogo().filter(s => s.sistema === clave && sel.has(s.idSintoma)).length;
+    return this.sintomasCatalogo().filter(
+      (s) => s.sistema === clave && sel.has(s.idSintoma),
+    ).length;
   }
 
   toggleSintoma(idSintoma: number) {
@@ -133,7 +159,9 @@ export class FormularioSoapComponent implements OnInit {
   }
 
   toggleGrupoSintomas(clave: string) {
-    this.grupoSintomasAbierto.set(this.grupoSintomasAbierto() === clave ? '' : clave);
+    this.grupoSintomasAbierto.set(
+      this.grupoSintomasAbierto() === clave ? '' : clave,
+    );
   }
 
   async agregarSintomaNuevo() {
@@ -143,7 +171,9 @@ export class FormularioSoapComponent implements OnInit {
     const ok = await this.sintomaService.agregarSintoma(sistema, texto);
     if (ok) {
       await this.cargarSintomas();
-      const agregado = this.sintomasCatalogo().find(s => s.sistema === sistema && s.sintoma === texto);
+      const agregado = this.sintomasCatalogo().find(
+        (s) => s.sistema === sistema && s.sintoma === texto,
+      );
       if (agregado) {
         const nuevo = new Set(this.sintomasSeleccionados());
         nuevo.add(agregado.idSintoma);
@@ -155,13 +185,36 @@ export class FormularioSoapComponent implements OnInit {
   }
 
   private static readonly GRUPO_DE_PANEL: Record<string, string> = {
-    p1: 'encuentro', p2: 'encuentro',
-    p3: 'soap', p4: 'soap', p5: 'soap', p6: 'soap', p7: 'soap',
-    p8: 'doc', p9: 'doc', p10: 'doc', p11: 'doc', p14: 'doc',
-    p15: 'cierre'
+    p1: 'encuentro',
+    p2: 'encuentro',
+    p3: 'soap',
+    p4: 'soap',
+    p5: 'soap',
+    p6: 'soap',
+    p7: 'soap',
+    p8: 'doc',
+    p9: 'doc',
+    p10: 'doc',
+    p11: 'doc',
+    p14: 'doc',
+    p15: 'cierre',
   };
 
-  private static readonly ORDEN_PANELES = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10', 'p11', 'p14', 'p15'];
+  private static readonly ORDEN_PANELES = [
+    'p1',
+    'p2',
+    'p3',
+    'p4',
+    'p5',
+    'p6',
+    'p7',
+    'p8',
+    'p9',
+    'p10',
+    'p11',
+    'p14',
+    'p15',
+  ];
 
   activarPanel(panel: string) {
     this.activePanel.set(panel);
@@ -170,23 +223,33 @@ export class FormularioSoapComponent implements OnInit {
   }
 
   irAnterior() {
-    const idx = FormularioSoapComponent.ORDEN_PANELES.indexOf(this.activePanel());
-    if (idx > 0) this.activarPanel(FormularioSoapComponent.ORDEN_PANELES[idx - 1]);
+    const idx = FormularioSoapComponent.ORDEN_PANELES.indexOf(
+      this.activePanel(),
+    );
+    if (idx > 0)
+      this.activarPanel(FormularioSoapComponent.ORDEN_PANELES[idx - 1]);
   }
 
   irSiguiente() {
-    const idx = FormularioSoapComponent.ORDEN_PANELES.indexOf(this.activePanel());
+    const idx = FormularioSoapComponent.ORDEN_PANELES.indexOf(
+      this.activePanel(),
+    );
     if (idx < FormularioSoapComponent.ORDEN_PANELES.length - 1) {
       this.activarPanel(FormularioSoapComponent.ORDEN_PANELES[idx + 1]);
     }
   }
 
   get esPrimerPanel(): boolean {
-    return FormularioSoapComponent.ORDEN_PANELES.indexOf(this.activePanel()) === 0;
+    return (
+      FormularioSoapComponent.ORDEN_PANELES.indexOf(this.activePanel()) === 0
+    );
   }
 
   get esUltimoPanel(): boolean {
-    return FormularioSoapComponent.ORDEN_PANELES.indexOf(this.activePanel()) === FormularioSoapComponent.ORDEN_PANELES.length - 1;
+    return (
+      FormularioSoapComponent.ORDEN_PANELES.indexOf(this.activePanel()) ===
+      FormularioSoapComponent.ORDEN_PANELES.length - 1
+    );
   }
 
   toggleGroup(grupo: string) {
@@ -202,7 +265,7 @@ export class FormularioSoapComponent implements OnInit {
       postoperatorio: [false],
       interconsulta: [false],
       emergencia: [false],
-      detalle: ['']
+      detalle: [''],
     }),
     subjetivo: this.fb.group({
       dolor: [false],
@@ -213,7 +276,7 @@ export class FormularioSoapComponent implements OnInit {
       mareos: [false],
       disnea: [false],
       evolucionSintomas: [''],
-      escalaDolor: [null]
+      escalaDolor: [null],
     }),
     signosVitales: this.fb.group({
       presionArterial: [''],
@@ -224,26 +287,35 @@ export class FormularioSoapComponent implements OnInit {
       peso: [null],
       talla: [null],
       imc: ['—'],
-      glucemia: [null]
+      glucemia: [null],
     }),
     examenFisico: this.fb.array([
-      // Sistemas agrupados según el diseño del examen físico por sistemas.
-      ...['Estado general','Piel','Cabeza y cuello','Tórax y pulmones','Corazón','Abdomen','Genitourinario','Extremidades y osteomuscular','Neurológico y estado mental'].map(sys =>
+      ...[
+        'Estado general',
+        'Piel',
+        'Cabeza y cuello',
+        'Tórax y pulmones',
+        'Corazón',
+        'Abdomen',
+        'Genitourinario',
+        'Extremidades y osteomuscular',
+        'Neurológico y estado mental',
+      ].map((sys) =>
         this.fb.group({
           sistema: [sys],
           normal: [true],
-          hallazgo: ['', [Validators.minLength(5)]]
-        })
-      )
+          hallazgo: ['', [Validators.minLength(5)]],
+        }),
+      ),
     ]),
     resultados: this.fb.group({
       laboratorio: this.fb.array([]),
       imagenes: this.fb.array([]),
-      otros: this.fb.array([])
+      otros: this.fb.array([]),
     }),
     evaluacion: this.fb.group({
       estadoClinico: ['Mejoría'],
-      pronostico: ['Bueno']
+      pronostico: ['Bueno'],
     }),
     diagnosticos: this.fb.array([
       this.fb.group({
@@ -251,8 +323,8 @@ export class FormularioSoapComponent implements OnInit {
         descripcion: [''],
         tipo: ['Presuntivo'],
         condicion: ['Principal'],
-        estado: ['Activo']
-      })
+        estado: ['Activo'],
+      }),
     ]),
     plan: this.fb.group({
       farmacologico: this.fb.array([]),
@@ -261,32 +333,32 @@ export class FormularioSoapComponent implements OnInit {
         suturas: [false],
         cateter: [false],
         intubacion: [false],
-        otro: ['']
+        otro: [''],
       }),
       solicitudExamenes: this.fb.group({
         laboratorio: [''],
         imagenes: [''],
-        otros: ['']
+        otros: [''],
       }),
       interconsultas: this.fb.group({
         cardiologia: [false],
         cirugia: [false],
         nutricion: [false],
         psicologia: [false],
-        otra: ['']
+        otra: [''],
       }),
       indicacionesGenerales: this.fb.group({
         dieta: [''],
         reposo: [''],
         hidratacion: [''],
         oxigeno: [''],
-        restricciones: ['']
-      })
+        restricciones: [''],
+      }),
     }),
     evolucionLibre: [''],
     ordenesMedicas: this.fb.group({
-      orden: [''], // radio
-      detalle: ['']
+      orden: [''],
+      detalle: [''],
     }),
     prescripcion: this.fb.array([]),
     procedimientosRealizados: this.fb.array([]),
@@ -294,16 +366,16 @@ export class FormularioSoapComponent implements OnInit {
       dias: [null],
       fechaInicio: [''],
       fechaFin: [''],
-      motivo: ['']
+      motivo: [''],
     }),
     certificados: this.fb.group({
       certificadoMedico: [false],
       informeMedico: [false],
       epicrisis: [false],
       constancias: [false],
-      observaciones: ['']
+      observaciones: [''],
     }),
-    adjuntos: this.fb.array([])
+    adjuntos: this.fb.array([]),
   });
 
   get signosVitalesForm(): FormGroup {
@@ -330,18 +402,20 @@ export class FormularioSoapComponent implements OnInit {
     return this.soapForm.get('adjuntos') as FormArray;
   }
 
-
   async firmar() {
     const firma = this.firmaDigital();
     if (!firma) {
-      this.modalGlobal.error('Debe dibujar su firma en el recuadro o subir una imagen de firma antes de firmar la evolución.', 'Firma requerida');
+      this.modalGlobal.error(
+        'Debe dibujar su firma en el recuadro o subir una imagen de firma antes de firmar la evolución.',
+        'Firma requerida',
+      );
       return;
     }
 
     const confirmado = await this.modalGlobal.confirmar(
       'Se guardará la evolución completa con su firma. ¿Desea continuar?',
       'Firmar evolución',
-      'Firmar'
+      'Firmar',
     );
     if (!confirmado) return;
 
@@ -350,11 +424,18 @@ export class FormularioSoapComponent implements OnInit {
     const catalogo = this.sintomasCatalogo();
     const seleccion = this.sintomasSeleccionados();
     const sintomas: SintomaSeleccionado[] = catalogo
-      .filter(s => seleccion.has(s.idSintoma))
-      .map(s => ({ idSintoma: s.idSintoma, sistema: s.sistema, sintoma: s.sintoma }));
+      .filter((s) => seleccion.has(s.idSintoma))
+      .map((s) => ({
+        idSintoma: s.idSintoma,
+        sistema: s.sistema,
+        sintoma: s.sintoma,
+      }));
 
     if (paciente && sintomas.length > 0) {
-      await this.sintomaService.guardarSintomas(paciente.idRegAtencion, sintomas);
+      await this.sintomaService.guardarSintomas(
+        paciente.idRegAtencion,
+        sintomas,
+      );
     }
 
     const formData = {
@@ -365,15 +446,19 @@ export class FormularioSoapComponent implements OnInit {
         hora: this.horaEvolucion,
         medicoTratante: this.authService.username() ?? '',
         tipoAtencion: this.tipoAtencion,
-        estado: this.estadoAtencion
+        estado: this.estadoAtencion,
       },
       firmaDigital: firma,
-      sintomas: sintomas.map(s => s.sintoma),
-      ...this.soapForm.value
+      sintomas: sintomas.map((s) => s.sintoma),
+      ...this.soapForm.value,
     };
 
-    // Codificar a base64 string
-    const dataB64 = btoa(encodeURIComponent(JSON.stringify(formData)).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCodePoint(Number('0x' + p1))));
+    const dataB64 = btoa(
+      encodeURIComponent(JSON.stringify(formData)).replace(
+        /%([0-9A-F]{2})/g,
+        (_match, p1) => String.fromCodePoint(Number(`0x${p1}`)),
+      ),
+    );
 
     const respuesta = await this.evolucionService.guardarEvolucion(dataB64);
     this.isSaving.set(false);
@@ -383,12 +468,18 @@ export class FormularioSoapComponent implements OnInit {
         fecha: respuesta.fecha,
         hora: respuesta.hora,
         usuario: this.authService.username() ?? '',
-        ip: respuesta.ipCliente
+        ip: respuesta.ipCliente,
       });
-      this.modalGlobal.exito('La evolución fue firmada y guardada correctamente.', 'Evolución guardada');
+      this.modalGlobal.exito(
+        'La evolución fue firmada y guardada correctamente.',
+        'Evolución guardada',
+      );
       this.evolucionService.clearSelection();
     } else {
-      this.modalGlobal.error('No se pudo guardar la evolución. Verifique la conexión e intente de nuevo.', 'Error al guardar');
+      this.modalGlobal.error(
+        'No se pudo guardar la evolución. Verifique la conexión e intente de nuevo.',
+        'Error al guardar',
+      );
     }
   }
 
