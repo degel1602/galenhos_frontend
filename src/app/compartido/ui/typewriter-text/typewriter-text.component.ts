@@ -79,7 +79,7 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
     return this.currentText.slice(0, this.charIndex);
   }
 
-  private cdr = inject(ChangeDetectorRef);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.startCursorBlink();
@@ -116,26 +116,14 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
       if (this.phase === 'holding') {
         this.cursorOn = !this.cursorOn;
         this.cdr.markForCheck();
-      } else {
-        if (!this.cursorOn) {
-          this.cursorOn = true;
-          this.cdr.markForCheck();
-        }
+      } else if (!this.cursorOn) {
+        this.cursorOn = true;
+        this.cdr.markForCheck();
       }
     }, 530);
   }
 
   private scheduleNextTick() {
-    if (
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      this.charIndex = this.currentText.length;
-      this.phase = 'holding';
-      this.cdr.markForCheck();
-      return;
-    }
-
     if (this.phase === 'typing') {
       if (this.charIndex < this.currentText.length) {
         this.timer = setTimeout(() => {

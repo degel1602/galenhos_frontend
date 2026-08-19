@@ -72,13 +72,15 @@ export class ApiClientService {
       );
     }
 
-    const envelope: ApiEnvelope<TipoRespuesta> = await response.json().catch(() => ({
-      success: false,
-      error: {
-        code: 'PARSE_ERROR',
-        message: 'La respuesta del servidor no es válida.',
-      },
-    }));
+    const envelope: ApiEnvelope<TipoRespuesta> = await response
+      .json()
+      .catch(() => ({
+        success: false,
+        error: {
+          code: 'PARSE_ERROR',
+          message: 'La respuesta del servidor no es válida.',
+        },
+      }));
 
     if (!response.ok || !envelope.success) {
       if (response.status === 401 && requiresAuth) {

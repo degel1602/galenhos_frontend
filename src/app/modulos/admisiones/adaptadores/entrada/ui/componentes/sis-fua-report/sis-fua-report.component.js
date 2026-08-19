@@ -1,129 +1,139 @@
 var SisFuaReportComponent_1;
-import { __decorate } from "tslib";
-import { ChangeDetectorRef, Component, EventEmitter, Input, inject, Output, ViewChild, } from '@angular/core';
+
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  inject,
+  Output,
+  ViewChild,
+} from '@angular/core';
+import { __decorate } from 'tslib';
 import { VentanaModal } from '../../../../../../../compartido/ui/ventana-modal/ventana-modal';
 import { imprimirHtml } from '../../../../../../../compartido/utilidades/print.util';
 import { TriajeApiService } from '../../../../../../triaje/adaptadores/salida/http/triaje.api.service';
+
 function val(row, ...names) {
-    if (!row)
-        return '';
-    for (const name of names) {
-        const key = Object.keys(row).find((k) => k.toLowerCase() === name.toLowerCase());
-        if (key !== undefined && row[key] != null)
-            return String(row[key]);
-    }
-    return '';
+  if (!row) return '';
+  for (const name of names) {
+    const key = Object.keys(row).find(
+      (k) => k.toLowerCase() === name.toLowerCase(),
+    );
+    if (key !== undefined && row[key] != null) return String(row[key]);
+  }
+  return '';
 }
 function marcaSi(valorCampo, esperado) {
-    return valorCampo === esperado ? 'X' : '';
+  return valorCampo === esperado ? 'X' : '';
 }
 function generarBarras(valor, alto = 34) {
-    let barras = '';
-    let x = 0;
-    const seed = valor.split('').map((c) => c.charCodeAt(0));
-    for (let i = 0; i < 46; i++) {
-        const w = (seed[i % seed.length] % 3) + 1;
-        if (i % 2 === 0)
-            barras += `<rect x="${x}" y="0" width="${w}" height="${alto}" fill="#000"/>`;
-        x += w + 1;
-    }
-    return `<svg width="${x}" height="${alto}" viewBox="0 0 ${x} ${alto}" xmlns="http://www.w3.org/2000/svg">${barras}</svg>`;
+  let barras = '';
+  let x = 0;
+  const seed = valor.split('').map((c) => c.charCodeAt(0));
+  for (let i = 0; i < 46; i++) {
+    const w = (seed[i % seed.length] % 3) + 1;
+    if (i % 2 === 0)
+      barras += `<rect x="${x}" y="0" width="${w}" height="${alto}" fill="#000"/>`;
+    x += w + 1;
+  }
+  return `<svg width="${x}" height="${alto}" viewBox="0 0 ${x} ${alto}" xmlns="http://www.w3.org/2000/svg">${barras}</svg>`;
 }
 let SisFuaReportComponent = class SisFuaReportComponent {
-    static { SisFuaReportComponent_1 = this; }
-    idCuentaAtencion;
-    alCerrar = new EventEmitter();
-    fuaFrame;
-    triajeApi = inject(TriajeApiService);
-    cdr = inject(ChangeDetectorRef);
-    cargando = true;
-    error = '';
-    fua = null;
-    institucion = null;
-    htmlFua = '';
-    static institucionCache = null;
-    async ngOnInit() {
-        if (!this.idCuentaAtencion) {
-            this.cargando = false;
-            return;
-        }
-        try {
-            await this.triajeApi.agregarFua(this.idCuentaAtencion);
-            const instPromise = SisFuaReportComponent_1.institucionCache
-                ? Promise.resolve(SisFuaReportComponent_1.institucionCache)
-                : this.triajeApi.obtenerDatosInstitucion().then((r) => {
-                    SisFuaReportComponent_1.institucionCache =
-                        r;
-                    return SisFuaReportComponent_1.institucionCache;
-                });
-            const [rImp, rInst] = await Promise.all([
-                this.triajeApi.imprimirFua(this.idCuentaAtencion),
-                instPromise,
-            ]);
-            if (!rImp) {
-                this.error = 'No se encontraron los datos del FUA.';
-                this.cargando = false;
-                this.cdr.detectChanges();
-                return;
-            }
-            this.institucion = rInst || null;
-            const datos = rImp;
-            const [diag, med, proc, cons] = await Promise.all([
-                this.triajeApi.diagnosticosFua(this.idCuentaAtencion),
-                this.triajeApi.medicamentosFua(this.idCuentaAtencion),
-                this.triajeApi.procedimientosFua(this.idCuentaAtencion),
-                this.triajeApi.consumoFua(this.idCuentaAtencion),
-            ]);
-            this.fua = {
-                datos,
-                diagnosticos: diag,
-                medicamentos: med,
-                procedimientos: proc,
-                consumo: cons,
-            };
-            this.htmlFua = this.generarHtmlFua();
-            this.cargando = false;
-            this.cdr.detectChanges();
-            setTimeout(() => this.escribirIframe(), 0);
-        }
-        catch {
-            this.error = 'No se pudo cargar el FUA.';
-            this.cargando = false;
-            this.cdr.detectChanges();
-        }
+  static {
+    SisFuaReportComponent_1 = SisFuaReportComponent;
+  }
+  idCuentaAtencion;
+  alCerrar = new EventEmitter();
+  fuaFrame;
+  triajeApi = inject(TriajeApiService);
+  cdr = inject(ChangeDetectorRef);
+  cargando = true;
+  error = '';
+  fua = null;
+  institucion = null;
+  htmlFua = '';
+  static institucionCache = null;
+  async ngOnInit() {
+    if (!this.idCuentaAtencion) {
+      this.cargando = false;
+      return;
     }
-    escribirIframe() {
-        const el = this.fuaFrame?.nativeElement;
-        if (!el || !this.htmlFua)
-            return;
-        const doc = el.contentDocument || el.contentWindow?.document;
-        if (doc) {
-            doc.open();
-            doc.write(this.htmlFua);
-            doc.close();
-        }
+    try {
+      await this.triajeApi.agregarFua(this.idCuentaAtencion);
+      const instPromise = SisFuaReportComponent_1.institucionCache
+        ? Promise.resolve(SisFuaReportComponent_1.institucionCache)
+        : this.triajeApi.obtenerDatosInstitucion().then((r) => {
+            SisFuaReportComponent_1.institucionCache = r;
+            return SisFuaReportComponent_1.institucionCache;
+          });
+      const [rImp, rInst] = await Promise.all([
+        this.triajeApi.imprimirFua(this.idCuentaAtencion),
+        instPromise,
+      ]);
+      if (!rImp) {
+        this.error = 'No se encontraron los datos del FUA.';
+        this.cargando = false;
+        this.cdr.detectChanges();
+        return;
+      }
+      this.institucion = rInst || null;
+      const datos = rImp;
+      const [diag, med, proc, cons] = await Promise.all([
+        this.triajeApi.diagnosticosFua(this.idCuentaAtencion),
+        this.triajeApi.medicamentosFua(this.idCuentaAtencion),
+        this.triajeApi.procedimientosFua(this.idCuentaAtencion),
+        this.triajeApi.consumoFua(this.idCuentaAtencion),
+      ]);
+      this.fua = {
+        datos,
+        diagnosticos: diag,
+        medicamentos: med,
+        procedimientos: proc,
+        consumo: cons,
+      };
+      this.htmlFua = this.generarHtmlFua();
+      this.cargando = false;
+      this.cdr.detectChanges();
+      setTimeout(() => this.escribirIframe(), 0);
+    } catch {
+      this.error = 'No se pudo cargar el FUA.';
+      this.cargando = false;
+      this.cdr.detectChanges();
     }
-    imprimir() {
-        imprimirHtml(this.htmlFua);
+  }
+  escribirIframe() {
+    const el = this.fuaFrame?.nativeElement;
+    if (!el || !this.htmlFua) return;
+    const doc = el.contentDocument || el.contentWindow?.document;
+    if (doc) {
+      doc.open();
+      doc.write(this.htmlFua);
+      doc.close();
     }
-    generarHtmlFua() {
-        if (!this.fua)
-            return '';
-        const { datos, diagnosticos, medicamentos, procedimientos, consumo } = this.fua;
-        const institucion = this.institucion;
-        const idCuentaAtencion = this.idCuentaAtencion;
-        const usuario = 'Usuario';
-        const fechaImp = new Date().toLocaleString('es-PE', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-        });
-        const g = (...names) => val(datos, ...names);
-        const v = (x) => x === null || x === undefined || x === '' ? '&nbsp;' : String(x);
-        const cabeceraSuperior = `
+  }
+  imprimir() {
+    imprimirHtml(this.htmlFua);
+  }
+  generarHtmlFua() {
+    if (!this.fua) return '';
+    const { datos, diagnosticos, medicamentos, procedimientos, consumo } =
+      this.fua;
+    const institucion = this.institucion;
+    const idCuentaAtencion = this.idCuentaAtencion;
+    const usuario = 'Usuario';
+    const fechaImp = new Date().toLocaleString('es-PE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    const g = (...names) => val(datos, ...names);
+    const v = (x) =>
+      x === null || x === undefined || x === '' ? '&nbsp;' : String(x);
+    const cabeceraSuperior = `
       <table style="width:100%">
         <tr><td style="width:50%;text-align:left">
           ${institucion?.logoMinsa ? `<img src="data:image/png;base64,${institucion.logoMinsa}" width="70" height="70">` : ''}
@@ -134,7 +144,7 @@ let SisFuaReportComponent = class SisFuaReportComponent {
           Cuenta: CTA: ${v(g('Cta') || idCuentaAtencion)}
         </td></tr>
       </table>`;
-        const tituloYNumero = `
+    const tituloYNumero = `
       <table style="width:100%;text-align:center" border="1" cellpadding="0" cellspacing="0">
         <tr><td colspan="5" style="text-align:center;font-size:9px;background-color:#b3b3b3">FORMATO UNICO DE ATENCIÓN</td></tr>
         <tr>
@@ -148,7 +158,7 @@ let SisFuaReportComponent = class SisFuaReportComponent {
           <td class="datosfua" style="font-size:12px">${v(g('FuaNumero'))}</td>
         </tr>
       </table>`;
-        const institucionTabla = `
+    const institucionTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <colgroup><col style="width:10%"><col style="width:5%"><col style="width:10%"><col style="width:10%"><col style="width:5%"><col style="width:10%"><col style="width:5%"><col style="width:10%"><col style="width:20%"><col style="width:10%"></colgroup>
         <tr><td colspan="10" style="text-align:center;font-size:8px;background-color:#b3b3b3">DE LA INSTITUCION PRESTADORA DE SERVICIOS DE SALUD</td></tr>
@@ -198,7 +208,7 @@ let SisFuaReportComponent = class SisFuaReportComponent {
           <td class="datosfua">${marcaSi(g('Atencion'), '3')}</td>
         </tr>
       </table>`;
-        const aseguradoIdentTabla = `
+    const aseguradoIdentTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <colgroup><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:6%"><col style="width:6%"><col style="width:4%"><col style="width:4%"><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:10%"><col style="width:20%"><col style="width:10%"><col style="width:10%"></colgroup>
         <tr><td colspan="14" style="text-align:center;font-size:8px;background-color:#b3b3b3">DEL ASEGURADO / USUARIO</td></tr>
@@ -291,12 +301,12 @@ let SisFuaReportComponent = class SisFuaReportComponent {
           <td class="datosfua"></td>
         </tr>
       </table>`;
-        const esConsultaExterna = g('FuaCodigoPrestacion') === '056';
-        const servicioTabla = `
+    const esConsultaExterna = g('FuaCodigoPrestacion') === '056';
+    const servicioTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <colgroup>${Array.from({ length: 20 })
-            .map(() => '<col style="width:5%">')
-            .join('')}</colgroup>
+          .map(() => '<col style="width:5%">')
+          .join('')}</colgroup>
         <tr><td colspan="20" style="text-align:center;font-size:8px;background-color:#b3b3b3">DEL ASEGURADO / USUARIO</td></tr>
         <tr>
           <td colspan="4" style="text-align:center;font-size:6.5px;background-color:#b3b3b3">FECHA DE ATENCIÓN</td>
@@ -375,11 +385,11 @@ let SisFuaReportComponent = class SisFuaReportComponent {
           <td class="datosfua">&nbsp;</td>
         </tr>
       </table>`;
-        const destinoTabla = `
+    const destinoTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <colgroup>${Array.from({ length: 20 })
-            .map(() => '<col style="width:5%">')
-            .join('')}</colgroup>
+          .map(() => '<col style="width:5%">')
+          .join('')}</colgroup>
         <tr><td colspan="20" style="text-align:center;font-size:8px;background-color:#b3b3b3">DEL DESTINO DEL ASEGURADO/USUARIO</td></tr>
         <tr>
           <td rowspan="2" class="datoscabecerafua">ALTA</td>
@@ -416,7 +426,7 @@ let SisFuaReportComponent = class SisFuaReportComponent {
           <td colspan="6" class="datosfua">${v(g('RF_Numero'))}</td>
         </tr>
       </table>`;
-        const actividadesTabla = `
+    const actividadesTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <colgroup><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:4%"><col style="width:4%"><col style="width:4%"><col style="width:4%"><col style="width:11%"><col style="width:3%"><col style="width:7%"><col style="width:3%"><col style="width:5%"><col style="width:3%"><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:7%"></colgroup>
         <tr>
@@ -543,13 +553,13 @@ let SisFuaReportComponent = class SisFuaReportComponent {
           <td colspan="4" style="text-align:center;font-size:4px;line-height:4px">GRUPO DE RIESGO HVB 1. TRABAJADOR DE SAÑUD 2. TRABAJAD. SEXUAL 3. HSH 4. PRIVADO LIBERTAD 5. FF.AA. 6. POLICIA NACIONAL 7. ESTUDIANTES DE SALUD 8. POLITRANSFUNDIDOS 9. DROGODEPENDIENTES</td>
         </tr>
       </table>`;
-        const filasDiag = diagnosticos
-            .slice(0, 15)
-            .map((dx, i) => {
-            const desc = val(dx, 'Descripcion');
-            const texto = desc.length > 78 ? `${desc.slice(0, 78)}...` : desc;
-            const tipo = val(dx, 'TipoDx');
-            return `<tr>
+    const filasDiag = diagnosticos
+      .slice(0, 15)
+      .map((dx, i) => {
+        const desc = val(dx, 'Descripcion');
+        const texto = desc.length > 78 ? `${desc.slice(0, 78)}...` : desc;
+        const tipo = val(dx, 'TipoDx');
+        return `<tr>
         <td class="datoscabecerafua">${i + 1}</td>
         <td colspan="12" class="datosfuadiag" style="text-align:left;font-size:8px">${texto}</td>
         <td class="datosfuadiag">${marcaSi(tipo, 'Presuntivo')}</td>
@@ -560,10 +570,11 @@ let SisFuaReportComponent = class SisFuaReportComponent {
         <td class="datosfuadiag">&nbsp;</td>
         <td class="datosfuadiag">&nbsp;</td>
       </tr>`;
-        })
-            .join('');
-        const filasDiagVacias = [1, 2, 3, 4]
-            .map((n) => `<tr>
+      })
+      .join('');
+    const filasDiagVacias = [1, 2, 3, 4]
+      .map(
+        (n) => `<tr>
       <td class="datoscabecerafua">${n}</td>
       <td colspan="12" class="datosfuadiag" style="text-align:left;font-size:8px">&nbsp;</td>
       <td class="datosfuadiag">&nbsp;</td>
@@ -573,13 +584,14 @@ let SisFuaReportComponent = class SisFuaReportComponent {
       <td class="datosfuadiag">&nbsp;</td>
       <td class="datosfuadiag">&nbsp;</td>
       <td class="datosfuadiag">&nbsp;</td>
-    </tr>`)
-            .join('');
-        const diagnosticosTabla = `
+    </tr>`,
+      )
+      .join('');
+    const diagnosticosTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <colgroup>${Array.from({ length: 20 })
-            .map(() => '<col style="width:5%">')
-            .join('')}</colgroup>
+          .map(() => '<col style="width:5%">')
+          .join('')}</colgroup>
         <tr><td colspan="20" style="text-align:center;font-size:8px;background-color:#b3b3b3">DIAGNOSTICOS</td></tr>
         <tr>
           <td rowspan="2" class="datoscabecerafua">N°</td>
@@ -616,7 +628,7 @@ let SisFuaReportComponent = class SisFuaReportComponent {
       <div style="text-align:left;font-size:6.1px;margin-top:1px">
         1. MÉDICO 2. FARMACEUTICO 3. CIRUJANO DENTISTA 4. BIÓLOGO 5. OBSTETRIZ 6. ENFERMERA 7. TRABAJADORA SOCIAL 8. PSCOLOGA 9. TECNOLOGO MEDICO 10. NUTRICIÓN 11. TECNICO ENFERMERIA 12. AUXILIAR DE ENFERMERIA 13. OTRO
       </div>`;
-        const firmaTabla = `
+    const firmaTabla = `
       <table style="width:100%;text-align:center;padding-top:8px">
         <tr>
           <td colspan="8" rowspan="4" style="vertical-align:bottom"></td>
@@ -653,7 +665,7 @@ let SisFuaReportComponent = class SisFuaReportComponent {
           <td colspan="3" style="text-align:center;font-size:6.5px">HUELLA DIGITAL DEL ASEGURADO O DEL APODERADO</td>
         </tr>
       </table>`;
-        const numeroFormato = `
+    const numeroFormato = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <tr>
           <td colspan="12" rowspan="2" class="datoscabecerafua">TERAPEUTICA, INSUMOS, PROCEDIMIENTOS Y APOYO AL DIAGNOSTICO</td>
@@ -665,41 +677,46 @@ let SisFuaReportComponent = class SisFuaReportComponent {
           <td colspan="4" class="datosfua">${v(g('FuaNumero'))}</td>
         </tr>
       </table>`;
-        const filaMedicamento = (m) => `
+    const filaMedicamento = (m) => `
         <td class="datosfua">${v(val(m, 'Codigo'))}</td>
         <td colspan="6" class="datosfua" style="text-align:left;font-size:8px">${v(val(m, 'Nombre'))}</td>
         <td class="datosfua">${v(val(m, 'CantidadPedida'))}</td>
         <td class="datosfua">${v(val(m, 'CantidadDespachada'))}</td>
         <td class="datosfua">${v(val(m, 'CodigoCIE10'))}</td>`;
-        let filasMed = '';
-        for (let i = 0; i < medicamentos.length; i += 2) {
-            filasMed += `<tr>${filaMedicamento(medicamentos[i])}${medicamentos[i + 1] ? filaMedicamento(medicamentos[i + 1]) : '<td></td><td colspan="6"></td><td></td><td></td><td></td>'}</tr>`;
-        }
-        const filasMedVacias = [1, 2, 3, 4]
-            .map(() => `<tr>
+    let filasMed = '';
+    for (let i = 0; i < medicamentos.length; i += 2) {
+      filasMed += `<tr>${filaMedicamento(medicamentos[i])}${medicamentos[i + 1] ? filaMedicamento(medicamentos[i + 1]) : '<td></td><td colspan="6"></td><td></td><td></td><td></td>'}</tr>`;
+    }
+    const filasMedVacias = [1, 2, 3, 4]
+      .map(
+        () => `<tr>
       <td class="datosfua">&nbsp;</td><td colspan="6" class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td>
       <td class="datosfua">&nbsp;</td><td colspan="6" class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td>
-    </tr>`)
-            .join('');
-        const filaProcedimiento = (p) => `
+    </tr>`,
+      )
+      .join('');
+    const filaProcedimiento = (p) => `
         <td class="datosfua">${v(val(p, 'codigo', 'Codigo'))}</td>
         <td colspan="5" class="datosfua" style="text-align:left;font-size:8px">${v(val(p, 'Nombre'))}</td>
         <td class="datosfua">${v(val(p, 'CantidadPedida'))}</td>
         <td class="datosfua"></td>
         <td class="datosfua">${v(val(p, 'CodigoCIE10'))}</td>
         <td class="datosfua"></td>`;
-        let filasProc = '';
-        for (let i = 0; i < procedimientos.length; i += 2) {
-            filasProc += `<tr>${filaProcedimiento(procedimientos[i])}${procedimientos[i + 1] ? filaProcedimiento(procedimientos[i + 1]) : '<td></td><td colspan="5"></td><td></td><td></td><td></td><td></td>'}</tr>`;
-        }
-        const filasProcVacias = [1, 2, 3, 4]
-            .map(() => `<tr>
+    let filasProc = '';
+    for (let i = 0; i < procedimientos.length; i += 2) {
+      filasProc += `<tr>${filaProcedimiento(procedimientos[i])}${procedimientos[i + 1] ? filaProcedimiento(procedimientos[i + 1]) : '<td></td><td colspan="5"></td><td></td><td></td><td></td><td></td>'}</tr>`;
+    }
+    const filasProcVacias = [1, 2, 3, 4]
+      .map(
+        () => `<tr>
       <td class="datosfua">&nbsp;</td><td colspan="5" class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td>
       <td class="datosfua">&nbsp;</td><td colspan="5" class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td>
-    </tr>`)
-            .join('');
-        const filasConsumo = consumo
-            .map((c) => `<tr>
+    </tr>`,
+      )
+      .join('');
+    const filasConsumo = consumo
+      .map(
+        (c) => `<tr>
       <td class="datosfua" style="font-size:8px">${v(val(c, 'Codigo'))}</td>
       <td colspan="5" class="datosfua" style="text-align:left;font-size:8px">${v(val(c, 'Nombre'))}</td>
       <td colspan="2" class="datosfua" style="font-size:8px"></td>
@@ -709,19 +726,22 @@ let SisFuaReportComponent = class SisFuaReportComponent {
       <td colspan="2" class="datosfua" style="font-size:8px"></td>
       <td colspan="2" class="datosfua" style="font-size:8px">${v(val(c, 'IdOrden'))}</td>
       <td colspan="2" class="datosfua" style="font-size:8px"></td>
-    </tr>`)
-            .join('');
-        const filasDispositivosVacias = [1, 2, 3, 4, 5]
-            .map(() => `<tr>
+    </tr>`,
+      )
+      .join('');
+    const filasDispositivosVacias = [1, 2, 3, 4, 5]
+      .map(
+        () => `<tr>
       <td class="datosfua">&nbsp;</td><td colspan="6" class="datosfua"></td><td class="datosfua"></td><td class="datosfua"></td><td class="datosfua"></td>
       <td class="datosfua">&nbsp;</td><td colspan="6" class="datosfua"></td><td class="datosfua"></td><td class="datosfua"></td><td class="datosfua"></td>
-    </tr>`)
-            .join('');
-        const medicamentosTabla = `
+    </tr>`,
+      )
+      .join('');
+    const medicamentosTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <colgroup>${Array.from({ length: 20 })
-            .map(() => '<col style="width:5%">')
-            .join('')}</colgroup>
+          .map(() => '<col style="width:5%">')
+          .join('')}</colgroup>
         <tr><td colspan="20" class="datoscabecerafua">PRODUCTOS FARMACEUTICOS / MEDICAMENTOS</td></tr>
         <tr>
           <td class="datoscabecerafua">CODIGO SISMED</td>
@@ -786,7 +806,7 @@ let SisFuaReportComponent = class SisFuaReportComponent {
         <tr><td colspan="20" class="datoscabecerafua">OBSERVACIONES</td></tr>
         <tr><td colspan="20" class="datosfua">${v(g('FuaObservaciones'))}</td></tr>
       </table>`;
-        const firmaTabla2 = `
+    const firmaTabla2 = `
       <table style="width:100%;text-align:center;padding-top:15px">
         <tr>
           <td colspan="8" rowspan="4" style="vertical-align:bottom"></td>
@@ -823,7 +843,7 @@ let SisFuaReportComponent = class SisFuaReportComponent {
           <td colspan="3" style="text-align:center;font-size:6.5px">HUELLA DIGITAL DEL ASEGURADO O DEL APODERADO</td>
         </tr>
       </table>`;
-        return `<!doctype html><html><head><meta charset="utf-8"><title> </title>
+    return `<!doctype html><html><head><meta charset="utf-8"><title> </title>
       <style>
         * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         @page { margin: 0cm 0cm; font-family: Arial; }
@@ -849,24 +869,32 @@ let SisFuaReportComponent = class SisFuaReportComponent {
       ${medicamentosTabla}
       ${firmaTabla2}
       </body></html>`;
-    }
+  }
 };
-__decorate([
-    Input()
-], SisFuaReportComponent.prototype, "idCuentaAtencion", void 0);
-__decorate([
-    Output()
-], SisFuaReportComponent.prototype, "alCerrar", void 0);
-__decorate([
-    ViewChild('fuaFrame')
-], SisFuaReportComponent.prototype, "fuaFrame", void 0);
-SisFuaReportComponent = SisFuaReportComponent_1 = __decorate([
+__decorate(
+  [Input()],
+  SisFuaReportComponent.prototype,
+  'idCuentaAtencion',
+  void 0,
+);
+__decorate([Output()], SisFuaReportComponent.prototype, 'alCerrar', void 0);
+__decorate(
+  [ViewChild('fuaFrame')],
+  SisFuaReportComponent.prototype,
+  'fuaFrame',
+  void 0,
+);
+SisFuaReportComponent = SisFuaReportComponent_1 = __decorate(
+  [
     Component({
-        selector: 'app-sis-fua-report',
-        standalone: true,
-        imports: [VentanaModal],
-        styles: [`@keyframes spin { to { transform: rotate(360deg); } }`],
-        templateUrl: './sis-fua-report.component.html',
-    })
-], SisFuaReportComponent);
+      selector: 'app-sis-fua-report',
+      standalone: true,
+      imports: [VentanaModal],
+      styles: [`@keyframes spin { to { transform: rotate(360deg); } }`],
+      templateUrl: './sis-fua-report.component.html',
+    }),
+  ],
+  SisFuaReportComponent,
+);
+
 export { SisFuaReportComponent };

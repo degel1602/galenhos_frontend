@@ -307,29 +307,29 @@ export class RegistroPacienteService {
       if (d.dateOfBirth) {
         this.form.fechaNacimiento = texto(d.dateOfBirth).slice(0, 10);
       }
-      this.form.idTipoSexo = texto(d['sexTypeId']);
-      this.form.telefono = texto(d['phone']);
-      this.form.celular = texto(d['cellphone']);
-      this.form.email = texto(d['email']);
-      this.form.idPaisNacimiento = texto(d['birthCountryId']);
-      this.form.idDistritoNacimiento = texto(d['birthDistrictId']);
-      this.form.idCentroPobladoNacimiento = texto(d['birthCenterId']);
-      this.form.idPaisProcedencia = texto(d['originCountryId']);
-      this.form.idDistritoProcedencia = texto(d['originDistrictId']);
-      this.form.idCentroPobladoProcedencia = texto(d['originCenterId']);
-      this.form.idPaisDomicilio = texto(d['homeCountryId']);
-      this.form.idDistritoDomicilio = texto(d['homeDistrictId']);
-      this.form.idCentroPobladoDomicilio = texto(d['homeCenterId']);
-      this.form.direccionDomicilio = texto(d['homeAddress']);
-      this.form.idEstadoCivil = texto(d['maritalStatusId']);
-      this.form.idGradoInstruccion = texto(d['educationDegreeId']);
-      this.form.idTipoOcupacion = texto(d['occupationTypeId']);
-      this.form.nombrePadre = texto(d['fatherName']);
-      this.form.nombreMadre = texto(d['motherName']);
-      this.form.idEtnia = texto(d['ethnicityId']);
-      this.form.idIdioma = texto(d['languageId']);
-      this.form.discapacidad = texto(d['disabilityId']);
-      this.form.incapacidad = texto(d['incapacityId']);
+      this.form.idTipoSexo = texto(d.sexTypeId);
+      this.form.telefono = texto(d.phone);
+      this.form.celular = texto(d.cellphone);
+      this.form.email = texto(d.email);
+      this.form.idPaisNacimiento = texto(d.birthCountryId);
+      this.form.idDistritoNacimiento = texto(d.birthDistrictId);
+      this.form.idCentroPobladoNacimiento = texto(d.birthCenterId);
+      this.form.idPaisProcedencia = texto(d.originCountryId);
+      this.form.idDistritoProcedencia = texto(d.originDistrictId);
+      this.form.idCentroPobladoProcedencia = texto(d.originCenterId);
+      this.form.idPaisDomicilio = texto(d.homeCountryId);
+      this.form.idDistritoDomicilio = texto(d.homeDistrictId);
+      this.form.idCentroPobladoDomicilio = texto(d.homeCenterId);
+      this.form.direccionDomicilio = texto(d.homeAddress);
+      this.form.idEstadoCivil = texto(d.maritalStatusId);
+      this.form.idGradoInstruccion = texto(d.educationDegreeId);
+      this.form.idTipoOcupacion = texto(d.occupationTypeId);
+      this.form.nombrePadre = texto(d.fatherName);
+      this.form.nombreMadre = texto(d.motherName);
+      this.form.idEtnia = texto(d.ethnicityId);
+      this.form.idIdioma = texto(d.languageId);
+      this.form.discapacidad = texto(d.disabilityId);
+      this.form.incapacidad = texto(d.incapacityId);
 
       await this.cargarUbigeoEdicion();
     } catch (err: unknown) {
@@ -349,7 +349,10 @@ export class RegistroPacienteService {
     const derivar = (idDistrito: string): { dep: string; prov: string } => {
       const n = Number(idDistrito);
       if (!Number.isNaN(n) && n >= 100) {
-        return { dep: String(Math.floor(n / 10000)), prov: String(Math.floor(n / 100)) };
+        return {
+          dep: String(Math.floor(n / 10000)),
+          prov: String(Math.floor(n / 100)),
+        };
       }
       return { dep: '', prov: '' };
     };
@@ -365,7 +368,9 @@ export class RegistroPacienteService {
         this.distritos = await this.ubigeoService.getDistritos(prov);
       }
       if (this.form.idDistritoDomicilio) {
-        this.comunidades = await this.ubigeoService.getCentrosPoblados(this.form.idDistritoDomicilio);
+        this.comunidades = await this.ubigeoService.getCentrosPoblados(
+          this.form.idDistritoDomicilio,
+        );
       }
     }
 
@@ -379,7 +384,9 @@ export class RegistroPacienteService {
         this.provNacimientoSel = prov;
         this.distritosNacimiento = await this.ubigeoService.getDistritos(prov);
       }
-      this.comunidadesNacimiento = await this.ubigeoService.getCentrosPoblados(this.form.idDistritoNacimiento);
+      this.comunidadesNacimiento = await this.ubigeoService.getCentrosPoblados(
+        this.form.idDistritoNacimiento,
+      );
     }
 
     if (this.form.idDistritoProcedencia) {
@@ -392,11 +399,16 @@ export class RegistroPacienteService {
         this.provProcedenciaSel = prov;
         this.distritosProcedencia = await this.ubigeoService.getDistritos(prov);
       }
-      this.comunidadesProcedencia = await this.ubigeoService.getCentrosPoblados(this.form.idDistritoProcedencia);
+      this.comunidadesProcedencia = await this.ubigeoService.getCentrosPoblados(
+        this.form.idDistritoProcedencia,
+      );
     }
   }
 
-  async guardar(pacienteId: number | string | null, modo: 'paciente' | 'triaje'): Promise<string | null> {
+  async guardar(
+    pacienteId: number | string | null,
+    modo: 'paciente' | 'triaje',
+  ): Promise<string | null> {
     const errorValidacion = this.validarGuardado();
     if (errorValidacion) {
       this.error = errorValidacion;
@@ -552,36 +564,59 @@ export class RegistroPacienteService {
       documentNumber: sanitizar(f.nroDocumento),
       paternalSurname: normalizarNombre(f.apellidoPaterno),
       firstName: normalizarNombre(f.primerNombre),
-      birthCountryId: num(f.idPaisNacimiento) ?? num(texto(d['birthCountryId'])),
-      maternalSurname: name(f.apellidoMaterno) ?? name(texto(d['maternalSurname'])),
-      homeAddress: sanitizar(f.direccionDomicilio) || sanitizar(texto(d['homeAddress'])) || undefined,
-      originCountryId: num(f.idPaisProcedencia) ?? num(texto(d['originCountryId'])),
-      secondName: name(f.segundoNombre) ?? name(texto(d['secondName'])),
-      thirdName: name(f.tercerNombre) ?? name(texto(d['thirdName'])),
-      dateOfBirth: f.fechaNacimiento ? new Date(`${f.fechaNacimiento}T00:00:00`).toISOString() : undefined,
-      phone: sanitizar(f.telefono) || sanitizar(texto(d['phone'])) || undefined,
-      cellphone: sanitizar(f.celular) || sanitizar(texto(d['cellphone'])) || undefined,
-      autoGenerated: texto(d['autoGenerated']) || undefined,
-      sexTypeId: num(f.idTipoSexo) ?? num(texto(d['sexTypeId'])),
-      originId: num(texto(d['originId'])),
-      educationDegreeId: num(f.idGradoInstruccion) ?? num(texto(d['educationDegreeId'])),
-      maritalStatusId: num(f.idEstadoCivil) ?? num(texto(d['maritalStatusId'])),
-      docIdentityId: num(f.idDocIdentidad) ?? num(texto(d['docIdentityId'])),
-      occupationTypeId: num(f.idTipoOcupacion) ?? num(texto(d['occupationTypeId'])),
-      homeCenterId: num(f.idCentroPobladoDomicilio) ?? num(texto(d['homeCenterId'])),
-      fatherName: name(f.nombrePadre) ?? name(texto(d['fatherName'])),
-      motherName: name(f.nombreMadre) ?? name(texto(d['motherName'])),
-      homeCountryId: num(f.idPaisDomicilio) ?? num(texto(d['homeCountryId'])),
-      birthCenterId: num(f.idCentroPobladoNacimiento) ?? num(texto(d['birthCenterId'])),
-      originCenterId: num(f.idCentroPobladoProcedencia) ?? num(texto(d['originCenterId'])),
-      originDistrictId: num(f.idDistritoProcedencia) ?? num(texto(d['originDistrictId'])),
-      homeDistrictId: num(f.idDistritoDomicilio) ?? num(texto(d['homeDistrictId'])),
-      birthDistrictId: num(f.idDistritoNacimiento) ?? num(texto(d['birthDistrictId'])),
-      ethnicityId: f.idEtnia !== '' && f.idEtnia !== undefined && f.idEtnia !== null ? String(f.idEtnia) : texto(d['ethnicityId']) || undefined,
-      languageId: num(f.idIdioma) ?? num(texto(d['languageId'])),
-      email: sanitizar(f.email) || sanitizar(texto(d['email'])) || undefined,
-      disabilityId: f.discapacidad === '' ? num(texto(d['disabilityId'])) : num(f.discapacidad),
-      incapacityId: f.incapacidad === '' ? num(texto(d['incapacityId'])) : num(f.incapacidad)
+      birthCountryId: num(f.idPaisNacimiento) ?? num(texto(d.birthCountryId)),
+      maternalSurname:
+        name(f.apellidoMaterno) ?? name(texto(d.maternalSurname)),
+      homeAddress:
+        sanitizar(f.direccionDomicilio) ||
+        sanitizar(texto(d.homeAddress)) ||
+        undefined,
+      originCountryId:
+        num(f.idPaisProcedencia) ?? num(texto(d.originCountryId)),
+      secondName: name(f.segundoNombre) ?? name(texto(d.secondName)),
+      thirdName: name(f.tercerNombre) ?? name(texto(d.thirdName)),
+      dateOfBirth: f.fechaNacimiento
+        ? new Date(`${f.fechaNacimiento}T00:00:00`).toISOString()
+        : undefined,
+      phone: sanitizar(f.telefono) || sanitizar(texto(d.phone)) || undefined,
+      cellphone:
+        sanitizar(f.celular) || sanitizar(texto(d.cellphone)) || undefined,
+      autoGenerated: texto(d.autoGenerated) || undefined,
+      sexTypeId: num(f.idTipoSexo) ?? num(texto(d.sexTypeId)),
+      originId: num(texto(d.originId)),
+      educationDegreeId:
+        num(f.idGradoInstruccion) ?? num(texto(d.educationDegreeId)),
+      maritalStatusId: num(f.idEstadoCivil) ?? num(texto(d.maritalStatusId)),
+      docIdentityId: num(f.idDocIdentidad) ?? num(texto(d.docIdentityId)),
+      occupationTypeId:
+        num(f.idTipoOcupacion) ?? num(texto(d.occupationTypeId)),
+      homeCenterId:
+        num(f.idCentroPobladoDomicilio) ?? num(texto(d.homeCenterId)),
+      fatherName: name(f.nombrePadre) ?? name(texto(d.fatherName)),
+      motherName: name(f.nombreMadre) ?? name(texto(d.motherName)),
+      homeCountryId: num(f.idPaisDomicilio) ?? num(texto(d.homeCountryId)),
+      birthCenterId:
+        num(f.idCentroPobladoNacimiento) ?? num(texto(d.birthCenterId)),
+      originCenterId:
+        num(f.idCentroPobladoProcedencia) ?? num(texto(d.originCenterId)),
+      originDistrictId:
+        num(f.idDistritoProcedencia) ?? num(texto(d.originDistrictId)),
+      homeDistrictId:
+        num(f.idDistritoDomicilio) ?? num(texto(d.homeDistrictId)),
+      birthDistrictId:
+        num(f.idDistritoNacimiento) ?? num(texto(d.birthDistrictId)),
+      ethnicityId:
+        f.idEtnia !== '' && f.idEtnia !== undefined && f.idEtnia !== null
+          ? String(f.idEtnia)
+          : texto(d.ethnicityId) || undefined,
+      languageId: num(f.idIdioma) ?? num(texto(d.languageId)),
+      email: sanitizar(f.email) || sanitizar(texto(d.email)) || undefined,
+      disabilityId:
+        f.discapacidad === ''
+          ? num(texto(d.disabilityId))
+          : num(f.discapacidad),
+      incapacityId:
+        f.incapacidad === '' ? num(texto(d.incapacityId)) : num(f.incapacidad),
     };
     const hc = Number(texto(d.historyNumber));
     if (!Number.isNaN(hc)) payload.historyNumber = hc;

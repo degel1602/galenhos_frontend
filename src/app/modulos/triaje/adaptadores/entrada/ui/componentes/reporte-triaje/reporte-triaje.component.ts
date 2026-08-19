@@ -1,7 +1,8 @@
-import { generarHtmlReporteTriaje } from './reporte-triaje.impresion';
 import { CommonModule } from '@angular/common';
+import { generarHtmlReporteTriaje } from './reporte-triaje.impresion';
 
 type ValorPrimitivo = string | number | boolean;
+
 import {
   ChangeDetectorRef,
   Component,
@@ -97,7 +98,8 @@ export class ReporteTriajeComponent implements OnInit {
     if (!this.cabecera) return '—';
     for (const k of claves) {
       const val = this.cabecera[k];
-      if (val !== undefined && val !== null && val !== '') return String(val as ValorPrimitivo);
+      if (val !== undefined && val !== null && val !== '')
+        return String(val as ValorPrimitivo);
     }
     return '—';
   }
@@ -115,7 +117,9 @@ export class ReporteTriajeComponent implements OnInit {
   inst(campo: string): string {
     if (!this.institucion) return '—';
     const val = this.institucion[campo];
-    return val !== undefined && val !== null && val !== '' ? String(val as ValorPrimitivo) : '—';
+    return val !== undefined && val !== null && val !== ''
+      ? String(val as ValorPrimitivo)
+      : '—';
   }
 
   logoMinsa(): string {
@@ -131,7 +135,7 @@ export class ReporteTriajeComponent implements OnInit {
       this.institucion,
       this.logoMinsa(),
       String(this.idTriaje),
-      this.fechaImp
+      this.fechaImp,
     );
     imprimirHtml(tmpl);
   }

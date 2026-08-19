@@ -1,4 +1,7 @@
-import { decodificarBase64Reporte, formatFecha } from './reporte-triaje.component';
+import {
+  decodificarBase64Reporte,
+  formatFecha,
+} from './reporte-triaje.component';
 
 type ValorImprimible = string | number | null | undefined;
 type ValorPrimitivo = string | number | boolean;
@@ -14,7 +17,9 @@ export function generarHtmlReporteTriaje(
   const datosInstitucion = institucion;
 
   const formatearValor = (valorFormato: ValorImprimible) =>
-    valorFormato === null || valorFormato === undefined || valorFormato === '' ? '—' : String(valorFormato);
+    valorFormato === null || valorFormato === undefined || valorFormato === ''
+      ? '—'
+      : String(valorFormato);
 
   const generarCelda = (value: ValorImprimible, centro = false) =>
     `<td style="border:1px solid #000;font-size:10px;text-align:${centro ? 'center' : 'left'};text-transform:uppercase;padding:2px 5px">${formatearValor(value)}</td>`;
@@ -31,7 +36,9 @@ export function generarHtmlReporteTriaje(
 
   const obtenerTexto = (claveValor: string) => {
     const valor = datosCabecera[claveValor];
-    return valor !== undefined && valor !== null && valor !== '' ? String(valor as ValorPrimitivo) : '';
+    return valor !== undefined && valor !== null && valor !== ''
+      ? String(valor as ValorPrimitivo)
+      : '';
   };
 
   const obtenerDecodificado = (claveValor: string) => {
@@ -77,7 +84,7 @@ export function generarHtmlReporteTriaje(
       </table>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
         <tr>
-          ${generarEtiqueta('N° DOCUMENTO')} ${generarCeldaExtendida(3, obtenerTexto('NroDocumento'), false)} ${generarEtiqueta('N° DE TRIAJE')} ${generarCelda(datosCabecera['idTriaje'] as string | number, true)} ${generarEtiqueta('FUEN. FIN')} ${generarCelda(obtenerTexto('fuentefinanciamiento'), true)}
+          ${generarEtiqueta('N° DOCUMENTO')} ${generarCeldaExtendida(3, obtenerTexto('NroDocumento'), false)} ${generarEtiqueta('N° DE TRIAJE')} ${generarCelda(datosCabecera.idTriaje as string | number, true)} ${generarEtiqueta('FUEN. FIN')} ${generarCelda(obtenerTexto('fuentefinanciamiento'), true)}
         </tr>
         <tr>${generarEtiqueta('PACIENTE')} ${generarCeldaExtendida(7, obtenerTexto('Paciente'), false)}</tr>
         <tr>

@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
+import { BienvenidaService } from '../../../../../../compartido/ui/credencial-bienvenida/bienvenida.service';
 import { TypewriterTextComponent } from '../../../../../../compartido/ui/typewriter-text/typewriter-text.component';
 import { AuthService } from '../../../../aplicacion/auth.service';
 import { AuthApiService } from '../../../salida/http/auth.api.service';
@@ -37,9 +38,10 @@ import { AuthApiService } from '../../../salida/http/auth.api.service';
   ],
 })
 export class LoginComponent {
-  private authService = inject(AuthService);
-  private authApi = inject(AuthApiService);
-  private router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly authApi = inject(AuthApiService);
+  private readonly router = inject(Router);
+  private readonly bienvenidaService = inject(BienvenidaService);
 
   user = '';
   pass = '';
@@ -47,7 +49,7 @@ export class LoginComponent {
   loading = false;
   showPassword = false;
 
-  heroTexts = [
+  readonly heroTexts = [
     'Para médicos y especialistas.',
     'Gestión clínica integral.',
     'Para todo el equipo de salud.',
@@ -70,6 +72,7 @@ export class LoginComponent {
       this.authService.setSession(response.accessToken, this.user);
       const authMenus = await this.authApi.getMenus();
       this.authService.setMenus(authMenus);
+      this.bienvenidaService.activar();
       this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
       if (

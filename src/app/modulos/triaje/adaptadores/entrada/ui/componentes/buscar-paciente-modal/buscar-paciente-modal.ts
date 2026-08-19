@@ -1,18 +1,28 @@
-import { Component, Output, EventEmitter, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  inject,
+  type OnInit,
+  Output,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { VentanaModal } from '../../../../../../../compartido/ui/ventana-modal/ventana-modal';
-import { PacientesApiService } from '../../../../../../pacientes/adaptadores/salida/http/pacientes.api.service';
 import { MaestrosApiService } from '../../../../../../../compartido/api/maestros.api.service';
 import { ApiRequestError } from '../../../../../../../compartido/api-client/api-client.service';
-import { IPaciente, ICatalogoDescripcion } from '../../../../../../../compartido/tipos/api-tipos';
+import type {
+  ICatalogoDescripcion,
+  IPaciente,
+} from '../../../../../../../compartido/tipos/api-tipos';
+import { VentanaModal } from '../../../../../../../compartido/ui/ventana-modal/ventana-modal';
+import { PacientesApiService } from '../../../../../../pacientes/adaptadores/salida/http/pacientes.api.service';
 
 @Component({
   selector: 'app-buscar-paciente-modal',
   standalone: true,
   imports: [CommonModule, FormsModule, VentanaModal],
   templateUrl: './buscar-paciente-modal.html',
-  styles: ['@keyframes spin { to { transform: rotate(360deg); } }']
+  styles: ['@keyframes spin { to { transform: rotate(360deg); } }'],
 })
 export class BuscarPacienteModal implements OnInit {
   @Output() alCerrar = new EventEmitter<void>();
@@ -25,7 +35,7 @@ export class BuscarPacienteModal implements OnInit {
   filtros = {
     apellidoPaterno: '',
     apellidoMaterno: '',
-    primerNombre: ''
+    primerNombre: '',
   };
 
   tiposDocumentos: ICatalogoDescripcion[] = [];
@@ -35,7 +45,7 @@ export class BuscarPacienteModal implements OnInit {
   error = '';
 
   ngOnInit(): void {
-    void this.maestrosApi.getTiposDocumentos().then(tipos => {
+    void this.maestrosApi.getTiposDocumentos().then((tipos) => {
       this.tiposDocumentos = tipos || [];
     });
   }
@@ -65,7 +75,10 @@ export class BuscarPacienteModal implements OnInit {
       this.resultados = res || [];
       this.buscado = true;
     } catch (err: unknown) {
-      this.error = err instanceof ApiRequestError ? err.message : 'No se pudo buscar al paciente.';
+      this.error =
+        err instanceof ApiRequestError
+          ? err.message
+          : 'No se pudo buscar al paciente.';
     } finally {
       this.cargando = false;
       this.cdr.detectChanges();
@@ -73,14 +86,18 @@ export class BuscarPacienteModal implements OnInit {
   }
 
   limpiar(): void {
-    this.filtros = { apellidoPaterno: '', apellidoMaterno: '', primerNombre: '' };
+    this.filtros = {
+      apellidoPaterno: '',
+      apellidoMaterno: '',
+      primerNombre: '',
+    };
     this.resultados = [];
     this.buscado = false;
     this.error = '';
   }
 
   descripcionTipoDocumento(id: unknown): string {
-    const tipo = this.tiposDocumentos.find(t => String(t.id) === String(id));
+    const tipo = this.tiposDocumentos.find((t) => String(t.id) === String(id));
     return tipo?.descripcion ?? '—';
   }
 

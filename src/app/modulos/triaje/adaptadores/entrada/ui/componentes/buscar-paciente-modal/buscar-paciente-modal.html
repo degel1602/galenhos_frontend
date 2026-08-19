@@ -6,27 +6,27 @@
 
   <div style="display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 12px; align-items: end; margin-bottom: 16px;">
     <div>
-      <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Apellido paterno</label>
-      <input type="text" placeholder="Ej: Rocha" [(ngModel)]="filtros.apellidoPaterno" name="filtroPaterno" (keydown.enter)="buscar()"
+      <label for="filtroPaterno" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Apellido paterno</label>
+      <input id="filtroPaterno" type="text" placeholder="Ej: Rocha" [(ngModel)]="filtros.apellidoPaterno" name="filtroPaterno" (keydown.enter)="buscar()"
              style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
     </div>
     <div>
-      <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Apellido materno</label>
-      <input type="text" placeholder="Ej: García" [(ngModel)]="filtros.apellidoMaterno" name="filtroMaterno" (keydown.enter)="buscar()"
+      <label for="filtroMaterno" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Apellido materno</label>
+      <input id="filtroMaterno" type="text" placeholder="Ej: García" [(ngModel)]="filtros.apellidoMaterno" name="filtroMaterno" (keydown.enter)="buscar()"
              style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
     </div>
     <div>
-      <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Primer nombre</label>
-      <input type="text" placeholder="Ej: Juan" [(ngModel)]="filtros.primerNombre" name="filtroNombre" (keydown.enter)="buscar()"
+      <label for="filtroNombre" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Primer nombre</label>
+      <input id="filtroNombre" type="text" placeholder="Ej: Juan" [(ngModel)]="filtros.primerNombre" name="filtroNombre" (keydown.enter)="buscar()"
              style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
     </div>
-    <button (click)="buscar()" [disabled]="cargando"
+    <button type="button" (click)="buscar()" [disabled]="cargando"
             style="display: flex; align-items: center; justify-content: center; gap: 7px; height: 42px; padding: 0 20px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;"
             [style.opacity]="cargando ? 0.5 : 1">
       @if (cargando) {
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+        <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
       } @else {
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+        <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
       }
       <span>{{ cargando ? 'Buscando...' : 'Buscar' }}</span>
     </button>
@@ -59,9 +59,10 @@
         </thead>
         <tbody>
           @for (p of resultados; track p.patientId) {
-            <tr (click)="seleccionar(p)" title="Seleccionar este paciente"
+            <tr tabindex="0" (click)="seleccionar(p)" (keyup.enter)="seleccionar(p)" title="Seleccionar este paciente"
                 style="border-bottom: 1px solid #eef1f6; cursor: pointer; transition: background .15s;"
-                onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''"
+                onfocus="this.style.background='#f0f4ff'" onblur="this.style.background=''">
               <td style="padding: 12px 10px; color: #54617f;">{{ p['TipoDocumento'] || p['tipoDocumento'] || descripcionTipoDocumento(p['docIdentityId']) }}</td>
               <td style="padding: 12px 10px; color: #07153a; font-weight: 600;">{{ p['NroDocumento'] || p['nroDocumento'] || p.documentNumber }}</td>
               <td style="padding: 12px 10px; color: #54617f;">{{ p['ApellidoPaterno'] || p['apellidoPaterno'] || p.paternalSurname }}</td>
@@ -76,18 +77,18 @@
 
     @if (cargando) {
       <div style="padding: 24px; text-align: center; color: #94a0bd; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
         Consultando pacientes...
       </div>
     }
   </div>
 
   <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-    <button (click)="limpiar()"
+    <button type="button" (click)="limpiar()"
             style="margin-right: 10px; padding: 10px 20px; border: 1px solid #e0e6f1; border-radius: 11px; background: #fff; font-size: 14px; font-weight: 600; color: #54617f; cursor: pointer;">
       Limpiar
     </button>
-    <button (click)="cerrar()"
+    <button type="button" (click)="cerrar()"
             style="padding: 10px 20px; border: 1px solid #e0e6f1; border-radius: 11px; background: #fff; font-size: 14px; font-weight: 600; color: #54617f; cursor: pointer;">
       Cerrar
     </button>
