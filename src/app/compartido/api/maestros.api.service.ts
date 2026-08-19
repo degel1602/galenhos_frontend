@@ -1,104 +1,44 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiClientService } from '../api-client/api-client.service';
-import type {
+import {
   ICatalogoDescripcion,
   ICatalogoNombre,
-  IFilaBackend,
   IFuenteFinanciamiento,
   IReniecResultado,
+  IFilaBackend
 } from '../tipos/api-tipos';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class MaestrosApiService {
   private readonly apiClient = inject(ApiClientService);
 
-  getTiposDocumentos(): Promise<ICatalogoDescripcion[]> {
-    return this.apiClient.request<ICatalogoDescripcion[]>(
-      '/api/v1/tipos-documentos',
-    );
-  }
-  getIdiomas(): Promise<ICatalogoDescripcion[]> {
-    interface IdiomaRaw {
-      id: number;
-      descripcion?: string;
-      lengua?: string;
-    }
-    return this.apiClient.request<IdiomaRaw[]>('/api/v1/idiomas').then((respuesta) =>
-      respuesta.map((idioma) => ({
-        id: idioma.id,
-        descripcion: (idioma.lengua || idioma.descripcion) as string,
-      })),
-    );
-  }
+  getTiposDocumentos(): Promise<ICatalogoDescripcion[]> { return this.apiClient.request<ICatalogoDescripcion[]>('/api/v1/tipos-documentos'); }
+  getIdiomas(): Promise<ICatalogoDescripcion[]> { return this.apiClient.request<any[]>('/api/v1/idiomas').then(res => res.map(i => ({ id: i.id, descripcion: i.lengua || i.descripcion }))); }
+  // El backend de etnias devuelve { codigo, descripcion } (no "id"); se mapea
+  // codigo como id para que el select coincida con el IdEtnia del paciente.
   getEtnias(): Promise<ICatalogoDescripcion[]> {
-    return this.apiClient.request<ICatalogoDescripcion[]>('/api/v1/etnias');
+    return this.apiClient.request<any[]>('/api/v1/etnias').then(res => (res || []).map(e => ({ id: e.codigo ?? e.id, descripcion: e.descripcion })));
   }
-  getDepartamentos(): Promise<ICatalogoNombre[]> {
-    return this.apiClient.request<ICatalogoNombre[]>('/api/v1/departamentos');
-  }
-  getPaises(): Promise<ICatalogoNombre[]> {
-    return this.apiClient.request<ICatalogoNombre[]>('/api/v1/paises');
-  }
-  getTiposSexo(): Promise<ICatalogoDescripcion[]> {
-    return this.apiClient.request<ICatalogoDescripcion[]>('/api/v1/tipos-sexo');
-  }
-  getEstadosCivil(): Promise<ICatalogoDescripcion[]> {
-    return this.apiClient.request<ICatalogoDescripcion[]>(
-      '/api/v1/estados-civil',
-    );
-  }
-  getEstadosLlegoPaciente(): Promise<ICatalogoDescripcion[]> {
-    return this.apiClient.request<ICatalogoDescripcion[]>(
-      '/api/v1/estados-llego-paciente',
-    );
-  }
-  getFuentesFinanciamiento(): Promise<IFuenteFinanciamiento[]> {
-    return this.apiClient.request<IFuenteFinanciamiento[]>(
-      '/api/v1/fuentes-financiamiento',
-    );
-  }
-  getGradosInstruccion(): Promise<ICatalogoDescripcion[]> {
-    return this.apiClient.request<ICatalogoDescripcion[]>(
-      '/api/v1/grados-instruccion',
-    );
-  }
-  getOcupaciones(): Promise<ICatalogoDescripcion[]> {
-    return this.apiClient.request<ICatalogoDescripcion[]>(
-      '/api/v1/ocupaciones',
-    );
-  }
-  getProvincias(idDepartamento: number | string): Promise<ICatalogoNombre[]> {
-    return this.apiClient.request<ICatalogoNombre[]>(
-      `/api/v1/provincias/${idDepartamento}`,
-    );
-  }
-  getDistritos(idProvincia: number | string): Promise<ICatalogoNombre[]> {
-    return this.apiClient.request<ICatalogoNombre[]>(
-      `/api/v1/distritos/${idProvincia}`,
-    );
-  }
-  getCentrosPoblados(idDistrito: number | string): Promise<ICatalogoNombre[]> {
-    return this.apiClient.request<ICatalogoNombre[]>(
-      `/api/v1/centros-poblados/${idDistrito}`,
-    );
-  }
-  getEspecialidades(): Promise<ICatalogoNombre[]> {
-    return this.apiClient.request<ICatalogoNombre[]>('/api/v1/especialidades');
-  }
-  getServicios(idArea: number | string): Promise<ICatalogoNombre[]> {
-    return this.apiClient.request<ICatalogoNombre[]>(
-      `/api/v1/servicios/${idArea}`,
-    );
-  }
-  getDatosInstitucion(): Promise<IFilaBackend> {
-    return this.apiClient.request<IFilaBackend>('/api/v1/datos-institucion');
-  }
+  getDepartamentos(): Promise<ICatalogoNombre[]> { return this.apiClient.request<ICatalogoNombre[]>('/api/v1/departamentos'); }
+  getPaises(): Promise<ICatalogoNombre[]> { return this.apiClient.request<ICatalogoNombre[]>('/api/v1/paises'); }
+  getTiposSexo(): Promise<ICatalogoDescripcion[]> { return this.apiClient.request<ICatalogoDescripcion[]>('/api/v1/tipos-sexo'); }
+  getEstadosCivil(): Promise<ICatalogoDescripcion[]> { return this.apiClient.request<ICatalogoDescripcion[]>('/api/v1/estados-civil'); }
+  getEstadosLlegoPaciente(): Promise<ICatalogoDescripcion[]> { return this.apiClient.request<ICatalogoDescripcion[]>('/api/v1/estados-llego-paciente'); }
+  getFuentesFinanciamiento(): Promise<IFuenteFinanciamiento[]> { return this.apiClient.request<IFuenteFinanciamiento[]>('/api/v1/fuentes-financiamiento'); }
+  getGradosInstruccion(): Promise<ICatalogoDescripcion[]> { return this.apiClient.request<ICatalogoDescripcion[]>('/api/v1/grados-instruccion'); }
+  getOcupaciones(): Promise<ICatalogoDescripcion[]> { return this.apiClient.request<ICatalogoDescripcion[]>('/api/v1/ocupaciones'); }
+  getProvincias(idDepartamento: number | string): Promise<ICatalogoNombre[]> { return this.apiClient.request<ICatalogoNombre[]>(`/api/v1/provincias/${idDepartamento}`); }
+  getDistritos(idProvincia: number | string): Promise<ICatalogoNombre[]> { return this.apiClient.request<ICatalogoNombre[]>(`/api/v1/distritos/${idProvincia}`); }
+  getCentrosPoblados(idDistrito: number | string): Promise<ICatalogoNombre[]> { return this.apiClient.request<ICatalogoNombre[]>(`/api/v1/centros-poblados/${idDistrito}`); }
+  getEspecialidades(): Promise<ICatalogoNombre[]> { return this.apiClient.request<ICatalogoNombre[]>('/api/v1/especialidades'); }
+  getServicios(idArea: number | string): Promise<ICatalogoNombre[]> { return this.apiClient.request<ICatalogoNombre[]>(`/api/v1/servicios/${idArea}`); }
+  getDatosInstitucion(): Promise<IFilaBackend> { return this.apiClient.request<IFilaBackend>('/api/v1/datos-institucion'); }
+  getParametro(id: number | string): Promise<IFilaBackend | IFilaBackend[]> { return this.apiClient.request<IFilaBackend | IFilaBackend[]>(`/api/v1/parametros/${id}`); }
 
+  // RENIEC puede devolver el objeto de datos con campos ausentes.
   consultarReniec(nroDocumento: string): Promise<IReniecResultado> {
-    return this.apiClient.request<IReniecResultado>(
-      `/api/v1/reniec/${encodeURIComponent(nroDocumento)}?operacion=completo`,
-    );
+    return this.apiClient.request<IReniecResultado>(`/api/v1/reniec/${encodeURIComponent(nroDocumento)}?operacion=completo`);
   }
 }

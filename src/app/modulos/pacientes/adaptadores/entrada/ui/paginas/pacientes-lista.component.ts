@@ -142,12 +142,12 @@ export class PacientesListaComponent implements OnInit {
     nom: string,
   ) {
     const query = new URLSearchParams();
-    if (doc) query.append('documento', doc);
-    if (hc) query.append('hc', hc);
-    if (pat) query.append('paterno', pat);
-    if (mat) query.append('materno', mat);
-    if (nom) query.append('nombres', nom);
-
+    query.append('documento', doc);
+    query.append('hc', hc);
+    query.append('paterno', pat);
+    query.append('materno', mat);
+    query.append('nombres', nom);
+    
     const res = await this.pacientesApi.buscar(query.toString());
     this.pacientes = res || [];
     this.paginaActual = 1;
