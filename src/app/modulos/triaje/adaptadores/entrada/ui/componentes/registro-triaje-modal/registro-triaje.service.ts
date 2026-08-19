@@ -1,12 +1,22 @@
 import { Injectable, inject } from '@angular/core';
 import { MaestrosApiService } from '../../../../../../../compartido/api/maestros.api.service';
-import { PacientesApiService } from '../../../../../../pacientes/adaptadores/salida/http/pacientes.api.service';
-import { SisApiService, SisAfiliado } from '../../../../../../sis/adaptadores/salida/http/sis.api.service';
-import { TriajeApiService, RegistroTriajePayload } from '../../../../salida/http/triaje.api.service';
-import { ICatalogoDescripcion, ICatalogoNombre, IFilaBackend } from '../../../../../../../compartido/tipos/api-tipos';
 import { ApiRequestError } from '../../../../../../../compartido/api-client/api-client.service';
-import type { RegistroPacientePayload } from '../../../../../../../compartido/tipos/api-tipos';
+import type {
+  ICatalogoDescripcion,
+  ICatalogoNombre,
+  IFilaBackend,
+  RegistroPacientePayload,
+} from '../../../../../../../compartido/tipos/api-tipos';
 import { ReniecMapper } from '../../../../../../../compartido/utilidades/reniec.mapper';
+import { PacientesApiService } from '../../../../../../pacientes/adaptadores/salida/http/pacientes.api.service';
+import {
+  type SisAfiliado,
+  SisApiService,
+} from '../../../../../../sis/adaptadores/salida/http/sis.api.service';
+import {
+  type RegistroTriajePayload,
+  TriajeApiService,
+} from '../../../../salida/http/triaje.api.service';
 import type { FormRegistroTriaje } from './registro-triaje.interfaces';
 
 // Parámetros que habilitan/deshabilitan la integración con webservices
@@ -180,7 +190,7 @@ export class RegistroTriajeService {
     try {
       await this.cargarParametrosIntegracion();
 
-      let paciente = await this.buscarEnBaseDatosLocal();
+      const paciente = await this.buscarEnBaseDatosLocal();
 
       if (!paciente) {
         const reniecOk = await this.consultarReniec();
@@ -219,7 +229,7 @@ export class RegistroTriajeService {
     try {
       const [sisParam, reniecParam] = await Promise.all([
         this.maestrosApi.getParametro(PARAMETRO_SIS_ID),
-        this.maestrosApi.getParametro(PARAMETRO_RENIEC_ID)
+        this.maestrosApi.getParametro(PARAMETRO_RENIEC_ID),
       ]);
 
       this.sisIntegrado = this.parametroEsS(sisParam);
@@ -232,7 +242,11 @@ export class RegistroTriajeService {
 
   private parametroEsS(param: IFilaBackend | IFilaBackend[]): boolean {
     const fila = Array.isArray(param) ? param[0] : param;
-    const claves: (keyof IFilaBackend)[] = ['valorTexto', 'ValorTexto', 'VALORTEXTO'];
+    const claves: (keyof IFilaBackend)[] = [
+      'valorTexto',
+      'ValorTexto',
+      'VALORTEXTO',
+    ];
     for (const clave of claves) {
       const valor = fila?.[clave];
       if (valor !== undefined && valor !== null) {
@@ -397,7 +411,7 @@ export class RegistroTriajeService {
 
     const buscarIAFA = (termino: string) =>
       this.fuentesFinanciamiento.find((f) =>
-        String(f.descripcion as string | number | boolean || '')
+        String((f.descripcion as string | number | boolean) || '')
           .toUpperCase()
           .includes(termino),
       );
@@ -452,7 +466,7 @@ export class RegistroTriajeService {
 
   private mapearDatosSisAlFormulario(sis: SisAfiliado): void {
     this.mapearNombresYApellidosSis(sis);
-    
+
     if (!this.formulario.fechaNacimiento && sis.fecNacimiento?.length === 8) {
       this.formulario.fechaNacimiento = `${sis.fecNacimiento.slice(0, 4)}-${sis.fecNacimiento.slice(4, 6)}-${sis.fecNacimiento.slice(6, 8)}`;
     }
@@ -476,7 +490,11 @@ export class RegistroTriajeService {
 
   private mapearPacienteLocal(paciente: Record<string, unknown>): void {
     const v = (prop1: string, prop2: string, prop3?: string) => {
-      const val = paciente[prop1] || paciente[prop2] || (prop3 ? paciente[prop3] : '') || '';
+      const val =
+        paciente[prop1] ||
+        paciente[prop2] ||
+        (prop3 ? paciente[prop3] : '') ||
+        '';
       return String(val as string | number | boolean);
     };
 

@@ -9,17 +9,24 @@ import {
   Output,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import type { IPaciente } from '../../../../../../../compartido/tipos/api-tipos';
 import { ErrorMensajeComponent } from '../../../../../../../compartido/ui/validacion/error-mensaje.component';
 import { VentanaModal } from '../../../../../../../compartido/ui/ventana-modal/ventana-modal';
+import { BuscarPacienteModal } from '../buscar-paciente-modal/buscar-paciente-modal';
 import { ReporteTriajeComponent } from '../reporte-triaje/reporte-triaje.component';
 import { RegistroTriajeService } from './registro-triaje.service';
-import { BuscarPacienteModal } from '../buscar-paciente-modal/buscar-paciente-modal';
-import { IPaciente } from '../../../../../../../compartido/tipos/api-tipos';
 
 @Component({
   selector: 'app-registro-triaje-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, VentanaModal, ReporteTriajeComponent, ErrorMensajeComponent, BuscarPacienteModal],
+  imports: [
+    CommonModule,
+    FormsModule,
+    VentanaModal,
+    ReporteTriajeComponent,
+    ErrorMensajeComponent,
+    BuscarPacienteModal,
+  ],
   providers: [RegistroTriajeService],
   templateUrl: './registro-triaje-modal.html',
   styles: [`@keyframes spin { to { transform: rotate(360deg); } }`],
@@ -75,7 +82,8 @@ export class RegistroTriajeModal implements OnInit {
     this.buscarAbierto = false;
 
     // Autocompleta tipo de documento y número de documento del formulario de triaje.
-    const idTipo = (paciente as unknown as Record<string, unknown>)['docIdentityId'];
+    const idTipo = (paciente as unknown as Record<string, unknown>)
+      .docIdentityId;
     if (idTipo !== undefined && idTipo !== null) {
       this.srv.formulario.idDocIdentidad = String(idTipo);
     }

@@ -1,71 +1,73 @@
-import { __decorate } from "tslib";
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { __decorate } from 'tslib';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
+import { BienvenidaService } from '../../../../../../compartido/ui/credencial-bienvenida/bienvenida.service';
 import { TypewriterTextComponent } from '../../../../../../compartido/ui/typewriter-text/typewriter-text.component';
 import { AuthService } from '../../../../aplicacion/auth.service';
 import { AuthApiService } from '../../../salida/http/auth.api.service';
+
 let LoginComponent = class LoginComponent {
-    authService = inject(AuthService);
-    authApi = inject(AuthApiService);
-    router = inject(Router);
-    user = '';
-    pass = '';
-    error = '';
-    loading = false;
-    showPassword = false;
-    heroTexts = [
-        'Para médicos y especialistas.',
-        'Gestión clínica integral.',
-        'Para todo el equipo de salud.',
-        'Innovación en cada consulta.',
-        'Para nuestro aliado en Seguridad.',
-        'El futuro de la atención médica en tus manos.',
-    ];
-    async handleLogin() {
-        if (!this.user || !this.pass) {
-            this.error = 'Ingrese usuario y contraseña.';
-            return;
-        }
-        this.error = '';
-        this.loading = true;
-        try {
-            const response = await this.authApi.login(this.user, this.pass);
-            this.authService.setSession(response.accessToken, this.user);
-            const authMenus = await this.authApi.getMenus();
-            this.authService.setMenus(authMenus);
-            this.router.navigate(['/dashboard']);
-        }
-        catch (err) {
-            if (err instanceof ApiRequestError &&
-                err.code === 'INVALID_CREDENTIALS') {
-                this.error = 'Usuario o contraseña incorrectos.';
-            }
-            else if (err instanceof ApiRequestError && err.status === 0) {
-                this.error =
-                    'No se pudo conectar con el servidor. Verifique la URL de la API.';
-            }
-            else if (err instanceof ApiRequestError) {
-                this.error = err.message;
-            }
-            else {
-                this.error = 'Ocurrió un error inesperado.';
-            }
-        }
-        finally {
-            this.loading = false;
-        }
+  authService = inject(AuthService);
+  authApi = inject(AuthApiService);
+  router = inject(Router);
+  bienvenidaService = inject(BienvenidaService);
+  user = '';
+  pass = '';
+  error = '';
+  loading = false;
+  showPassword = false;
+  heroTexts = [
+    'Para médicos y especialistas.',
+    'Gestión clínica integral.',
+    'Para todo el equipo de salud.',
+    'Innovación en cada consulta.',
+    'Para nuestro aliado en Seguridad.',
+    'El futuro de la atención médica en tus manos.',
+  ];
+  async handleLogin() {
+    if (!this.user || !this.pass) {
+      this.error = 'Ingrese usuario y contraseña.';
+      return;
     }
+    this.error = '';
+    this.loading = true;
+    try {
+      const response = await this.authApi.login(this.user, this.pass);
+      this.authService.setSession(response.accessToken, this.user);
+      const authMenus = await this.authApi.getMenus();
+      this.authService.setMenus(authMenus);
+      this.bienvenidaService.activar();
+      this.router.navigate(['/dashboard']);
+    } catch (err) {
+      if (
+        err instanceof ApiRequestError &&
+        err.code === 'INVALID_CREDENTIALS'
+      ) {
+        this.error = 'Usuario o contraseña incorrectos.';
+      } else if (err instanceof ApiRequestError && err.status === 0) {
+        this.error =
+          'No se pudo conectar con el servidor. Verifique la URL de la API.';
+      } else if (err instanceof ApiRequestError) {
+        this.error = err.message;
+      } else {
+        this.error = 'Ocurrió un error inesperado.';
+      }
+    } finally {
+      this.loading = false;
+    }
+  }
 };
-LoginComponent = __decorate([
+LoginComponent = __decorate(
+  [
     Component({
-        selector: 'app-login',
-        standalone: true,
-        imports: [FormsModule, TypewriterTextComponent],
-        templateUrl: './login.component.html',
-        styles: [
-            `
+      selector: 'app-login',
+      standalone: true,
+      imports: [FormsModule, TypewriterTextComponent],
+      templateUrl: './login.component.html',
+      styles: [
+        `
     .slideshow-bg {
       position: absolute;
       inset: 0;
@@ -87,7 +89,10 @@ LoginComponent = __decorate([
       100% { opacity: 0; transform: scale(1); }
     }
   `,
-        ],
-    })
-], LoginComponent);
+      ],
+    }),
+  ],
+  LoginComponent,
+);
+
 export { LoginComponent };

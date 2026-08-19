@@ -20,10 +20,11 @@
           </div>
           <div class="flex flex-col gap-0.5">
             @for (paciente of evolucionService.filteredPacientes(); track paciente.idRegAtencion) {
-              <div 
+              <div
                 class="px-3 py-2 rounded-lg cursor-pointer transition-colors duration-150 ease-in-out hover:bg-slate-100 w-full"
                 [class.bg-teal-50]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
                 (click)="evolucionService.selectPatient(paciente)"
+                (keydown.enter)="evolucionService.selectPatient(paciente)"
               >
                 <div class="font-semibold text-[13px] text-slate-900 break-words leading-snug">{{ paciente.nombre }}</div>
                 <div class="font-mono text-[10.8px] text-slate-500 mt-0.5 flex justify-between gap-2 leading-none">
@@ -62,7 +63,7 @@
                 <span><b>Cama:</b> {{ paciente.cama }}</span>
               </div>
             </div>
-            <button 
+            <button type="button" 
               (click)="evolucionService.setViewMode('form')"
               class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
             >
@@ -79,7 +80,7 @@
 
             @if (evolucionesCargando()) {
               <div class="flex justify-center items-center py-14 gap-3 text-slate-500">
-                <svg class="animate-spin h-5 w-5 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg aria-hidden="true" class="animate-spin h-5 w-5 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -87,7 +88,7 @@
               </div>
             } @else if (evolucionesPaciente().length === 0) {
               <div class="text-center py-14 text-slate-400">
-                <svg class="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg aria-hidden="true" class="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"></path>
                 </svg>
                 <p>Este paciente aún no tiene evoluciones registradas en el sistema.</p>
@@ -119,7 +120,7 @@
                       type="button"
                       (click)="verEvolucion(evolucion)"
                       class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-teal-600 hover:text-teal-800 hover:underline transition-colors cursor-pointer">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                         <circle cx="12" cy="12" r="3"></circle>
                       </svg>
@@ -133,15 +134,15 @@
           </div>
 
           @if (evolucionDetalle(); as detalle) {
-            <div class="fixed inset-0 bg-[#07153a]/45 flex items-center justify-center p-6 z-[110]" (click)="cerrarDetalle()">
-              <div (click)="$event.stopPropagation()" class="w-full max-w-3xl max-h-[85vh] overflow-hidden bg-white rounded-2xl shadow-[0_20px_60px_rgba(7,21,58,0.3)] flex flex-col">
+            <div class="fixed inset-0 bg-[#07153a]/45 flex items-center justify-center p-6 z-[110]" (click)="cerrarDetalle()" (keydown.enter)="cerrarDetalle()">
+              <div (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" class="w-full max-w-3xl max-h-[85vh] overflow-hidden bg-white rounded-2xl shadow-[0_20px_60px_rgba(7,21,58,0.3)] flex flex-col">
                 <div class="flex items-start justify-between px-6 py-4 border-b border-slate-200 shrink-0">
                   <div class="min-w-0">
                     <div class="text-base font-bold text-[#07153a]">Evolución N.º {{ detalle.idFirma }}</div>
                     <div class="text-[12.5px] text-[#7a86a1] mt-0.5">Firmada el {{ detalle.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}</div>
                   </div>
-                  <button (click)="cerrarDetalle()" class="w-8 h-8 rounded-lg border border-slate-200 bg-white cursor-pointer flex items-center justify-center text-slate-500 shrink-0 transition-colors hover:bg-slate-50 ml-3" aria-label="Cerrar">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <button type="button" (click)="cerrarDetalle()" class="w-8 h-8 rounded-lg border border-slate-200 bg-white cursor-pointer flex items-center justify-center text-slate-500 shrink-0 transition-colors hover:bg-slate-50 ml-3" aria-label="Cerrar">
+                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                   </button>
@@ -154,7 +155,7 @@
           }
         } @else {
           <div class="text-center py-20 text-slate-400">
-            <svg class="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" class="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
               <rect x="8" y="2" width="8" height="4" rx="1"></rect>
               <path d="M9 12h6"></path>

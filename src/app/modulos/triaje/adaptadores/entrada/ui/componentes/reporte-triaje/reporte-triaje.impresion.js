@@ -1,36 +1,52 @@
-import { decodificarBase64Reporte, formatFecha } from './reporte-triaje.component';
-export function generarHtmlReporteTriaje(cabecera, institucion, logoMinsa, idTriaje, fechaImp) {
-    const datosCabecera = cabecera;
-    const datosInstitucion = institucion;
-    const formatearValor = (valorFormato) => valorFormato === null || valorFormato === undefined || valorFormato === '' ? '—' : String(valorFormato);
-    const generarCelda = (value, centro = false) => `<td style="border:1px solid #000;font-size:10px;text-align:${centro ? 'center' : 'left'};text-transform:uppercase;padding:2px 5px">${formatearValor(value)}</td>`;
-    const generarCeldaExtendida = (columnas, value, centro = false) => `<td colspan="${columnas}" style="border:1px solid #000;font-size:10px;text-align:${centro ? 'center' : 'left'};text-transform:uppercase;padding:2px 5px">${formatearValor(value)}</td>`;
-    const generarEtiqueta = (textoEtiqueta) => `<td style="background:#cccccc;border:1px solid #000;font-size:10px;text-align:center">${textoEtiqueta}</td>`;
-    const obtenerTexto = (claveValor) => {
-        const valor = datosCabecera[claveValor];
-        return valor !== undefined && valor !== null && valor !== '' ? String(valor) : '';
-    };
-    const obtenerDecodificado = (claveValor) => {
-        const valor = datosCabecera[claveValor];
-        return valor !== undefined && valor !== null && valor !== ''
-            ? decodificarBase64Reporte(String(valor))
-            : '—';
-    };
-    const obtenerInstitucion = (claveValor) => {
-        const valor = datosInstitucion?.[claveValor];
-        return valor !== undefined && valor !== null && valor !== ''
-            ? String(valor)
-            : '—';
-    };
-    const logo = logoMinsa;
-    const formatearDireccion = () => {
-        const dir = obtenerTexto('Direccion');
-        const dist = obtenerTexto('Distrito');
-        if (dir === '—' || dir === '')
-            return '—';
-        return dist !== '—' && dist !== '' ? `${dir}, ${dist}` : dir;
-    };
-    return `<!doctype html><html><head><meta charset="utf-8"><title>Reporte de Triaje N° ${idTriaje}</title>
+import {
+  decodificarBase64Reporte,
+  formatFecha,
+} from './reporte-triaje.component';
+export function generarHtmlReporteTriaje(
+  cabecera,
+  institucion,
+  logoMinsa,
+  idTriaje,
+  fechaImp,
+) {
+  const datosCabecera = cabecera;
+  const datosInstitucion = institucion;
+  const formatearValor = (valorFormato) =>
+    valorFormato === null || valorFormato === undefined || valorFormato === ''
+      ? '—'
+      : String(valorFormato);
+  const generarCelda = (value, centro = false) =>
+    `<td style="border:1px solid #000;font-size:10px;text-align:${centro ? 'center' : 'left'};text-transform:uppercase;padding:2px 5px">${formatearValor(value)}</td>`;
+  const generarCeldaExtendida = (columnas, value, centro = false) =>
+    `<td colspan="${columnas}" style="border:1px solid #000;font-size:10px;text-align:${centro ? 'center' : 'left'};text-transform:uppercase;padding:2px 5px">${formatearValor(value)}</td>`;
+  const generarEtiqueta = (textoEtiqueta) =>
+    `<td style="background:#cccccc;border:1px solid #000;font-size:10px;text-align:center">${textoEtiqueta}</td>`;
+  const obtenerTexto = (claveValor) => {
+    const valor = datosCabecera[claveValor];
+    return valor !== undefined && valor !== null && valor !== ''
+      ? String(valor)
+      : '';
+  };
+  const obtenerDecodificado = (claveValor) => {
+    const valor = datosCabecera[claveValor];
+    return valor !== undefined && valor !== null && valor !== ''
+      ? decodificarBase64Reporte(String(valor))
+      : '—';
+  };
+  const obtenerInstitucion = (claveValor) => {
+    const valor = datosInstitucion?.[claveValor];
+    return valor !== undefined && valor !== null && valor !== ''
+      ? String(valor)
+      : '—';
+  };
+  const logo = logoMinsa;
+  const formatearDireccion = () => {
+    const dir = obtenerTexto('Direccion');
+    const dist = obtenerTexto('Distrito');
+    if (dir === '—' || dir === '') return '—';
+    return dist !== '—' && dist !== '' ? `${dir}, ${dist}` : dir;
+  };
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Reporte de Triaje N° ${idTriaje}</title>
     <style>
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       @page { margin: 1cm; font-family: Arial; }
@@ -50,7 +66,7 @@ export function generarHtmlReporteTriaje(cabecera, institucion, logoMinsa, idTri
       </table>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
         <tr>
-          ${generarEtiqueta('N° DOCUMENTO')} ${generarCeldaExtendida(3, obtenerTexto('NroDocumento'), false)} ${generarEtiqueta('N° DE TRIAJE')} ${generarCelda(datosCabecera['idTriaje'], true)} ${generarEtiqueta('FUEN. FIN')} ${generarCelda(obtenerTexto('fuentefinanciamiento'), true)}
+          ${generarEtiqueta('N° DOCUMENTO')} ${generarCeldaExtendida(3, obtenerTexto('NroDocumento'), false)} ${generarEtiqueta('N° DE TRIAJE')} ${generarCelda(datosCabecera.idTriaje, true)} ${generarEtiqueta('FUEN. FIN')} ${generarCelda(obtenerTexto('fuentefinanciamiento'), true)}
         </tr>
         <tr>${generarEtiqueta('PACIENTE')} ${generarCeldaExtendida(7, obtenerTexto('Paciente'), false)}</tr>
         <tr>

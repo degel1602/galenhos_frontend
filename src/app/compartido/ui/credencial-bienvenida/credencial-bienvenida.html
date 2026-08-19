@@ -1,0 +1,38 @@
+<div class="overlay-bienvenida">
+
+  <!-- El canvas 3D será inyectado aquí por Three.js -->
+  <div #contenedor class="lanyard-wrapper"></div>
+
+  <div class="texto-superior">
+    <h1 class="titulo-bienvenida">
+      ¡Bienvenido, <span class="nombre-resaltado">{{ nombreUsuario }}</span>!
+    </h1>
+    <p class="subtitulo-bienvenida">Preparando tu espacio de trabajo…</p>
+    <div class="indicador-carga">
+      <div class="barra-carga"></div>
+    </div>
+  </div>
+
+  <div class="contenedor-acciones">
+    <p class="instruccion-arrastre">
+      <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
+        <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+      </svg>
+      Puedes arrastrar tu credencial
+    </p>
+
+    <button
+      type="button"
+      class="boton-entrar"
+      aria-label="Entrar al sistema"
+      (click)="cerrarOverlay()">
+      Entrar al Sistema
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </button>
+  </div>
+
+</div>

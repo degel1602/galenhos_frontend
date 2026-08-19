@@ -147,7 +147,7 @@ export class PacientesListaComponent implements OnInit {
     query.append('paterno', pat);
     query.append('materno', mat);
     query.append('nombres', nom);
-    
+
     const res = await this.pacientesApi.buscar(query.toString());
     this.pacientes = res || [];
     this.paginaActual = 1;

@@ -41,11 +41,11 @@
       }
       <span>{{ srv.buscando ? 'Verificando...' : 'Buscar' }}</span>
     </button>
-    <button (click)="abrirBuscador()" [disabled]="srv.buscando || srv.formulario.pacienteNn"
+    <button type="button" (click)="abrirBuscador()" [disabled]="srv.buscando || srv.formulario.pacienteNn"
             title="Buscar por apellidos y nombre"
             style="display: flex; align-items: center; justify-content: center; height: 42px; width: 42px; background: #f8fafc; color: #263c7a; border: 1px solid #d5dceb; border-radius: 11px; cursor: pointer; flex-shrink: 0;"
             [style.opacity]="(srv.buscando || srv.formulario.pacienteNn) ? 0.5 : 1">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
     </button>
   </div>
 
@@ -76,15 +76,15 @@
   @if (srv.pacienteEncontrado) {
     <div style="margin-top: 16px; border-radius: 14px; overflow: hidden;"
          [style.border]="srv.formulario.idPaciente ? '1px solid #bbf7d0' : '1px solid #fde68a'">
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 11px 16px; background: #f0f4ff; cursor: pointer; user-select: none;"
-           (click)="mostrarPaciente = !mostrarPaciente">
-        <span style="font-size: 12px; font-weight: 700; color: #263c7a; text-transform: uppercase; letter-spacing: .04em;">Datos del paciente</span>
+      <button type="button" style="width: 100%; border: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 11px 16px; background: #f0f4ff; cursor: pointer; user-select: none;"
+              (click)="mostrarPaciente = !mostrarPaciente">
+        <span style="font-size: 12px; font-weight: 700; color: #263c7a; text-transform: uppercase; letter-spacing: .04em; text-align: left;">Datos del paciente</span>
         <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
              style="color: #54617f; transition: transform .2s;"
              [style.transform]="mostrarPaciente ? 'rotate(180deg)' : 'none'">
           <path d="M6 9l6 6 6-6" />
         </svg>
-      </div>
+      </button>
       @if (mostrarPaciente) {
         <div style="padding: 16px;">
           <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;">
@@ -249,8 +249,8 @@
             </button>
           </div>
           <div>
-            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">IAFA</label>
-            <select [(ngModel)]="srv.formulario.idFuenteFinanciamiento" name="idFuenteFinanciamiento" [disabled]="srv.sisIntegrado"
+            <label for="iafa-select" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">IAFA</label>
+            <select id="iafa-select" [(ngModel)]="srv.formulario.idFuenteFinanciamiento" name="idFuenteFinanciamiento" [disabled]="srv.sisIntegrado"
                     [style.background]="srv.sisIntegrado ? '#eef1f6' : '#f8fafc'"
                     style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; color: #07153a;">
               <option value="">Seleccionar...</option>
@@ -409,13 +409,13 @@
     </button>
     @if (srv.pasoActual === 2) {
       <button type="button" (click)="continuar()"
-              style="padding: 10px 22px; background: #0d9488; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer;">
+              style="padding: 10px 22px; background: #0f766e; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer;">
         Continuar con el triaje
       </button>
     }
     @if (srv.pasoActual === 3) {
       <button type="button" (click)="registrar()" [disabled]="srv.guardando"
-              style="padding: 10px 22px; background: #0d9488; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px;"
+              style="padding: 10px 22px; background: #0f766e; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px;"
               [style.opacity]="srv.guardando ? 0.7 : 1" [style.cursor]="srv.guardando ? 'wait' : 'pointer'">
         @if (srv.guardando) {
           <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="animation: spin 1s linear infinite;">
@@ -427,10 +427,9 @@
     }
   </div>
 </ventana-modal>
-
+}
 @if (buscarAbierto) {
   <app-buscar-paciente-modal (alCerrar)="cerrarBuscador()" (seleccionado)="onPacienteSeleccionado($event)"></app-buscar-paciente-modal>
-}
 }
 
 @if (reporteId) {
