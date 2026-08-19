@@ -1,22 +1,18 @@
 import { Injectable, inject } from '@angular/core';
 import { MaestrosApiService } from '../../../../../../../compartido/api/maestros.api.service';
-import { ApiRequestError } from '../../../../../../../compartido/api-client/api-client.service';
-import type {
-  ICatalogoDescripcion,
-  ICatalogoNombre,
-  RegistroPacientePayload,
-} from '../../../../../../../compartido/tipos/api-tipos';
-import { ReniecMapper } from '../../../../../../../compartido/utilidades/reniec.mapper';
 import { PacientesApiService } from '../../../../../../pacientes/adaptadores/salida/http/pacientes.api.service';
-import {
-  type SisAfiliado,
-  SisApiService,
-} from '../../../../../../sis/adaptadores/salida/http/sis.api.service';
-import {
-  type RegistroTriajePayload,
-  TriajeApiService,
-} from '../../../../salida/http/triaje.api.service';
+import { SisApiService, SisAfiliado } from '../../../../../../sis/adaptadores/salida/http/sis.api.service';
+import { TriajeApiService, RegistroTriajePayload } from '../../../../salida/http/triaje.api.service';
+import { ICatalogoDescripcion, ICatalogoNombre, IFilaBackend } from '../../../../../../../compartido/tipos/api-tipos';
+import { ApiRequestError } from '../../../../../../../compartido/api-client/api-client.service';
+import type { RegistroPacientePayload } from '../../../../../../../compartido/tipos/api-tipos';
+import { ReniecMapper } from '../../../../../../../compartido/utilidades/reniec.mapper';
 import type { FormRegistroTriaje } from './registro-triaje.interfaces';
+
+// Parámetros que habilitan/deshabilitan la integración con webservices
+// externos: 'S' habilita la consulta, 'N' la deshabilita.
+const PARAMETRO_SIS_ID = 322;
+const PARAMETRO_RENIEC_ID = 296;
 
 @Injectable()
 export class RegistroTriajeService {
@@ -37,6 +33,8 @@ export class RegistroTriajeService {
   sisActivo = false;
   sisDescripcion = '';
   sisGuardado = false;
+  sisIntegrado = false;
+  reniecIntegrado = false;
 
   ultimoTriajeId: number | null = null;
 
@@ -156,6 +154,8 @@ export class RegistroTriajeService {
     this.sisActivo = false;
     this.sisDescripcion = '';
     this.sisGuardado = false;
+    this.sisIntegrado = false;
+    this.reniecIntegrado = false;
     this.ultimoTriajeId = null;
   }
 
@@ -178,7 +178,9 @@ export class RegistroTriajeService {
     this.sisActivo = false;
 
     try {
-      const paciente = await this.buscarEnBaseDatosLocal();
+      await this.cargarParametrosIntegracion();
+
+      let paciente = await this.buscarEnBaseDatosLocal();
 
       if (!paciente) {
         const reniecOk = await this.consultarReniec();
@@ -192,7 +194,9 @@ export class RegistroTriajeService {
         this.pasoActual = 2;
       }
 
-      await this.consultarSis();
+      if (this.sisIntegrado) {
+        await this.consultarSis();
+      }
 
       if (!this.pacienteEncontrado && !this.mensajeError) {
         this.mensajeError =
@@ -206,6 +210,36 @@ export class RegistroTriajeService {
     } finally {
       this.buscando = false;
     }
+  }
+
+  // Consulta los parámetros que activan las integraciones con SIS y RENIEC.
+  // valorTexto === 'S' habilita la integración; cualquier otro valor la apaga.
+  // Ante un error del endpoint se asume integración desactivada (fail-closed).
+  private async cargarParametrosIntegracion(): Promise<void> {
+    try {
+      const [sisParam, reniecParam] = await Promise.all([
+        this.maestrosApi.getParametro(PARAMETRO_SIS_ID),
+        this.maestrosApi.getParametro(PARAMETRO_RENIEC_ID)
+      ]);
+
+      this.sisIntegrado = this.parametroEsS(sisParam);
+      this.reniecIntegrado = this.parametroEsS(reniecParam);
+    } catch {
+      this.sisIntegrado = false;
+      this.reniecIntegrado = false;
+    }
+  }
+
+  private parametroEsS(param: IFilaBackend | IFilaBackend[]): boolean {
+    const fila = Array.isArray(param) ? param[0] : param;
+    const claves: (keyof IFilaBackend)[] = ['valorTexto', 'ValorTexto', 'VALORTEXTO'];
+    for (const clave of claves) {
+      const valor = fila?.[clave];
+      if (valor !== undefined && valor !== null) {
+        return String(valor).trim().toUpperCase() === 'S';
+      }
+    }
+    return false;
   }
 
   private habilitarModoNN(): void {
@@ -232,9 +266,13 @@ export class RegistroTriajeService {
 
   private async buscarPorDocumentoSinTipo(): Promise<unknown> {
     try {
-      const resultados = await this.pacientesApi.buscar(
-        `documento=${encodeURIComponent(this.formulario.nroDocumento)}`,
-      );
+      const query = new URLSearchParams();
+      query.append('documento', this.formulario.nroDocumento);
+      query.append('hc', '');
+      query.append('paterno', '');
+      query.append('materno', '');
+      query.append('nombres', '');
+      const resultados = await this.pacientesApi.buscar(query.toString());
       return resultados.length > 0 ? resultados[0] : null;
     } catch {
       return null;
@@ -242,6 +280,11 @@ export class RegistroTriajeService {
   }
 
   private async consultarReniec(): Promise<boolean> {
+    if (!this.reniecIntegrado) return false;
+
+    // RENIEC solo consulta DNI (idDocIdentidad = 1).
+    if (this.formulario.idDocIdentidad !== '1') return false;
+
     try {
       const resultado = await this.pacientesApi.consultarReniec(
         this.formulario.nroDocumento,
@@ -350,6 +393,8 @@ export class RegistroTriajeService {
   }
 
   actualizarIafaAutomatico(): void {
+    if (!this.sisIntegrado) return;
+
     const buscarIAFA = (termino: string) =>
       this.fuentesFinanciamiento.find((f) =>
         String(f.descripcion as string | number | boolean || '')

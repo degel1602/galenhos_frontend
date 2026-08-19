@@ -5,7 +5,7 @@
   [ancho]="1100"
   (alCerrar)="cerrar()">
 
-  <div style="display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 10px; align-items: end;">
+  <div style="display: grid; grid-template-columns: 1fr 1fr auto auto auto; gap: 10px; align-items: end;">
     <div>
       <label for="tipo-de-documento" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Tipo de documento</label>
         <select id="tipo-de-documento" style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;"
@@ -40,6 +40,12 @@
         <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
       }
       <span>{{ srv.buscando ? 'Verificando...' : 'Buscar' }}</span>
+    </button>
+    <button (click)="abrirBuscador()" [disabled]="srv.buscando || srv.formulario.pacienteNn"
+            title="Buscar por apellidos y nombre"
+            style="display: flex; align-items: center; justify-content: center; height: 42px; width: 42px; background: #f8fafc; color: #263c7a; border: 1px solid #d5dceb; border-radius: 11px; cursor: pointer; flex-shrink: 0;"
+            [style.opacity]="(srv.buscando || srv.formulario.pacienteNn) ? 0.5 : 1">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
     </button>
   </div>
 
@@ -243,9 +249,10 @@
             </button>
           </div>
           <div>
-            <label for="iafa" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">IAFA</label>
-        <select id="iafa" [ngModel]="srv.formulario.idFuenteFinanciamiento" [disabled]="true"
-                    style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #eef1f6; color: #07153a;">
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">IAFA</label>
+            <select [(ngModel)]="srv.formulario.idFuenteFinanciamiento" name="idFuenteFinanciamiento" [disabled]="srv.sisIntegrado"
+                    [style.background]="srv.sisIntegrado ? '#eef1f6' : '#f8fafc'"
+                    style="width: 100%; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; color: #07153a;">
               <option value="">Seleccionar...</option>
               @for (fuente of srv.fuentesFinanciamiento; track fuente.idFuenteFinanciamiento) {
                 <option [value]="fuente.idFuenteFinanciamiento">{{ fuente.descripcion || fuente.nombre }}</option>
@@ -420,6 +427,10 @@
     }
   </div>
 </ventana-modal>
+
+@if (buscarAbierto) {
+  <app-buscar-paciente-modal (alCerrar)="cerrarBuscador()" (seleccionado)="onPacienteSeleccionado($event)"></app-buscar-paciente-modal>
+}
 }
 
 @if (reporteId) {
