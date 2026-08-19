@@ -102,8 +102,8 @@ export class PacientesListaComponent implements OnInit {
       } else {
         await this.cargarListadoPaginado();
       }
-    } catch (err: unknown) {
-      this.manejarErrorBusqueda(err);
+    } catch (error: unknown) {
+      this.manejarErrorBusqueda(error);
     } finally {
       this.cargando = false;
       this.cdr.detectChanges();
@@ -167,9 +167,9 @@ export class PacientesListaComponent implements OnInit {
     this.totalRegistros = res.totalItems;
   }
 
-  private manejarErrorBusqueda(err: unknown) {
-    if (err instanceof ApiRequestError) {
-      this.error = err.message;
+  private manejarErrorBusqueda(error: unknown) {
+    if (error instanceof ApiRequestError) {
+      this.error = error.message;
     } else {
       this.error = 'Ocurrió un error al buscar pacientes.';
     }
@@ -233,9 +233,9 @@ export class PacientesListaComponent implements OnInit {
       this.mensajeExito = `Paciente ${nombre} eliminado correctamente.`;
       setTimeout(() => (this.mensajeExito = ''), 5000);
       this.buscarPacientes();
-    } catch (err: unknown) {
-      if (err instanceof ApiRequestError) {
-        this.error = err.message;
+    } catch (error: unknown) {
+      if (error instanceof ApiRequestError) {
+        this.error = error.message;
       } else {
         this.error = 'No se pudo eliminar el paciente.';
       }

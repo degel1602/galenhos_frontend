@@ -15,8 +15,8 @@ export interface PacienteItem {
   estado: string;
 }
 
-export interface PaginaResponse<T> {
-  items: T[];
+export interface PaginaResponse<TipoPaginacion> {
+  items: TipoPaginacion[];
   page: number;
   totalPages: number;
   totalItems: number;
@@ -153,7 +153,7 @@ export class EvolucionService {
       const binario = atob(dataB64);
       let texto = '';
       for (let i = 0; i < binario.length; i++) {
-        const code = binario.charCodeAt(i);
+        const code = binario.codePointAt(i) || 0;
         texto +=
           code > 127 ? `%${code.toString(16).padStart(2, '0')}` : binario[i];
       }
@@ -170,9 +170,8 @@ export class EvolucionService {
 
   public normalizarEdad(edad: string): string {
     if (!edad) return 'N/A';
-    const match = edad.match(
-      /(-?\d+)\s*años?[,\s]+(-?\d+)\s*meses?[,\s]+(-?\d+)\s*días?/i,
-    );
+    const regexEdad = /^\D*(-?\d+)\D+(-?\d+)\D+(-?\d+)\D*$/;
+    const match = regexEdad.exec(edad);
     if (!match) return edad;
 
     let anios = Number(match[1]);

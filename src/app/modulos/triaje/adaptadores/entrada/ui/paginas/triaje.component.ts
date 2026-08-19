@@ -190,10 +190,10 @@ export class TriajeComponent implements OnInit {
         '-100',
       );
       this.pacientes = Array.isArray(items) ? items : [];
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.error =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo cargar el listado de triaje.';
     } finally {
       this.cargando = false;
@@ -234,10 +234,10 @@ export class TriajeComponent implements OnInit {
     try {
       const items = await this.triajeApi.obtenerReporte({});
       this.reporte = Array.isArray(items) ? items : [];
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.errorReporte =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo generar el reporte de triaje.';
     } finally {
       this.cargandoReporte = false;
@@ -302,10 +302,10 @@ export class TriajeComponent implements OnInit {
         }
         return { clave, valor: strValor };
       });
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.errorFicha =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo obtener la ficha de admisión.';
     } finally {
       this.cargandoFicha = false;
@@ -419,10 +419,10 @@ export class TriajeComponent implements OnInit {
       this.mensajeExito = 'Evaluación de triaje guardada.';
       setTimeout(() => (this.mensajeExito = ''), 5000);
       this.cargarLista();
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.errorEvaluacion =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo guardar la evaluación.';
     } finally {
       this.guardandoEvaluacion = false;

@@ -127,7 +127,7 @@ export class RegistroPacienteService {
         p(this.maestrosApi.getEstadosLlegoPaciente()),
       ]);
 
-      const asArray = <T>(val: unknown): T[] =>
+      const asArray = <TipoElemento>(val: unknown): TipoElemento[] =>
         Array.isArray(val) && val.length ? val : [];
 
       this.tiposDocumento = asArray(docs);

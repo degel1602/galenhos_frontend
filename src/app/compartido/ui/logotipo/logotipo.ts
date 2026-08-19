@@ -2,20 +2,7 @@ import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'logotipo',
-  template: `
-    <div class="flex items-center" [style.gap.px]="size * 0.4">
-      <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="6" fill="#07153a" />
-        <path d="M12 5v14M5 12h14" stroke="#66b6ff" stroke-width="2.6" stroke-linecap="round" />
-      </svg>
-      <span class="flex items-baseline font-['Poppins',sans-serif]" [style.gap.px]="size * 0.18">
-        <span class="font-bold text-[#07153a] tracking-[.01em]" [style.font-size.px]="size * 0.72">GALENOS</span>
-        <span class="font-bold text-[#263c7a]" [style.font-size.px]="size * 0.72">
-          PR<span class="text-[#66b6ff]">O</span>
-        </span>
-      </span>
-    </div>
-  `,
+  templateUrl: './logotipo.html',
 })
 export class Logotipo {
   @Input() size: number = 24;

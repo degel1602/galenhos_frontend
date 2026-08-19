@@ -25,10 +25,10 @@ export class MaestrosApiService {
       descripcion?: string;
       lengua?: string;
     }
-    return this.apiClient.request<IdiomaRaw[]>('/api/v1/idiomas').then((res) =>
-      res.map((i) => ({
-        id: i.id,
-        descripcion: (i.lengua || i.descripcion) as string,
+    return this.apiClient.request<IdiomaRaw[]>('/api/v1/idiomas').then((respuesta) =>
+      respuesta.map((idioma) => ({
+        id: idioma.id,
+        descripcion: (idioma.lengua || idioma.descripcion) as string,
       })),
     );
   }

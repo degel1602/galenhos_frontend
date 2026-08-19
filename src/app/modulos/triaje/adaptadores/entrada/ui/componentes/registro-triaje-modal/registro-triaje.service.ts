@@ -350,32 +350,27 @@ export class RegistroTriajeService {
   }
 
   actualizarIafaAutomatico(): void {
-    if (this.formulario.esAccidenteTransito) {
-      const soat = this.fuentesFinanciamiento.find((f) =>
-        String(f.descripcion || '')
+    const buscarIAFA = (termino: string) =>
+      this.fuentesFinanciamiento.find((f) =>
+        String(f.descripcion as string | number | boolean || '')
           .toUpperCase()
-          .includes('SOAT'),
+          .includes(termino),
       );
+
+    if (this.formulario.esAccidenteTransito) {
+      const soat = buscarIAFA('SOAT');
       if (soat)
         this.formulario.idFuenteFinanciamiento = String(
           soat.idFuenteFinanciamiento,
         );
     } else if (this.sisActivo) {
-      const sis = this.fuentesFinanciamiento.find((f) =>
-        String(f.descripcion || '')
-          .toUpperCase()
-          .includes('SIS'),
-      );
+      const sis = buscarIAFA('SIS');
       if (sis)
         this.formulario.idFuenteFinanciamiento = String(
           sis.idFuenteFinanciamiento,
         );
     } else {
-      const particular = this.fuentesFinanciamiento.find((f) =>
-        String(f.descripcion || '')
-          .toUpperCase()
-          .includes('PARTICULAR'),
-      );
+      const particular = buscarIAFA('PARTICULAR');
       if (particular)
         this.formulario.idFuenteFinanciamiento = String(
           particular.idFuenteFinanciamiento,
@@ -383,7 +378,7 @@ export class RegistroTriajeService {
     }
   }
 
-  private mapearDatosSisAlFormulario(sis: SisAfiliado): void {
+  private mapearNombresYApellidosSis(sis: SisAfiliado): void {
     if (!this.formulario.apellidoPaterno && sis.apePaterno)
       this.formulario.apellidoPaterno = sis.apePaterno;
     if (!this.formulario.apellidoMaterno && sis.apeMaterno)
@@ -393,25 +388,14 @@ export class RegistroTriajeService {
       this.formulario.primerNombre = partes[0] || '';
       this.formulario.segundoNombre = partes.slice(1).join(' ');
     }
-    if (
-      !this.formulario.fechaNacimiento &&
-      sis.fecNacimiento &&
-      sis.fecNacimiento.length === 8
-    ) {
-      this.formulario.fechaNacimiento = `${sis.fecNacimiento.slice(0, 4)}-${sis.fecNacimiento.slice(4, 6)}-${sis.fecNacimiento.slice(6, 8)}`;
-    }
-    if (!this.formulario.idTipoSexo && sis.genero) {
-      this.formulario.idTipoSexo =
-        sis.genero === '1' ? '1' : sis.genero === '2' ? '2' : '';
-    }
-    if (!this.formulario.direccionDomicilio && sis.direccion)
-      this.formulario.direccionDomicilio = sis.direccion;
-    if (!this.formulario.idDistritoDomicilio && sis.idUbigeo) {
-      this.formulario.idDistritoDomicilio = sis.idUbigeo;
-    }
+  }
 
-    if (this.formulario.idDistritoDomicilio) {
-      const dist = this.formulario.idDistritoDomicilio;
+  private mapearUbigeoSis(idUbigeo?: string): void {
+    if (!this.formulario.idDistritoDomicilio && idUbigeo) {
+      this.formulario.idDistritoDomicilio = idUbigeo;
+    }
+    const dist = this.formulario.idDistritoDomicilio;
+    if (dist) {
       if (!this.formulario.idDepartamentoDomicilio && dist.length >= 2) {
         this.formulario.idDepartamentoDomicilio = dist.substring(0, 2);
       }
@@ -419,6 +403,23 @@ export class RegistroTriajeService {
         this.formulario.idProvinciaDomicilio = dist.substring(0, 4);
       }
     }
+  }
+
+  private mapearDatosSisAlFormulario(sis: SisAfiliado): void {
+    this.mapearNombresYApellidosSis(sis);
+    
+    if (!this.formulario.fechaNacimiento && sis.fecNacimiento?.length === 8) {
+      this.formulario.fechaNacimiento = `${sis.fecNacimiento.slice(0, 4)}-${sis.fecNacimiento.slice(4, 6)}-${sis.fecNacimiento.slice(6, 8)}`;
+    }
+    if (!this.formulario.idTipoSexo && sis.genero) {
+      const esGeneroValido = sis.genero === '1' || sis.genero === '2';
+      this.formulario.idTipoSexo = esGeneroValido ? sis.genero : '';
+    }
+    if (!this.formulario.direccionDomicilio && sis.direccion) {
+      this.formulario.direccionDomicilio = sis.direccion;
+    }
+
+    this.mapearUbigeoSis(sis.idUbigeo);
 
     this.pacienteEncontrado = true;
     this.pasoActual = 2;
@@ -429,13 +430,10 @@ export class RegistroTriajeService {
   }
 
   private mapearPacienteLocal(paciente: Record<string, unknown>): void {
-    const v = (prop1: string, prop2: string, prop3?: string) =>
-      String(
-        paciente[prop1] ||
-          paciente[prop2] ||
-          (prop3 ? paciente[prop3] : '') ||
-          '',
-      );
+    const v = (prop1: string, prop2: string, prop3?: string) => {
+      const val = paciente[prop1] || paciente[prop2] || (prop3 ? paciente[prop3] : '') || '';
+      return String(val as string | number | boolean);
+    };
 
     this.formulario.idPaciente = Number(
       paciente.patientId ||
@@ -683,10 +681,10 @@ export class RegistroTriajeService {
         hoy,
         this.formulario.nroDocumento.trim(),
       );
-      const arr = Array.isArray(items) ? items : [];
-      if (arr.length === 0) return null;
-      const ids = arr.map((i: Record<string, unknown>) =>
-        Number(i.IdTriaje ?? i.idTriaje ?? i.IDTriaje ?? 0),
+      const arregloItems = Array.isArray(items) ? items : [];
+      if (arregloItems.length === 0) return null;
+      const ids = arregloItems.map((item: Record<string, unknown>) =>
+        Number(item.IdTriaje ?? item.idTriaje ?? item.IDTriaje ?? 0),
       );
       const max = Math.max(...ids);
       return max > 0 ? max : null;

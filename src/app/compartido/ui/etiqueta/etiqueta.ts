@@ -10,11 +10,7 @@ export type EtiquetaVariante =
 
 @Component({
   selector: 'etiqueta',
-  template: `
-    <span class="inline-flex items-center gap-1.5 px-[11px] py-1 rounded-full text-xs font-semibold whitespace-nowrap" [class]="clases[variante] + ' ' + claseAdicional">
-      <ng-content></ng-content>
-    </span>
-  `,
+  templateUrl: './etiqueta.html',
 })
 export class Etiqueta {
   @Input() variante: EtiquetaVariante = 'neutral';

@@ -168,10 +168,10 @@ export class TriajeConsultaComponent implements OnInit {
         idServicio: Number(this.servicioFiltro) || undefined,
       });
       this.atenciones = Array.isArray(items) ? items : [];
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.error =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo cargar la bandeja de triaje.';
     } finally {
       this.cargando = false;
@@ -360,10 +360,10 @@ export class TriajeConsultaComponent implements OnInit {
       this.mensajeExito = 'Triaje de consulta externa registrado.';
       setTimeout(() => (this.mensajeExito = ''), 5000);
       this.cargarLista();
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.errorGuardado =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo guardar el triaje.';
     } finally {
       this.guardando = false;
@@ -382,10 +382,10 @@ export class TriajeConsultaComponent implements OnInit {
       this.mensajeExito = 'Triaje marcado como atendido.';
       setTimeout(() => (this.mensajeExito = ''), 5000);
       this.cargarLista();
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.errorGuardado =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo actualizar el estado del triaje.';
     } finally {
       this.cdr.detectChanges();

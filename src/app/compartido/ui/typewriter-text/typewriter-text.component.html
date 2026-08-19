@@ -1,0 +1,27 @@
+<div
+      role="text"
+      [attr.aria-label]="prefix + ' ' + currentText"
+      [ngStyle]="getContainerStyles()"
+      class="typewriter-container"
+    >
+      @if (prefix) {
+        <span [style.color]="prefixColor">{{ prefix }}</span>
+      }
+
+      <span aria-hidden="true" [style.color]="color" class="relative">
+        {{ displayed }}
+        <span
+          aria-hidden="true"
+          class="cursor-blink"
+          [style.opacity]="cursorOn ? 1 : 0"
+          [ngStyle]="getCursorStyles()"
+        ></span>
+      </span>
+
+      <span
+        aria-live="polite"
+        class="sr-only"
+      >
+        {{ prefix }} {{ displayed }}
+      </span>
+    </div>

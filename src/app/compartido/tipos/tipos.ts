@@ -7,8 +7,8 @@ export interface IPatient {
   thirdName: string;
 }
 
-export interface IPageResponse<T> {
-  items: T[];
+export interface IPageResponse<TipoEntidad> {
+  items: TipoEntidad[];
   page: number;
   pageSize: number;
   totalItems: number;

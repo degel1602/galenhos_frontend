@@ -13,9 +13,9 @@ export class ApiRequestError extends Error {
   }
 }
 
-interface ApiEnvelope<T> {
+interface ApiEnvelope<TipoRespuesta> {
   success: boolean;
-  data?: T;
+  data?: TipoRespuesta;
   error?: IApiErrorPayload;
 }
 
@@ -23,7 +23,7 @@ interface ApiEnvelope<T> {
   providedIn: 'root',
 })
 export class ApiClientService {
-  private authService = inject(AuthService);
+  private readonly authService = inject(AuthService);
   private readonly API_BASE_URL_KEY = 'galenos.apiBaseUrl';
 
   getApiBaseUrl(): string {
@@ -37,14 +37,18 @@ export class ApiClientService {
   }
 
   setApiBaseUrl(url: string): void {
-    localStorage.setItem(this.API_BASE_URL_KEY, url.trim().replace(/\/+$/, ''));
+    let cleanUrl = url.trim();
+    while (cleanUrl.endsWith('/')) {
+      cleanUrl = cleanUrl.slice(0, -1);
+    }
+    localStorage.setItem(this.API_BASE_URL_KEY, cleanUrl);
   }
 
-  async request<T>(
+  async request<TipoRespuesta>(
     path: string,
     options: RequestInit = {},
     requiresAuth = true,
-  ): Promise<T> {
+  ): Promise<TipoRespuesta> {
     const headers = new Headers(options.headers);
     headers.set('Accept', 'application/json');
     if (options.body) headers.set('Content-Type', 'application/json');
@@ -68,7 +72,7 @@ export class ApiClientService {
       );
     }
 
-    const envelope: ApiEnvelope<T> = await response.json().catch(() => ({
+    const envelope: ApiEnvelope<TipoRespuesta> = await response.json().catch(() => ({
       success: false,
       error: {
         code: 'PARSE_ERROR',
@@ -87,6 +91,6 @@ export class ApiClientService {
       );
     }
 
-    return envelope.data as T;
+    return envelope.data as TipoRespuesta;
   }
 }

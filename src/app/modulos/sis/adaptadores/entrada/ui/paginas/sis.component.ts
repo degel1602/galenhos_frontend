@@ -13,7 +13,9 @@ import {
   SisApiService,
 } from '../../../salida/http/sis.api.service';
 
-interface FormFiliacion {
+export type SisValorFila = string | number | boolean;
+
+interface SisFiliacionForm {
   documentoNumero: string;
   paterno: string;
   materno: string;
@@ -24,7 +26,7 @@ interface FormFiliacion {
   codigo: string;
 }
 
-function formFiliacionVacio(): FormFiliacion {
+export function formFiliacionVacio(): SisFiliacionForm {
   return {
     documentoNumero: '',
     paterno: '',
@@ -85,10 +87,10 @@ export class SisComponent {
       this.filasAfiliado = Object.entries(afiliado)
         .filter(([, v]) => v !== null && v !== undefined && String(v) !== '')
         .map(([clave, valor]) => ({ clave, valor: String(valor) }));
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.error =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo consultar el SIS.';
     } finally {
       this.consultando = false;
@@ -120,10 +122,10 @@ export class SisComponent {
           cabecera: c,
         }));
       }
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.error =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo ejecutar la operación SIS.';
     } finally {
       this.operando = false;
@@ -188,10 +190,10 @@ export class SisComponent {
       await this.sisApi.forzarGuardadoFua(id);
       this.mensajeExito = 'FUA guardado correctamente.';
       setTimeout(() => (this.mensajeExito = ''), 5000);
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.error =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo guardar el FUA.';
     } finally {
       this.operando = false;
@@ -212,10 +214,10 @@ export class SisComponent {
       const resp = await this.sisApi.agregarFua(id, empleado);
       this.mensajeExito = `FUA agregado (respuesta: ${resp.respuesta}).`;
       setTimeout(() => (this.mensajeExito = ''), 5000);
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.error =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo agregar el FUA.';
     } finally {
       this.operando = false;
@@ -237,12 +239,25 @@ export class SisComponent {
       const fua = await this.sisApi.fuaImprimir(id);
       this.fua = fua;
       this.filasFua = Object.entries(fua)
-        .filter(([, v]) => v !== null && v !== undefined && String(v) !== '')
-        .map(([clave, valor]) => ({ clave, valor: String(valor) }));
-    } catch (err: unknown) {
+        .filter(
+          ([, valorFila]) =>
+            valorFila !== null &&
+            valorFila !== undefined &&
+            (typeof valorFila === 'object'
+              ? JSON.stringify(valorFila) !== '{}'
+              : String(valorFila as SisValorFila) !== ''),
+        )
+        .map(([clave, valorFila]) => ({
+          clave,
+          valor:
+            typeof valorFila === 'object'
+              ? JSON.stringify(valorFila)
+              : String(valorFila as SisValorFila),
+        }));
+    } catch (error: unknown) {
       this.error =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo obtener el FUA para imprimir.';
     } finally {
       this.operando = false;
@@ -274,10 +289,10 @@ export class SisComponent {
       this.filiacion = formFiliacionVacio();
       this.mensajeExito = 'Afiliación SIS guardada correctamente.';
       setTimeout(() => (this.mensajeExito = ''), 5000);
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       this.error =
-        err instanceof ApiRequestError
-          ? err.message
+        error instanceof ApiRequestError
+          ? error.message
           : 'No se pudo guardar la afiliación.';
     } finally {
       this.guardandoFiliacion = false;
@@ -286,8 +301,10 @@ export class SisComponent {
   }
 
   valorCelda(fila: IFilaBackend, clave: string): string {
-    const v = fila[clave];
-    if (v === null || v === undefined) return '—';
-    return typeof v === 'object' ? JSON.stringify(v) : String(v);
+    const valorCeldaData = fila[clave];
+    if (valorCeldaData === null || valorCeldaData === undefined) return '—';
+    return typeof valorCeldaData === 'object'
+      ? JSON.stringify(valorCeldaData)
+      : String(valorCeldaData as SisValorFila);
   }
 }
