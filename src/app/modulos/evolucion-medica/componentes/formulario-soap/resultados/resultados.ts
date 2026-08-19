@@ -1,16 +1,27 @@
-import { Component, Input, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup } from '@angular/forms';
-import { ResultadoService, ResultadoInfo } from '../../../servicios/resultado.service';
-import { EvolucionService } from '../../../servicios/evolucion.service';
-import { TablaComponent, ColumnaTabla } from '../../../../../compartido/componentes/tabla/tabla.component';
+import { Component, Input, inject, type OnInit, signal } from '@angular/core';
+import { type FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ColumnaTemplateDirective } from '../../../../../compartido/componentes/tabla/columna-template.directive';
+import {
+  type ColumnaTabla,
+  TablaComponent,
+} from '../../../../../compartido/componentes/tabla/tabla.component';
+import { EvolucionService } from '../../../servicios/evolucion.service';
+import {
+  type ResultadoInfo,
+  ResultadoService,
+} from '../../../servicios/resultado.service';
 
 @Component({
   selector: 'app-resultados',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TablaComponent, ColumnaTemplateDirective],
-  templateUrl: './resultados.html'
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TablaComponent,
+    ColumnaTemplateDirective,
+  ],
+  templateUrl: './resultados.html',
 })
 export class ResultadosComponent implements OnInit {
   @Input({ required: true }) formGroup!: FormGroup;
@@ -28,7 +39,7 @@ export class ResultadosComponent implements OnInit {
     { campo: 'fechaCustom', cabecera: 'Fecha' },
     { campo: 'resultadoCustom', cabecera: 'Resultado / Detalle' },
     { campo: 'estadoCustom', cabecera: 'Estado' },
-    { campo: 'revisadoCustom', cabecera: 'Revisado', alineacion: 'center' }
+    { campo: 'revisadoCustom', cabecera: 'Revisado', alineacion: 'center' },
   ];
 
   columnasImagenes: ColumnaTabla[] = [
@@ -36,7 +47,7 @@ export class ResultadosComponent implements OnInit {
     { campo: 'fechaCustom', cabecera: 'Fecha' },
     { campo: 'informeCustom', cabecera: 'Informe / Conclusión' },
     { campo: 'estadoCustom', cabecera: 'Estado' },
-    { campo: 'revisadoCustom', cabecera: 'Revisado', alineacion: 'center' }
+    { campo: 'revisadoCustom', cabecera: 'Revisado', alineacion: 'center' },
   ];
 
   ngOnInit(): void {
@@ -53,12 +64,14 @@ export class ResultadosComponent implements OnInit {
     try {
       const [labs, imgs] = await Promise.all([
         this.resultadoService.listarLaboratorio(paciente.idPaciente),
-        this.resultadoService.listarImagenes(paciente.idPaciente)
+        this.resultadoService.listarImagenes(paciente.idPaciente),
       ]);
       this.laboratorios.set(labs);
       this.imagenes.set(imgs);
     } catch {
-      this.errorMessage.set('No se pudieron cargar los resultados. Intente nuevamente.');
+      this.errorMessage.set(
+        'No se pudieron cargar los resultados. Intente nuevamente.',
+      );
     } finally {
       this.isLoading.set(false);
     }
@@ -69,9 +82,8 @@ export class ResultadosComponent implements OnInit {
       Normal: 'bg-green-100 text-green-700',
       Anormal: 'bg-red-100 text-red-700',
       Crítico: 'bg-red-200 text-red-900 font-bold',
-      Pendiente: 'bg-slate-100 text-slate-500'
+      Pendiente: 'bg-slate-100 text-slate-500',
     };
     return clases[estado] ?? 'bg-slate-100 text-slate-500';
   }
 }
-

@@ -1,5 +1,5 @@
 <div class="gp-in" style="display: flex; flex-direction: column; gap: 18px;">
-  <!-- Agendar Cita -->
+  
   <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
     <div style="font-size: 14px; font-weight: 600; color: #07153a; margin-bottom: 14px;">Agendar cita</div>
 
@@ -41,7 +41,7 @@
     }
 
     @if (authService.hasPermission('agregar')) {
-      <button
+      <button type="button"
         (click)="handleAgendarSubmit()"
         [disabled]="agendarState.loading"
         class="gp-primary-btn"
@@ -52,7 +52,7 @@
     }
   </div>
 
-  <!-- Buscar Cita -->
+  
   <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
     <div style="font-size: 14px; font-weight: 600; color: #07153a; margin-bottom: 14px;">Buscar cita por ID</div>
 
@@ -66,7 +66,7 @@
         placeholder="uuid de la cita"
         style="flex: 1; max-width: 360px; padding: 10px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;"
       />
-      <button
+      <button type="button"
         (click)="handleBuscar()"
         [disabled]="buscarState.loading"
         class="gp-primary-btn"

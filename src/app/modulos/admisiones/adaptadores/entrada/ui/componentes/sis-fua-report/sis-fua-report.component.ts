@@ -1,15 +1,26 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  type ElementRef,
+  EventEmitter,
+  Input,
+  inject,
+  type OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { VentanaModal } from '../../../../../../../compartido/ui/ventana-modal/ventana-modal';
-import { TriajeApiService } from '../../../../../../triaje/adaptadores/salida/http/triaje.api.service';
 import { imprimirHtml } from '../../../../../../../compartido/utilidades/print.util';
-import { IFilaBackend } from '../../../../../../../compartido/tipos/api-tipos';
+import { TriajeApiService } from '../../../../../../triaje/adaptadores/salida/http/triaje.api.service';
 
 type Row = Record<string, unknown>;
 
 function val(row: Row | null | undefined, ...names: string[]): string {
   if (!row) return '';
   for (const name of names) {
-    const key = Object.keys(row).find(k => k.toLowerCase() === name.toLowerCase());
+    const key = Object.keys(row).find(
+      (k) => k.toLowerCase() === name.toLowerCase(),
+    );
     if (key !== undefined && row[key] != null) return String(row[key]);
   }
   return '';
@@ -22,10 +33,11 @@ function marcaSi(valorCampo: string, esperado: string): string {
 function generarBarras(valor: string, alto = 34): string {
   let barras = '';
   let x = 0;
-  const seed = valor.split('').map(c => c.charCodeAt(0));
+  const seed = valor.split('').map((c) => c.charCodeAt(0));
   for (let i = 0; i < 46; i++) {
     const w = (seed[i % seed.length] % 3) + 1;
-    if (i % 2 === 0) barras += `<rect x="${x}" y="0" width="${w}" height="${alto}" fill="#000"/>`;
+    if (i % 2 === 0)
+      barras += `<rect x="${x}" y="0" width="${w}" height="${alto}" fill="#000"/>`;
     x += w + 1;
   }
   return `<svg width="${x}" height="${alto}" viewBox="0 0 ${x} ${alto}" xmlns="http://www.w3.org/2000/svg">${barras}</svg>`;
@@ -48,44 +60,7 @@ interface DatosInstitucion {
   standalone: true,
   imports: [VentanaModal],
   styles: [`@keyframes spin { to { transform: rotate(360deg); } }`],
-  template: `
-    <ventana-modal
-      titulo="Formato Único de Atención (FUA)"
-      [subtitulo]="'Cuenta N° ' + idCuentaAtencion"
-      [ancho]="880"
-      (alCerrar)="alCerrar.emit()">
-
-      @if (cargando) {
-        <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:40px 0;color:#54617f;font-size:14px;font-weight:500">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-          Cargando FUA...
-        </div>
-      } @else if (error) {
-        <div style="padding:20px;text-align:center;color:#b91c1c;font-size:13.5px;font-weight:500">{{ error }}</div>
-      } @else {
-        <div>
-          <iframe
-            #fuaFrame
-            [title]="'FUA N° ' + idCuentaAtencion"
-            style="width:100%;height:calc(90vh - 240px);min-height:340px;border:1px solid #e2e8f2;border-radius:12px;background:#fff;display:block">
-          </iframe>
-          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;border-top:1px solid #e6eaf2;padding-top:16px">
-            <button
-              (click)="alCerrar.emit()"
-              style="padding:10px 20px;border:1px solid #e0e6f1;border-radius:11px;background:#fff;font-size:14px;font-weight:600;color:#54617f;cursor:pointer">
-              Cerrar
-            </button>
-            <button
-              (click)="imprimir()"
-              style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#263c7a;color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              Imprimir PDF
-            </button>
-          </div>
-        </div>
-      }
-    </ventana-modal>
-  `
+  templateUrl: './sis-fua-report.component.html',
 })
 export class SisFuaReportComponent implements OnInit {
   @Input() idCuentaAtencion!: number;
@@ -113,14 +88,15 @@ export class SisFuaReportComponent implements OnInit {
 
       const instPromise = SisFuaReportComponent.institucionCache
         ? Promise.resolve(SisFuaReportComponent.institucionCache)
-        : this.triajeApi.obtenerDatosInstitucion().then(r => {
-            SisFuaReportComponent.institucionCache = r as unknown as DatosInstitucion;
+        : this.triajeApi.obtenerDatosInstitucion().then((r) => {
+            SisFuaReportComponent.institucionCache =
+              r as unknown as DatosInstitucion;
             return SisFuaReportComponent.institucionCache;
           });
 
       const [rImp, rInst] = await Promise.all([
         this.triajeApi.imprimirFua(this.idCuentaAtencion),
-        instPromise
+        instPromise,
       ]);
 
       if (!rImp) {
@@ -137,7 +113,7 @@ export class SisFuaReportComponent implements OnInit {
         this.triajeApi.diagnosticosFua(this.idCuentaAtencion),
         this.triajeApi.medicamentosFua(this.idCuentaAtencion),
         this.triajeApi.procedimientosFua(this.idCuentaAtencion),
-        this.triajeApi.consumoFua(this.idCuentaAtencion)
+        this.triajeApi.consumoFua(this.idCuentaAtencion),
       ]);
 
       this.fua = {
@@ -145,7 +121,7 @@ export class SisFuaReportComponent implements OnInit {
         diagnosticos: diag as unknown as Row[],
         medicamentos: med as unknown as Row[],
         procedimientos: proc as unknown as Row[],
-        consumo: cons as unknown as Row[]
+        consumo: cons as unknown as Row[],
       };
       this.htmlFua = this.generarHtmlFua();
       this.cargando = false;
@@ -175,16 +151,24 @@ export class SisFuaReportComponent implements OnInit {
 
   private generarHtmlFua(): string {
     if (!this.fua) return '';
-    const { datos, diagnosticos, medicamentos, procedimientos, consumo } = this.fua;
+    const { datos, diagnosticos, medicamentos, procedimientos, consumo } =
+      this.fua;
     const institucion = this.institucion;
     const idCuentaAtencion = this.idCuentaAtencion;
     const usuario = 'Usuario';
-    const fechaImp = new Date().toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const fechaImp = new Date().toLocaleString('es-PE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
 
     const g = (...names: string[]) => val(datos, ...names);
-    const v = (x: unknown) => (x === null || x === undefined || x === '' ? '&nbsp;' : String(x));
+    const v = (x: unknown) =>
+      x === null || x === undefined || x === '' ? '&nbsp;' : String(x);
 
-    // === Cabecera institucional (logo + fecha/usuario/cuenta) ===
     const cabeceraSuperior = `
       <table style="width:100%">
         <tr><td style="width:50%;text-align:left">
@@ -197,7 +181,6 @@ export class SisFuaReportComponent implements OnInit {
         </td></tr>
       </table>`;
 
-    // === Tabla título + número de formato ===
     const tituloYNumero = `
       <table style="width:100%;text-align:center" border="1" cellpadding="0" cellspacing="0">
         <tr><td colspan="5" style="text-align:center;font-size:9px;background-color:#b3b3b3">FORMATO UNICO DE ATENCIÓN</td></tr>
@@ -213,7 +196,6 @@ export class SisFuaReportComponent implements OnInit {
         </tr>
       </table>`;
 
-    // === DE LA INSTITUCIÓN PRESTADORA DE SERVICIOS DE SALUD (10 columnas) ===
     const institucionTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <colgroup><col style="width:10%"><col style="width:5%"><col style="width:10%"><col style="width:10%"><col style="width:5%"><col style="width:10%"><col style="width:5%"><col style="width:10%"><col style="width:20%"><col style="width:10%"></colgroup>
@@ -265,7 +247,6 @@ export class SisFuaReportComponent implements OnInit {
         </tr>
       </table>`;
 
-    // === DEL ASEGURADO / USUARIO — identificación (14 columnas) ===
     const aseguradoIdentTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <colgroup><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:6%"><col style="width:6%"><col style="width:4%"><col style="width:4%"><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:10%"><col style="width:20%"><col style="width:10%"><col style="width:10%"></colgroup>
@@ -360,11 +341,12 @@ export class SisFuaReportComponent implements OnInit {
         </tr>
       </table>`;
 
-    // === DEL ASEGURADO / USUARIO — servicio + CONCEPTO PRESTACIONAL (20 columnas) ===
     const esConsultaExterna = g('FuaCodigoPrestacion') === '056';
     const servicioTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
-        <colgroup>${Array.from({ length: 20 }).map(() => '<col style="width:5%">').join('')}</colgroup>
+        <colgroup>${Array.from({ length: 20 })
+          .map(() => '<col style="width:5%">')
+          .join('')}</colgroup>
         <tr><td colspan="20" style="text-align:center;font-size:8px;background-color:#b3b3b3">DEL ASEGURADO / USUARIO</td></tr>
         <tr>
           <td colspan="4" style="text-align:center;font-size:6.5px;background-color:#b3b3b3">FECHA DE ATENCIÓN</td>
@@ -444,10 +426,11 @@ export class SisFuaReportComponent implements OnInit {
         </tr>
       </table>`;
 
-    // === DEL DESTINO DEL ASEGURADO/USUARIO + SE REFIERE/CONTRAREFIERE (20 columnas) ===
     const destinoTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
-        <colgroup>${Array.from({ length: 20 }).map(() => '<col style="width:5%">').join('')}</colgroup>
+        <colgroup>${Array.from({ length: 20 })
+          .map(() => '<col style="width:5%">')
+          .join('')}</colgroup>
         <tr><td colspan="20" style="text-align:center;font-size:8px;background-color:#b3b3b3">DEL DESTINO DEL ASEGURADO/USUARIO</td></tr>
         <tr>
           <td rowspan="2" class="datoscabecerafua">ALTA</td>
@@ -485,7 +468,6 @@ export class SisFuaReportComponent implements OnInit {
         </tr>
       </table>`;
 
-    // === ACTIVIDADES PREVENTIVAS Y OTROS / VACUNAS N° DE DOSIS (20 columnas) ===
     const actividadesTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <colgroup><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:4%"><col style="width:4%"><col style="width:4%"><col style="width:4%"><col style="width:11%"><col style="width:3%"><col style="width:7%"><col style="width:3%"><col style="width:5%"><col style="width:3%"><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:7%"></colgroup>
@@ -614,12 +596,13 @@ export class SisFuaReportComponent implements OnInit {
         </tr>
       </table>`;
 
-    // === DIAGNÓSTICOS (20 columnas) ===
-    const filasDiag = diagnosticos.slice(0, 15).map((dx, i) => {
-      const desc = val(dx, 'Descripcion');
-      const texto = desc.length > 78 ? `${desc.slice(0, 78)}...` : desc;
-      const tipo = val(dx, 'TipoDx');
-      return `<tr>
+    const filasDiag = diagnosticos
+      .slice(0, 15)
+      .map((dx, i) => {
+        const desc = val(dx, 'Descripcion');
+        const texto = desc.length > 78 ? `${desc.slice(0, 78)}...` : desc;
+        const tipo = val(dx, 'TipoDx');
+        return `<tr>
         <td class="datoscabecerafua">${i + 1}</td>
         <td colspan="12" class="datosfuadiag" style="text-align:left;font-size:8px">${texto}</td>
         <td class="datosfuadiag">${marcaSi(tipo, 'Presuntivo')}</td>
@@ -630,9 +613,12 @@ export class SisFuaReportComponent implements OnInit {
         <td class="datosfuadiag">&nbsp;</td>
         <td class="datosfuadiag">&nbsp;</td>
       </tr>`;
-    }).join('');
+      })
+      .join('');
 
-    const filasDiagVacias = [1, 2, 3, 4].map(n => `<tr>
+    const filasDiagVacias = [1, 2, 3, 4]
+      .map(
+        (n) => `<tr>
       <td class="datoscabecerafua">${n}</td>
       <td colspan="12" class="datosfuadiag" style="text-align:left;font-size:8px">&nbsp;</td>
       <td class="datosfuadiag">&nbsp;</td>
@@ -642,11 +628,15 @@ export class SisFuaReportComponent implements OnInit {
       <td class="datosfuadiag">&nbsp;</td>
       <td class="datosfuadiag">&nbsp;</td>
       <td class="datosfuadiag">&nbsp;</td>
-    </tr>`).join('');
+    </tr>`,
+      )
+      .join('');
 
     const diagnosticosTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
-        <colgroup>${Array.from({ length: 20 }).map(() => '<col style="width:5%">').join('')}</colgroup>
+        <colgroup>${Array.from({ length: 20 })
+          .map(() => '<col style="width:5%">')
+          .join('')}</colgroup>
         <tr><td colspan="20" style="text-align:center;font-size:8px;background-color:#b3b3b3">DIAGNOSTICOS</td></tr>
         <tr>
           <td rowspan="2" class="datoscabecerafua">N°</td>
@@ -684,7 +674,6 @@ export class SisFuaReportComponent implements OnInit {
         1. MÉDICO 2. FARMACEUTICO 3. CIRUJANO DENTISTA 4. BIÓLOGO 5. OBSTETRIZ 6. ENFERMERA 7. TRABAJADORA SOCIAL 8. PSCOLOGA 9. TECNOLOGO MEDICO 10. NUTRICIÓN 11. TECNICO ENFERMERIA 12. AUXILIAR DE ENFERMERIA 13. OTRO
       </div>`;
 
-    // === Bloque de firmas (página 1) ===
     const firmaTabla = `
       <table style="width:100%;text-align:center;padding-top:8px">
         <tr>
@@ -723,7 +712,6 @@ export class SisFuaReportComponent implements OnInit {
         </tr>
       </table>`;
 
-    // === Página 2: terapéutica / medicamentos / procedimientos ===
     const numeroFormato = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
         <tr>
@@ -747,10 +735,14 @@ export class SisFuaReportComponent implements OnInit {
     for (let i = 0; i < medicamentos.length; i += 2) {
       filasMed += `<tr>${filaMedicamento(medicamentos[i])}${medicamentos[i + 1] ? filaMedicamento(medicamentos[i + 1]) : '<td></td><td colspan="6"></td><td></td><td></td><td></td>'}</tr>`;
     }
-    const filasMedVacias = [1, 2, 3, 4].map(() => `<tr>
+    const filasMedVacias = [1, 2, 3, 4]
+      .map(
+        () => `<tr>
       <td class="datosfua">&nbsp;</td><td colspan="6" class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td>
       <td class="datosfua">&nbsp;</td><td colspan="6" class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td>
-    </tr>`).join('');
+    </tr>`,
+      )
+      .join('');
 
     const filaProcedimiento = (p: Row) => `
         <td class="datosfua">${v(val(p, 'codigo', 'Codigo'))}</td>
@@ -763,12 +755,18 @@ export class SisFuaReportComponent implements OnInit {
     for (let i = 0; i < procedimientos.length; i += 2) {
       filasProc += `<tr>${filaProcedimiento(procedimientos[i])}${procedimientos[i + 1] ? filaProcedimiento(procedimientos[i + 1]) : '<td></td><td colspan="5"></td><td></td><td></td><td></td><td></td>'}</tr>`;
     }
-    const filasProcVacias = [1, 2, 3, 4].map(() => `<tr>
+    const filasProcVacias = [1, 2, 3, 4]
+      .map(
+        () => `<tr>
       <td class="datosfua">&nbsp;</td><td colspan="5" class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td>
       <td class="datosfua">&nbsp;</td><td colspan="5" class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td><td class="datosfua">&nbsp;</td>
-    </tr>`).join('');
+    </tr>`,
+      )
+      .join('');
 
-    const filasConsumo = consumo.map(c => `<tr>
+    const filasConsumo = consumo
+      .map(
+        (c) => `<tr>
       <td class="datosfua" style="font-size:8px">${v(val(c, 'Codigo'))}</td>
       <td colspan="5" class="datosfua" style="text-align:left;font-size:8px">${v(val(c, 'Nombre'))}</td>
       <td colspan="2" class="datosfua" style="font-size:8px"></td>
@@ -778,16 +776,24 @@ export class SisFuaReportComponent implements OnInit {
       <td colspan="2" class="datosfua" style="font-size:8px"></td>
       <td colspan="2" class="datosfua" style="font-size:8px">${v(val(c, 'IdOrden'))}</td>
       <td colspan="2" class="datosfua" style="font-size:8px"></td>
-    </tr>`).join('');
+    </tr>`,
+      )
+      .join('');
 
-    const filasDispositivosVacias = [1, 2, 3, 4, 5].map(() => `<tr>
+    const filasDispositivosVacias = [1, 2, 3, 4, 5]
+      .map(
+        () => `<tr>
       <td class="datosfua">&nbsp;</td><td colspan="6" class="datosfua"></td><td class="datosfua"></td><td class="datosfua"></td><td class="datosfua"></td>
       <td class="datosfua">&nbsp;</td><td colspan="6" class="datosfua"></td><td class="datosfua"></td><td class="datosfua"></td><td class="datosfua"></td>
-    </tr>`).join('');
+    </tr>`,
+      )
+      .join('');
 
     const medicamentosTabla = `
       <table style="width:100%;text-align:center;padding-top:1.5px" border="1" cellpadding="0" cellspacing="0">
-        <colgroup>${Array.from({ length: 20 }).map(() => '<col style="width:5%">').join('')}</colgroup>
+        <colgroup>${Array.from({ length: 20 })
+          .map(() => '<col style="width:5%">')
+          .join('')}</colgroup>
         <tr><td colspan="20" class="datoscabecerafua">PRODUCTOS FARMACEUTICOS / MEDICAMENTOS</td></tr>
         <tr>
           <td class="datoscabecerafua">CODIGO SISMED</td>

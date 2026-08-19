@@ -1,6 +1,10 @@
-import { Component, Input, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormArray } from '@angular/forms';
+import { Component, Input, inject, signal } from '@angular/core';
+import {
+  type FormArray,
+  FormBuilder,
+  ReactiveFormsModule,
+} from '@angular/forms';
 
 const MAX_TAMANO_BYTES = 10 * 1024 * 1024;
 const EXTENSIONES_PERMITIDAS = ['jpg', 'jpeg', 'png', 'pdf'];
@@ -9,7 +13,7 @@ const EXTENSIONES_PERMITIDAS = ['jpg', 'jpeg', 'png', 'pdf'];
   selector: 'app-adjuntos',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './adjuntos.html'
+  templateUrl: './adjuntos.html',
 })
 export class AdjuntosComponent {
   @Input({ required: true }) formArray!: FormArray;
@@ -34,7 +38,9 @@ export class AdjuntosComponent {
   onDrop(event: DragEvent): void {
     event.preventDefault();
     this.arrastrando.set(false);
-    const archivos = event.dataTransfer ? Array.from(event.dataTransfer.files) : [];
+    const archivos = event.dataTransfer
+      ? Array.from(event.dataTransfer.files)
+      : [];
     this.procesarArchivos(archivos);
   }
 
@@ -51,13 +57,15 @@ export class AdjuntosComponent {
   private async procesarArchivos(archivos: File[]): Promise<void> {
     this.errorMessage.set('');
 
-    const invalidos = archivos.filter(f => {
+    const invalidos = archivos.filter((f) => {
       const ext = f.name.split('.').pop()?.toLowerCase() ?? '';
       return !EXTENSIONES_PERMITIDAS.includes(ext) || f.size > MAX_TAMANO_BYTES;
     });
 
     if (invalidos.length > 0) {
-      this.errorMessage.set('Solo se admiten JPG, PNG o PDF con un máximo de 10MB por archivo.');
+      this.errorMessage.set(
+        'Solo se admiten JPG, PNG o PDF con un máximo de 10MB por archivo.',
+      );
       return;
     }
 
@@ -65,19 +73,21 @@ export class AdjuntosComponent {
     for (const archivo of archivos) {
       const dataB64 = await this.leerArchivo(archivo);
       if (dataB64) {
-        this.adjuntosArray.push(this.fb.group({
-          nombre: [archivo.name],
-          tipo: [archivo.type],
-          tamano: [archivo.size],
-          dataB64: [dataB64]
-        }));
+        this.adjuntosArray.push(
+          this.fb.group({
+            nombre: [archivo.name],
+            tipo: [archivo.type],
+            tamano: [archivo.size],
+            dataB64: [dataB64],
+          }),
+        );
       }
     }
     this.leyendo.set(false);
   }
 
   private leerArchivo(archivo: File): Promise<string> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result ?? ''));
       reader.onerror = () => resolve('');

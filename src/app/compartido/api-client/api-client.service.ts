@@ -1,25 +1,29 @@
 import { Injectable, inject } from '@angular/core';
-import { IApiErrorPayload } from '../tipos/tipos';
 import { AuthService } from '../../modulos/auth/aplicacion/auth.service';
+import type { IApiErrorPayload } from '../tipos/tipos';
 
 export class ApiRequestError extends Error {
-  constructor(public code: string, message: string, public status: number) {
+  constructor(
+    public code: string,
+    message: string,
+    public status: number,
+  ) {
     super(message);
     this.name = 'ApiRequestError';
   }
 }
 
-interface ApiEnvelope<T> {
+interface ApiEnvelope<TipoRespuesta> {
   success: boolean;
-  data?: T;
+  data?: TipoRespuesta;
   error?: IApiErrorPayload;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiClientService {
-  private authService = inject(AuthService);
+  private readonly authService = inject(AuthService);
   private readonly API_BASE_URL_KEY = 'galenos.apiBaseUrl';
 
   getApiBaseUrl(): string {
@@ -27,16 +31,24 @@ export class ApiClientService {
     if (savedUrl) {
       return savedUrl;
     }
-    // Usamos el hostname dinámicamente para soportar acceso por IP en la red local
+
     const hostname = window.location.hostname;
     return `http://${hostname}:8080`;
   }
 
   setApiBaseUrl(url: string): void {
-    localStorage.setItem(this.API_BASE_URL_KEY, url.trim().replace(/\/+$/, ''));
+    let cleanUrl = url.trim();
+    while (cleanUrl.endsWith('/')) {
+      cleanUrl = cleanUrl.slice(0, -1);
+    }
+    localStorage.setItem(this.API_BASE_URL_KEY, cleanUrl);
   }
 
-  async request<T>(path: string, options: RequestInit = {}, requiresAuth = true): Promise<T> {
+  async request<TipoRespuesta>(
+    path: string,
+    options: RequestInit = {},
+    requiresAuth = true,
+  ): Promise<TipoRespuesta> {
     const headers = new Headers(options.headers);
     headers.set('Accept', 'application/json');
     if (options.body) headers.set('Content-Type', 'application/json');
@@ -48,15 +60,27 @@ export class ApiClientService {
 
     let response: Response;
     try {
-      response = await fetch(`${this.getApiBaseUrl()}${path}`, { ...options, headers });
+      response = await fetch(`${this.getApiBaseUrl()}${path}`, {
+        ...options,
+        headers,
+      });
     } catch {
-      throw new ApiRequestError('NETWORK_ERROR', 'No se pudo conectar con el servidor. Verifique la URL configurada y su conexión.', 0);
+      throw new ApiRequestError(
+        'NETWORK_ERROR',
+        'No se pudo conectar con el servidor. Verifique la URL configurada y su conexión.',
+        0,
+      );
     }
 
-    const envelope: ApiEnvelope<T> = await response.json().catch(() => ({
-      success: false,
-      error: { code: 'PARSE_ERROR', message: 'La respuesta del servidor no es válida.' }
-    }));
+    const envelope: ApiEnvelope<TipoRespuesta> = await response
+      .json()
+      .catch(() => ({
+        success: false,
+        error: {
+          code: 'PARSE_ERROR',
+          message: 'La respuesta del servidor no es válida.',
+        },
+      }));
 
     if (!response.ok || !envelope.success) {
       if (response.status === 401 && requiresAuth) {
@@ -65,10 +89,10 @@ export class ApiClientService {
       throw new ApiRequestError(
         envelope.error?.code ?? 'UNKNOWN_ERROR',
         envelope.error?.message ?? 'Ocurrió un error inesperado.',
-        response.status
+        response.status,
       );
     }
 
-    return envelope.data as T;
+    return envelope.data as TipoRespuesta;
   }
 }

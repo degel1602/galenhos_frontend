@@ -43,26 +43,58 @@ export interface FormRegistroPaciente {
 
 export function formVacio(): FormRegistroPaciente {
   return {
-    idDocIdentidad: '', nroDocumento: '', apellidoPaterno: '', apellidoMaterno: '',
-    primerNombre: '', segundoNombre: '', tercerNombre: '', fechaNacimiento: '',
-    idTipoSexo: '', telefono: '', celular: '', email: '',
-    idPaisNacimiento: '', idDistritoNacimiento: '', idCentroPobladoNacimiento: '',
-    idPaisProcedencia: '', idDistritoProcedencia: '', idCentroPobladoProcedencia: '',
-    idPaisDomicilio: '', idDepartamentoDomicilio: '', idProvinciaDomicilio: '',
-    idDistritoDomicilio: '', idCentroPobladoDomicilio: '', direccionDomicilio: '',
-    idEstadoCivil: '', idGradoInstruccion: '', idTipoOcupacion: '',
-    nombrePadre: '', nombreMadre: '', idEtnia: '', idIdioma: '',
-    discapacidad: '', incapacidad: '',
-    idFuenteFinanciamiento: '', idEstadollego: '', idEsAccidenteTransito: '', gestante: '', motivo: ''
+    idDocIdentidad: '',
+    nroDocumento: '',
+    apellidoPaterno: '',
+    apellidoMaterno: '',
+    primerNombre: '',
+    segundoNombre: '',
+    tercerNombre: '',
+    fechaNacimiento: '',
+    idTipoSexo: '',
+    telefono: '',
+    celular: '',
+    email: '',
+    idPaisNacimiento: '',
+    idDistritoNacimiento: '',
+    idCentroPobladoNacimiento: '',
+    idPaisProcedencia: '',
+    idDistritoProcedencia: '',
+    idCentroPobladoProcedencia: '',
+    idPaisDomicilio: '',
+    idDepartamentoDomicilio: '',
+    idProvinciaDomicilio: '',
+    idDistritoDomicilio: '',
+    idCentroPobladoDomicilio: '',
+    direccionDomicilio: '',
+    idEstadoCivil: '',
+    idGradoInstruccion: '',
+    idTipoOcupacion: '',
+    nombrePadre: '',
+    nombreMadre: '',
+    idEtnia: '',
+    idIdioma: '',
+    discapacidad: '',
+    incapacidad: '',
+    idFuenteFinanciamiento: '',
+    idEstadollego: '',
+    idEsAccidenteTransito: '',
+    gestante: '',
+    motivo: '',
   };
 }
 
 export function normalizarTexto(texto: string): string {
-  return texto.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+  return texto
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export function sanitizar(texto: string): string {
-  return texto.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '').trim();
+  return texto.replace(/[\p{Cc}\u200B-\u200F\uFEFF]/gu, '').trim();
 }
 
 export function normalizarNombre(texto: string): string {

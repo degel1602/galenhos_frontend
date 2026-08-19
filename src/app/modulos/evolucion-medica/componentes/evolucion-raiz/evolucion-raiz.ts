@@ -1,10 +1,18 @@
-import { Component, ChangeDetectionStrategy, inject, ViewChild, TemplateRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  type AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  type OnDestroy,
+  type TemplateRef,
+  ViewChild,
+} from '@angular/core';
+import { HeaderActionsService } from '../../../../compartido/servicios/header-actions.service';
+import { AuthService } from '../../../auth/aplicacion/auth.service';
 import { EvolucionService } from '../../servicios/evolucion.service';
 import { BandejaPacientesComponent } from '../bandeja-pacientes/bandeja-pacientes';
 import { FormularioSoapComponent } from '../formulario-soap/formulario-soap';
-import { HeaderActionsService } from '../../../../compartido/servicios/header-actions.service';
-import { AuthService } from '../../../auth/aplicacion/auth.service';
 
 @Component({
   selector: 'app-evolucion-raiz',
@@ -14,62 +22,13 @@ import { AuthService } from '../../../auth/aplicacion/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   styles: [':host { display: block; }'],
-  template: `
-    <div class="min-h-full bg-slate-50 text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-900">
-      <ng-template #headerActions>
-        <div class="flex gap-2.5 items-center">
-          @if (evolucionService.viewMode() === 'tray') {
-            <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded bg-white text-slate-500 border border-slate-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-              BANDEJA
-            </span>
-          } @else {
-            <button 
-              (click)="evolucionService.clearSelection()"
-              class="flex items-center gap-1.5 font-semibold text-xs px-3 py-1.5 rounded-sm bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-              Volver
-            </button>
-            
-            <div class="h-4 w-px bg-slate-300 mx-1"></div>
-            
-            <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-sm bg-amber-50 text-amber-800 border border-amber-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-              BORRADOR ACTIVO
-            </span>
-            
-            @if (authService.hasPermission('imprimir')) {
-              <button class="flex items-center gap-1.5 font-semibold text-xs px-3 py-1.5 rounded-sm bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors ml-auto">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                Imprimir
-              </button>
-            }
-            @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
-              <button class="flex items-center gap-1.5 font-semibold text-xs px-4 py-1.5 rounded-sm bg-blue-800 text-white border border-blue-900 hover:bg-blue-900 transition-colors">
-                Guardar Evolución
-              </button>
-            }
-          }
-        </div>
-      </ng-template>
-
-      <!-- Main Content Area -->
-      <div class="relative w-full h-full">
-        @if (evolucionService.viewMode() === 'tray') {
-          <app-bandeja-pacientes class="block" />
-        } @else {
-          <app-formulario-soap class="block" />
-        }
-      </div>
-    </div>
-  `
+  templateUrl: './evolucion-raiz.html',
 })
 export class EvolucionRaizComponent implements AfterViewInit, OnDestroy {
   evolucionService = inject(EvolucionService);
   headerActionsService = inject(HeaderActionsService);
   authService = inject(AuthService);
-  
+
   @ViewChild('headerActions') headerActionsTpl!: TemplateRef<unknown>;
 
   ngAfterViewInit() {

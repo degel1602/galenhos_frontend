@@ -1,7 +1,17 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  type ElementRef,
+  EventEmitter,
+  Input,
+  inject,
+  type OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { VentanaModal } from '../../../../../../../compartido/ui/ventana-modal/ventana-modal';
-import { TriajeApiService } from '../../../../../../triaje/adaptadores/salida/http/triaje.api.service';
 import { imprimirHtml } from '../../../../../../../compartido/utilidades/print.util';
+import { TriajeApiService } from '../../../../../../triaje/adaptadores/salida/http/triaje.api.service';
 
 interface FichaData {
   IdCuentaAtencion?: number;
@@ -60,7 +70,7 @@ function decodificarBase64(valor: string | null | undefined): string {
   if (!valor) return '';
   try {
     if (/^[A-Za-z0-9+/]+={0,2}$/.test(valor)) return atob(valor);
-  } catch { /* no es base64 */ }
+  } catch {}
   return valor;
 }
 
@@ -69,44 +79,7 @@ function decodificarBase64(valor: string | null | undefined): string {
   standalone: true,
   imports: [VentanaModal],
   styles: [`@keyframes spin { to { transform: rotate(360deg); } }`],
-  template: `
-    <ventana-modal
-      titulo="Ficha de Admisión"
-      [subtitulo]="'Cuenta N° ' + idCuentaAtencion"
-      [ancho]="780"
-      (alCerrar)="alCerrar.emit()">
-
-      @if (cargando) {
-        <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:40px 0;color:#54617f;font-size:14px;font-weight:500">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-          Cargando ficha...
-        </div>
-      } @else if (error) {
-        <div style="padding:20px;text-align:center;color:#b91c1c;font-size:13.5px;font-weight:500">{{ error }}</div>
-      } @else {
-        <div>
-          <iframe
-            #fichaFrame
-            [title]="'Ficha de Admisión N° ' + idCuentaAtencion"
-            style="width:100%;height:calc(90vh - 240px);min-height:340px;border:1px solid #e2e8f2;border-radius:12px;background:#fff;display:block">
-          </iframe>
-          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;border-top:1px solid #e6eaf2;padding-top:16px">
-            <button
-              (click)="alCerrar.emit()"
-              style="padding:10px 20px;border:1px solid #e0e6f1;border-radius:11px;background:#fff;font-size:14px;font-weight:600;color:#54617f;cursor:pointer">
-              Cerrar
-            </button>
-            <button
-              (click)="imprimir()"
-              style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#263c7a;color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              Imprimir PDF
-            </button>
-          </div>
-        </div>
-      }
-    </ventana-modal>
-  `
+  templateUrl: './ficha-admision.component.html',
 })
 export class FichaAdmisionComponent implements OnInit {
   @Input() idCuentaAtencion!: number;
@@ -132,13 +105,14 @@ export class FichaAdmisionComponent implements OnInit {
     try {
       const instPromise = FichaAdmisionComponent.institucionCache
         ? Promise.resolve(FichaAdmisionComponent.institucionCache)
-        : this.triajeApi.obtenerDatosInstitucion().then(r => {
-            FichaAdmisionComponent.institucionCache = r as unknown as DatosInstitucion;
+        : this.triajeApi.obtenerDatosInstitucion().then((r) => {
+            FichaAdmisionComponent.institucionCache =
+              r as unknown as DatosInstitucion;
             return FichaAdmisionComponent.institucionCache;
           });
       const [fichaRaw, instRaw] = await Promise.all([
         this.triajeApi.obtenerFichaAdmision(this.idCuentaAtencion),
-        instPromise
+        instPromise,
       ]);
       this.ficha = fichaRaw as unknown as FichaData;
       this.institucion = instRaw || null;
@@ -173,30 +147,49 @@ export class FichaAdmisionComponent implements OnInit {
     const ficha = this.ficha;
     const institucion = this.institucion;
     const usuario = 'Usuario';
-    const fechaImp = new Date().toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const v = (x: string | number | null | undefined): string => (x === null || x === undefined || x === '' ? '&nbsp;' : String(x));
-    const linea = (ancho = 300) => `<span style="display:inline-block;border-bottom:1px solid #000;width:${ancho}px">&nbsp;</span>`;
-    const casilla = (marcado = false) => `<span style="display:inline-block;width:9px;height:9px;border:1px solid #000;vertical-align:middle;margin-right:3px;text-align:center;font-size:8px;line-height:9px">${marcado ? '✓' : ''}</span>`;
-    const casillaLetra = (letra: string) => `<span style="display:inline-block;width:15px;height:15px;border:1px solid #000;text-align:center;font-size:9px;line-height:15px;margin-right:2px;vertical-align:middle">${letra}</span>`;
+    const fechaImp = new Date().toLocaleString('es-PE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    const v = (x: string | number | null | undefined): string =>
+      x === null || x === undefined || x === '' ? '&nbsp;' : String(x);
+    const linea = (ancho = 300) =>
+      `<span style="display:inline-block;border-bottom:1px solid #000;width:${ancho}px">&nbsp;</span>`;
+    const casilla = (marcado = false) =>
+      `<span style="display:inline-block;width:9px;height:9px;border:1px solid #000;vertical-align:middle;margin-right:3px;text-align:center;font-size:8px;line-height:9px">${marcado ? '✓' : ''}</span>`;
+    const casillaLetra = (letra: string) =>
+      `<span style="display:inline-block;width:15px;height:15px;border:1px solid #000;text-align:center;font-size:9px;line-height:15px;margin-right:2px;vertical-align:middle">${letra}</span>`;
 
     function generarBarras(valor: string, alto = 32): string {
       let barras = '';
       let x = 0;
-      const seed = valor.split('').map(c => c.charCodeAt(0));
+      const seed = valor.split('').map((c) => c.charCodeAt(0));
       for (let i = 0; i < 46; i++) {
         const w = (seed[i % seed.length] % 3) + 1;
-        if (i % 2 === 0) barras += `<rect x="${x}" y="0" width="${w}" height="${alto}" fill="#000"/>`;
+        if (i % 2 === 0)
+          barras += `<rect x="${x}" y="0" width="${w}" height="${alto}" fill="#000"/>`;
         x += w + 1;
       }
       return `<svg width="${x}" height="${alto}" viewBox="0 0 ${x} ${alto}" xmlns="http://www.w3.org/2000/svg">${barras}</svg>`;
     }
 
-    const label = (t: string) => `<span style="font-size:9.5px;color:#000">${t}</span>`;
-    const filaCampos = (campos: [string, string | number | null | undefined][]) => {
-      const celdas = campos.map(([et, val]) => `
+    const label = (t: string) =>
+      `<span style="font-size:9.5px;color:#000">${t}</span>`;
+    const filaCampos = (
+      campos: [string, string | number | null | undefined][],
+    ) => {
+      const celdas = campos
+        .map(
+          ([et, val]) => `
         <td style="width:18%;padding:1.5px 4px;white-space:nowrap;vertical-align:top">${label(et)}</td>
         <td style="width:32%;padding:1.5px 10px 1.5px 4px;font-size:10.5px;text-transform:uppercase;overflow-wrap:break-word">${v(val)}</td>
-      `).join('');
+      `,
+        )
+        .join('');
       return `<tr>${celdas}</tr>`;
     };
 
@@ -220,12 +213,24 @@ export class FichaAdmisionComponent implements OnInit {
     </tr>`;
     const colgroupDiagnostico = `<colgroup><col style="width:60%"><col style="width:16%"><col style="width:24%"></colgroup>`;
 
-    const checklist = (items: string[]) => items.map(i => `<span style="display:inline-flex;align-items:center;margin-right:14px;white-space:nowrap;font-size:9.5px">${casilla()}${i}</span>`).join('');
-    const filaChecklistAlineada = (items: string[], colWidth = '25%') => `<tr>${items
-      .map(i => `<td style="width:${colWidth};padding:2px 4px 2px 0;white-space:nowrap;font-size:9.5px">${i ? casilla() + i : '&nbsp;'}</td>`)
-      .join('')}</tr>`;
+    const checklist = (items: string[]) =>
+      items
+        .map(
+          (i) =>
+            `<span style="display:inline-flex;align-items:center;margin-right:14px;white-space:nowrap;font-size:9.5px">${casilla()}${i}</span>`,
+        )
+        .join('');
+    const filaChecklistAlineada = (items: string[], colWidth = '25%') =>
+      `<tr>${items
+        .map(
+          (i) =>
+            `<td style="width:${colWidth};padding:2px 4px 2px 0;white-space:nowrap;font-size:9.5px">${i ? casilla() + i : '&nbsp;'}</td>`,
+        )
+        .join('')}</tr>`;
 
-    const fechaHoraAtencion = ficha?.FechaHoraAtencion ?? [ficha?.FechaIngreso, ficha?.HoraIngreso].filter(Boolean).join(' ');
+    const fechaHoraAtencion =
+      ficha?.FechaHoraAtencion ??
+      [ficha?.FechaIngreso, ficha?.HoraIngreso].filter(Boolean).join(' ');
 
     const tmpl = `<!doctype html><html><head><meta charset="utf-8"><title> </title>
       <style>
@@ -265,13 +270,37 @@ export class FichaAdmisionComponent implements OnInit {
       </table>
       <table style="margin-top:1px;table-layout:fixed">
         <colgroup><col style="width:18%"><col style="width:32%"><col style="width:18%"><col style="width:32%"></colgroup>
-        ${filaCampos([['Paciente:', ficha?.PACIENTE ?? ficha?.Pac], ['DNI/CE:', ficha?.NroDocumento]])}
-        ${filaCampos([['Fecha de nacimiento:', ficha?.FechaNacimiento], ['Sexo:', ficha?.Sexo]])}
-        ${filaCampos([['Dirección:', ficha?.DireccionDomicilio], ['Edad:', ficha?.Edad]])}
-        ${filaCampos([['Lugar de procedencia:', ficha?.LugarProcedencia ?? ficha?.DireccionDomicilio], ['Ocupación:', ficha?.Ocupacion]])}
-        ${filaCampos([['Estado civil:', ficha?.EstadoCivil], ['Teléfono:', ficha?.Telefono]])}
-        ${filaCampos([['Acompañante:', ficha?.NombreAcompaniante], ['Telef. acompañante:', ficha?.Telefono_Acompaniante]])}
-        ${filaCampos([['Consultorio:', ficha?.Consultorio ?? ficha?.Servicio], ['Médico:', ficha?.NombresMedico ?? ficha?.Medico]])}
+        ${filaCampos([
+          ['Paciente:', ficha?.PACIENTE ?? ficha?.Pac],
+          ['DNI/CE:', ficha?.NroDocumento],
+        ])}
+        ${filaCampos([
+          ['Fecha de nacimiento:', ficha?.FechaNacimiento],
+          ['Sexo:', ficha?.Sexo],
+        ])}
+        ${filaCampos([
+          ['Dirección:', ficha?.DireccionDomicilio],
+          ['Edad:', ficha?.Edad],
+        ])}
+        ${filaCampos([
+          [
+            'Lugar de procedencia:',
+            ficha?.LugarProcedencia ?? ficha?.DireccionDomicilio,
+          ],
+          ['Ocupación:', ficha?.Ocupacion],
+        ])}
+        ${filaCampos([
+          ['Estado civil:', ficha?.EstadoCivil],
+          ['Teléfono:', ficha?.Telefono],
+        ])}
+        ${filaCampos([
+          ['Acompañante:', ficha?.NombreAcompaniante],
+          ['Telef. acompañante:', ficha?.Telefono_Acompaniante],
+        ])}
+        ${filaCampos([
+          ['Consultorio:', ficha?.Consultorio ?? ficha?.Servicio],
+          ['Médico:', ficha?.NombresMedico ?? ficha?.Medico],
+        ])}
       </table>
       <div style="font-size:11px;font-weight:bold;margin-top:3px">PRIORIDAD: <span style="text-transform:uppercase">${v(ficha?.TipoPrioridad)}</span></div>
 

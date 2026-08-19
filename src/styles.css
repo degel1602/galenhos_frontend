@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @keyframes gp-spin {
   to {
@@ -18,7 +18,8 @@
 }
 
 @keyframes gp-float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -27,7 +28,8 @@
 }
 
 @keyframes gp-heartbeat {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   14% {
@@ -75,7 +77,8 @@
 }
 
 @keyframes gp-drift {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) translateX(0);
     opacity: 0.5;
   }
@@ -176,7 +179,7 @@
 
 /* Item de submenú activo: barra lateral izquierda */
 .active-subnav::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -3px;
   top: 50%;
@@ -188,7 +191,7 @@
 }
 
 body {
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

@@ -26,7 +26,7 @@ interface ResultadoBackend {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ResultadoService {
   private readonly api = inject(ApiClientService);
@@ -35,7 +35,7 @@ export class ResultadoService {
     try {
       const datos = await this.api.request<ResultadoBackend[]>(
         `/api/v1/resultados/laboratorio/paciente/${idPaciente}`,
-        { method: 'GET' }
+        { method: 'GET' },
       );
       return (datos ?? []).map(this.normalizarResultado);
     } catch (error) {
@@ -48,7 +48,7 @@ export class ResultadoService {
     try {
       const datos = await this.api.request<ResultadoBackend[]>(
         `/api/v1/resultados/imagenes/paciente/${idPaciente}`,
-        { method: 'GET' }
+        { method: 'GET' },
       );
       return (datos ?? []).map(this.normalizarResultado);
     } catch (error) {
@@ -66,8 +66,7 @@ export class ResultadoService {
       fechaResultado: item.fechaExamen ?? item.fechaResultado ?? '',
       valores: item.detalle ?? item.valores ?? '',
       observaciones: item.observaciones ?? '',
-      estado: item.estado ?? 'Pendiente'
+      estado: item.estado ?? 'Pendiente',
     };
   }
 }
-

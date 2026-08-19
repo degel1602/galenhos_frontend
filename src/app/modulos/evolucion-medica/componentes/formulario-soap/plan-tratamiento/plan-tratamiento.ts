@@ -1,23 +1,42 @@
-import { Component, Input, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder } from '@angular/forms';
-import { AuthService } from '../../../../auth/aplicacion/auth.service';
-import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
-import { TablaComponent, ColumnaTabla } from '../../../../../compartido/componentes/tabla/tabla.component';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  inject,
+} from '@angular/core';
+import {
+  type FormArray,
+  FormBuilder,
+  type FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { ColumnaTemplateDirective } from '../../../../../compartido/componentes/tabla/columna-template.directive';
+import {
+  type ColumnaTabla,
+  TablaComponent,
+} from '../../../../../compartido/componentes/tabla/tabla.component';
+import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
+import { AuthService } from '../../../../auth/aplicacion/auth.service';
 
 @Component({
   selector: 'app-plan-tratamiento',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent, TablaComponent, ColumnaTemplateDirective],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ErrorMensajeComponent,
+    TablaComponent,
+    ColumnaTemplateDirective,
+  ],
   templateUrl: './plan-tratamiento.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlanTratamientoComponent {
   @Input({ required: true }) formGroup!: FormGroup;
   public readonly authService = inject(AuthService);
 
-  constructor(private readonly fb: FormBuilder) {}
+  private readonly fb = inject(FormBuilder);
 
   columnasMedicamentos: ColumnaTabla[] = [
     { campo: 'medicamentoCustom', cabecera: 'Medicamento / Insumo' },
@@ -25,7 +44,7 @@ export class PlanTratamientoComponent {
     { campo: 'frecuenciaCustom', cabecera: 'Frecuencia' },
     { campo: 'viaCustom', cabecera: 'Vía de admin.' },
     { campo: 'duracionCustom', cabecera: 'Duración' },
-    { campo: 'accionesCustom', cabecera: '', alineacion: 'center' }
+    { campo: 'accionesCustom', cabecera: '', alineacion: 'center' },
   ];
 
   get farmacologicoArray(): FormArray {
@@ -49,13 +68,15 @@ export class PlanTratamientoComponent {
   }
 
   agregarMedicamento() {
-    this.farmacologicoArray.push(this.fb.group({
-      medicamento: [''],
-      dosis: [''],
-      frecuencia: [''],
-      via: ['Oral'],
-      duracion: ['']
-    }));
+    this.farmacologicoArray.push(
+      this.fb.group({
+        medicamento: [''],
+        dosis: [''],
+        frecuencia: [''],
+        via: ['Oral'],
+        duracion: [''],
+      }),
+    );
   }
 
   removerMedicamento(index: number) {

@@ -1,12 +1,12 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, inject, type OnDestroy, type OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { DashboardApiService } from '../../../salida/http/dashboard.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
+import { DashboardApiService } from '../../../salida/http/dashboard.api.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  templateUrl: './dashboard.component.html'
+  templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private dashboardApi = inject(DashboardApiService);

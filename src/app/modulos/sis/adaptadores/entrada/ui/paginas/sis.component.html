@@ -14,13 +14,13 @@
     <div class="bg-emerald-50 text-emerald-700 text-sm font-medium px-4 py-3 rounded-lg">{{ mensajeExito }}</div>
   }
 
-  <!-- Consulta de afiliado -->
+  
   <div class="bg-white border border-slate-200 rounded-xl p-5">
     <div class="text-sm font-semibold text-slate-700 mb-3">Consulta de afiliado (WS SIS)</div>
     <div class="flex flex-col sm:flex-row gap-3">
       <input [(ngModel)]="dni" (keydown.enter)="consultarAfiliado()" placeholder="DNI del afiliado"
              class="w-full sm:w-64 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:border-teal-500 outline-none" />
-      <button (click)="consultarAfiliado()" [disabled]="consultando"
+      <button type="button" (click)="consultarAfiliado()" [disabled]="consultando"
               class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50">
         {{ consultando ? 'Consultando…' : 'Consultar' }}
       </button>
@@ -38,7 +38,7 @@
     }
   </div>
 
-  <!-- FUA y listados -->
+  
   <div class="bg-white border border-slate-200 rounded-xl p-5">
     <div class="text-sm font-semibold text-slate-700 mb-3">FUA y listados de la atención</div>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -59,13 +59,13 @@
       </label>
     </div>
     <div class="flex flex-wrap gap-2 mt-4">
-      <button (click)="forzarGuardadoFua()" [disabled]="operando" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg disabled:opacity-50">Forzar guardado FUA</button>
-      <button (click)="agregarFua()" [disabled]="operando" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg disabled:opacity-50">Agregar FUA</button>
-      <button (click)="imprimirFua()" [disabled]="operando" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg disabled:opacity-50">FUA imprimir</button>
-      <button (click)="listarDiagnosticos()" [disabled]="operando" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold rounded-lg disabled:opacity-50">Diagnósticos</button>
-      <button (click)="listarMedicamentos()" [disabled]="operando" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold rounded-lg disabled:opacity-50">Medicamentos</button>
-      <button (click)="listarProcedimientos()" [disabled]="operando" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold rounded-lg disabled:opacity-50">Procedimientos</button>
-      <button (click)="listarConsumo()" [disabled]="operando" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold rounded-lg disabled:opacity-50">Consumo</button>
+      <button type="button" (click)="forzarGuardadoFua()" [disabled]="operando" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg disabled:opacity-50">Forzar guardado FUA</button>
+      <button type="button" (click)="agregarFua()" [disabled]="operando" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg disabled:opacity-50">Agregar FUA</button>
+      <button type="button" (click)="imprimirFua()" [disabled]="operando" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg disabled:opacity-50">FUA imprimir</button>
+      <button type="button" (click)="listarDiagnosticos()" [disabled]="operando" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold rounded-lg disabled:opacity-50">Diagnósticos</button>
+      <button type="button" (click)="listarMedicamentos()" [disabled]="operando" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold rounded-lg disabled:opacity-50">Medicamentos</button>
+      <button type="button" (click)="listarProcedimientos()" [disabled]="operando" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold rounded-lg disabled:opacity-50">Procedimientos</button>
+      <button type="button" (click)="listarConsumo()" [disabled]="operando" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold rounded-lg disabled:opacity-50">Consumo</button>
     </div>
 
     @if (filasFua.length > 0) {
@@ -94,7 +94,7 @@
     }
   </div>
 
-  <!-- Filiación -->
+  
   <div class="bg-white border border-slate-200 rounded-xl p-5">
     <div class="text-sm font-semibold text-slate-700 mb-3">Registrar afiliación SIS</div>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
@@ -144,7 +144,7 @@
       </label>
     </div>
     <div class="mt-4">
-      <button (click)="guardarFiliacion()" [disabled]="guardandoFiliacion"
+      <button type="button" (click)="guardarFiliacion()" [disabled]="guardandoFiliacion"
               class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50">
         {{ guardandoFiliacion ? 'Guardando…' : 'Guardar afiliación' }}
       </button>

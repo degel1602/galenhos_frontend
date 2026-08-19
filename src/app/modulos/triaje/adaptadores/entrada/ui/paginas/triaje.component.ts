@@ -1,15 +1,29 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { TriajeApiService, RegistroTriajePayload } from '../../../salida/http/triaje.api.service';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  type OnInit,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MaestrosApiService } from '../../../../../../compartido/api/maestros.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
-import { IFilaBackend, ICatalogoNombre } from '../../../../../../compartido/tipos/api-tipos';
+import { ColumnaTemplateDirective } from '../../../../../../compartido/componentes/tabla/columna-template.directive';
+import {
+  type ColumnaTabla,
+  TablaComponent,
+} from '../../../../../../compartido/componentes/tabla/tabla.component';
+import type {
+  ICatalogoNombre,
+  IFilaBackend,
+} from '../../../../../../compartido/tipos/api-tipos';
+import { AuthService } from '../../../../../auth/aplicacion/auth.service';
+import {
+  type RegistroTriajePayload,
+  TriajeApiService,
+} from '../../../salida/http/triaje.api.service';
 import { RegistroTriajeModal } from '../componentes/registro-triaje-modal/registro-triaje-modal';
 import { ReporteTriajeComponent } from '../componentes/reporte-triaje/reporte-triaje.component';
-import { AuthService } from '../../../../../auth/aplicacion/auth.service';
-import { TablaComponent, ColumnaTabla } from '../../../../../../compartido/componentes/tabla/tabla.component';
-import { ColumnaTemplateDirective } from '../../../../../../compartido/componentes/tabla/columna-template.directive';
 
 interface FormEvaluacion {
   motivo: string;
@@ -31,17 +45,28 @@ interface FormEvaluacion {
 
 function formEvaluacionVacio(): FormEvaluacion {
   return {
-    motivo: '', presionArterial: '', frecCardiaca: '', frecRespiratoria: '',
-    temperatura: '', saturacion: '', fiO2: '', peso: '', talla: '', escalaDolor: '',
-    escalaGlasgow: '', tiempoEvolucionCantidad: '', tiempoEvolucionCantidadUnidad: '',
-    idServicio: '', idTipoPrioridad: ''
+    motivo: '',
+    presionArterial: '',
+    frecCardiaca: '',
+    frecRespiratoria: '',
+    temperatura: '',
+    saturacion: '',
+    fiO2: '',
+    peso: '',
+    talla: '',
+    escalaDolor: '',
+    escalaGlasgow: '',
+    tiempoEvolucionCantidad: '',
+    tiempoEvolucionCantidadUnidad: '',
+    idServicio: '',
+    idTipoPrioridad: '',
   };
 }
 
-// Lee un campo de un map devuelto por el SP probando varias claves (los SP
-// resuelven los nombres de columna en runtime; variantes de mayúsculas).
-
-function campo(item: IFilaBackend | null | undefined, claves: string[]): string {
+function campo(
+  item: IFilaBackend | null | undefined,
+  claves: string[],
+): string {
   if (!item) return '';
   for (const k of claves) {
     const v = item[k];
@@ -59,26 +84,33 @@ const PRIORIDADES = [
   { value: '2', label: 'Naranja · Muy urgente' },
   { value: '3', label: 'Amarillo · Urgente' },
   { value: '4', label: 'Verde · Poco urgente' },
-  { value: '5', label: 'Azul · No urgente' }
+  { value: '5', label: 'Azul · No urgente' },
 ];
 
 const UNIDADES_TIEMPO = [
   { value: 'MINUTOS', label: 'Minutos' },
   { value: 'HORAS', label: 'Horas' },
   { value: 'DIAS', label: 'Días' },
-  { value: 'SEMANAS', label: 'Semanas' }
+  { value: 'SEMANAS', label: 'Semanas' },
 ];
 
 const SI_NO = [
   { value: '0', label: 'No' },
-  { value: '1', label: 'Sí' }
+  { value: '1', label: 'Sí' },
 ];
 
 @Component({
   selector: 'app-triaje',
   standalone: true,
-  imports: [FormsModule, CommonModule, RegistroTriajeModal, ReporteTriajeComponent, TablaComponent, ColumnaTemplateDirective],
-  templateUrl: './triaje.component.html'
+  imports: [
+    FormsModule,
+    CommonModule,
+    RegistroTriajeModal,
+    ReporteTriajeComponent,
+    TablaComponent,
+    ColumnaTemplateDirective,
+  ],
+  templateUrl: './triaje.component.html',
 })
 export class TriajeComponent implements OnInit {
   private readonly triajeApi = inject(TriajeApiService);
@@ -92,13 +124,18 @@ export class TriajeComponent implements OnInit {
   mensajeExito = '';
 
   filtro = '';
-  fechaInicio = (d => `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`)(new Date());
-  fechaFin = (d => `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`)(new Date());
+  fechaInicio = ((d) =>
+    `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`)(
+    new Date(),
+  );
+  fechaFin = ((d) =>
+    `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`)(
+    new Date(),
+  );
   servicioFiltro = '';
   serviciosFiltro: ICatalogoNombre[] = [];
   triajesBuscados = false;
 
-  // Modal de registro (componente global compartido con la página Pacientes)
   modalRegistro = false;
   reporteTriajeId: number | null = null;
 
@@ -111,23 +148,20 @@ export class TriajeComponent implements OnInit {
     { campo: 'servicioCustom', cabecera: 'Servicio' },
     { campo: 'gravedadCustom', cabecera: 'Tipo gravedad' },
     { campo: 'estadoCustom', cabecera: 'Estado' },
-    { campo: 'accionCustom', cabecera: 'Reporte', alineacion: 'right' }
+    { campo: 'accionCustom', cabecera: 'Reporte', alineacion: 'right' },
   ];
 
-  // Modal de reporte de triaje (GET /api/v1/triaje/reporte)
   modalReporte = false;
   reporte: IFilaBackend[] = [];
   cargandoReporte = false;
   errorReporte = '';
 
-  // Modal de ficha de admisión (GET /api/v1/triaje/ficha-admision)
   modalFicha = false;
   ficha: IFilaBackend | null = null;
   filasFicha: { clave: string; valor: string }[] = [];
   cargandoFicha = false;
   errorFicha = '';
 
-  // Modal de evaluación
   pacienteEvaluar: IFilaBackend | null = null;
   formEvaluacion: FormEvaluacion = formEvaluacionVacio();
   guardandoEvaluacion = false;
@@ -149,10 +183,18 @@ export class TriajeComponent implements OnInit {
     this.triajesBuscados = true;
     try {
       const derivado = this.servicioFiltro || '-100';
-      const items = await this.triajeApi.listar(this.fechaInicio, this.fechaFin, derivado, '-100');
+      const items = await this.triajeApi.listar(
+        this.fechaInicio,
+        this.fechaFin,
+        derivado,
+        '-100',
+      );
       this.pacientes = Array.isArray(items) ? items : [];
-    } catch (err: unknown) {
-      this.error = err instanceof ApiRequestError ? err.message : 'No se pudo cargar el listado de triaje.';
+    } catch (error: unknown) {
+      this.error =
+        error instanceof ApiRequestError
+          ? error.message
+          : 'No se pudo cargar el listado de triaje.';
     } finally {
       this.cargando = false;
       this.cdr.detectChanges();
@@ -164,12 +206,9 @@ export class TriajeComponent implements OnInit {
       const serv = await this.maestrosApi.getServicios(2);
       if (Array.isArray(serv)) this.serviciosFiltro = serv;
       if (Array.isArray(serv)) this.servicios = serv;
-    } catch {
-      // Catálogo auxiliar
-    }
+    } catch {}
   }
 
-  // --- Reporte de triaje ---
   abrirReporte(idTriaje?: number) {
     if (idTriaje) {
       this.reporteTriajeId = idTriaje;
@@ -195,8 +234,11 @@ export class TriajeComponent implements OnInit {
     try {
       const items = await this.triajeApi.obtenerReporte({});
       this.reporte = Array.isArray(items) ? items : [];
-    } catch (err: unknown) {
-      this.errorReporte = err instanceof ApiRequestError ? err.message : 'No se pudo generar el reporte de triaje.';
+    } catch (error: unknown) {
+      this.errorReporte =
+        error instanceof ApiRequestError
+          ? error.message
+          : 'No se pudo generar el reporte de triaje.';
     } finally {
       this.cargandoReporte = false;
       this.cdr.detectChanges();
@@ -221,9 +263,19 @@ export class TriajeComponent implements OnInit {
     return '—';
   }
 
-  // --- Ficha de admisión ---
   idCuentaAtencion(item: IFilaBackend): number {
-    return Number(campo(item, ['IdCuentaAtencion', 'idCuentaAtencion', 'NroCuenta', 'nroCuenta', 'Cuenta', 'cuenta'])) || 0;
+    return (
+      Number(
+        campo(item, [
+          'IdCuentaAtencion',
+          'idCuentaAtencion',
+          'NroCuenta',
+          'nroCuenta',
+          'Cuenta',
+          'cuenta',
+        ]),
+      ) || 0
+    );
   }
 
   async abrirFicha(item: IFilaBackend) {
@@ -244,13 +296,17 @@ export class TriajeComponent implements OnInit {
         let strValor = '';
         if (valor !== null && valor !== undefined) {
           if (typeof valor === 'string') strValor = valor;
-          else if (typeof valor === 'number' || typeof valor === 'boolean') strValor = String(valor);
+          else if (typeof valor === 'number' || typeof valor === 'boolean')
+            strValor = String(valor);
           else if (typeof valor === 'object') strValor = JSON.stringify(valor);
         }
         return { clave, valor: strValor };
       });
-    } catch (err: unknown) {
-      this.errorFicha = err instanceof ApiRequestError ? err.message : 'No se pudo obtener la ficha de admisión.';
+    } catch (error: unknown) {
+      this.errorFicha =
+        error instanceof ApiRequestError
+          ? error.message
+          : 'No se pudo obtener la ficha de admisión.';
     } finally {
       this.cargandoFicha = false;
       this.cdr.detectChanges();
@@ -262,7 +318,6 @@ export class TriajeComponent implements OnInit {
     this.ficha = null;
   }
 
-  // La fuente financiamiento responde con idFuenteFinanciamiento (no "id").
   abrirModalRegistro() {
     this.modalRegistro = true;
   }
@@ -274,17 +329,18 @@ export class TriajeComponent implements OnInit {
   onPacienteRegistrado() {
     this.modalRegistro = false;
     this.mensajeExito = 'Paciente registrado en la bandeja de triaje.';
-    setTimeout(() => this.mensajeExito = '', 5000);
+    setTimeout(() => (this.mensajeExito = ''), 5000);
     this.cargarLista();
   }
 
-  // Elimina caracteres de control/espaciado invisible y recorta los extremos.
   sanitizar(texto: string): string {
-    return texto.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '').trim();
+    return texto.replace(/[\p{Cc}\u200B-\u200F\uFEFF]/gu, '').trim();
   }
 
   abrirEvaluacion(paciente: IFilaBackend) {
-    const ev = (paciente['evaluacion'] ?? undefined) as Record<string, unknown> | undefined;
+    const ev = (paciente.evaluacion ?? undefined) as
+      | Record<string, unknown>
+      | undefined;
     const texto = (v: unknown): string => {
       if (v === null || v === undefined) return '';
       if (typeof v === 'string') return v;
@@ -294,12 +350,23 @@ export class TriajeComponent implements OnInit {
     this.pacienteEvaluar = paciente;
     this.formEvaluacion = ev
       ? {
-          motivo: texto(ev['motivo']), presionArterial: texto(ev['pa'] ?? ev['presionArterial']), frecCardiaca: texto(ev['fc'] ?? ev['frecCardiaca']),
-          frecRespiratoria: texto(ev['fr'] ?? ev['frecRespiratoria']), temperatura: texto(ev['temp'] ?? ev['temperatura']),
-          saturacion: texto(ev['spo2'] ?? ev['saturacion']), fiO2: texto(ev['fiO2']), peso: texto(ev['peso']),
-          talla: texto(ev['talla']), escalaDolor: texto(ev['escalaDolor']), escalaGlasgow: texto(ev['escalaGlasgow']),
-          tiempoEvolucionCantidad: texto(ev['tiempoEvolucionCantidad']), tiempoEvolucionCantidadUnidad: texto(ev['tiempoEvolucionCantidadUnidad']),
-          idServicio: texto(ev['idServicio']), idTipoPrioridad: texto(ev['idTipoPrioridad'])
+          motivo: texto(ev.motivo),
+          presionArterial: texto(ev.pa ?? ev.presionArterial),
+          frecCardiaca: texto(ev.fc ?? ev.frecCardiaca),
+          frecRespiratoria: texto(ev.fr ?? ev.frecRespiratoria),
+          temperatura: texto(ev.temp ?? ev.temperatura),
+          saturacion: texto(ev.spo2 ?? ev.saturacion),
+          fiO2: texto(ev.fiO2),
+          peso: texto(ev.peso),
+          talla: texto(ev.talla),
+          escalaDolor: texto(ev.escalaDolor),
+          escalaGlasgow: texto(ev.escalaGlasgow),
+          tiempoEvolucionCantidad: texto(ev.tiempoEvolucionCantidad),
+          tiempoEvolucionCantidadUnidad: texto(
+            ev.tiempoEvolucionCantidadUnidad,
+          ),
+          idServicio: texto(ev.idServicio),
+          idTipoPrioridad: texto(ev.idTipoPrioridad),
         }
       : formEvaluacionVacio();
     this.errorEvaluacion = '';
@@ -311,47 +378,69 @@ export class TriajeComponent implements OnInit {
 
   async guardarEvaluacion() {
     const f = this.formEvaluacion;
-    const idTriaje = Number(campo(this.pacienteEvaluar, ['IdTriaje', 'idTriaje', 'IDTriaje']));
+    const idTriaje = Number(
+      campo(this.pacienteEvaluar, ['IdTriaje', 'idTriaje', 'IDTriaje']),
+    );
     if (!idTriaje) {
       this.errorEvaluacion = 'El registro no tiene un id de triaje válido.';
       return;
     }
     const motivo = this.sanitizar(f.motivo);
     const presionArterial = this.sanitizar(f.presionArterial);
-    if (!motivo || !presionArterial || !f.frecCardiaca.trim() ||
-        !f.frecRespiratoria.trim() || !f.temperatura.trim() || !f.saturacion.trim()) {
-      this.errorEvaluacion = 'Complete el motivo de consulta y todos los signos vitales.';
+    if (
+      !motivo ||
+      !presionArterial ||
+      !f.frecCardiaca.trim() ||
+      !f.frecRespiratoria.trim() ||
+      !f.temperatura.trim() ||
+      !f.saturacion.trim()
+    ) {
+      this.errorEvaluacion =
+        'Complete el motivo de consulta y todos los signos vitales.';
       return;
     }
     if (!/^\d{2,3}\/\d{2,3}$/.test(presionArterial)) {
-      this.errorEvaluacion = 'La presión arterial debe tener el formato 120/80.';
+      this.errorEvaluacion =
+        'La presión arterial debe tener el formato 120/80.';
       return;
     }
     this.guardandoEvaluacion = true;
     this.errorEvaluacion = '';
-    const payload = this.construirPayloadEvaluacion(idTriaje, f, motivo, presionArterial);
+    const payload = this.construirPayloadEvaluacion(
+      idTriaje,
+      f,
+      motivo,
+      presionArterial,
+    );
 
     try {
       await this.triajeApi.registrar(payload);
       this.pacienteEvaluar = null;
       this.mensajeExito = 'Evaluación de triaje guardada.';
-      setTimeout(() => this.mensajeExito = '', 5000);
+      setTimeout(() => (this.mensajeExito = ''), 5000);
       this.cargarLista();
-    } catch (err: unknown) {
-      this.errorEvaluacion = err instanceof ApiRequestError ? err.message : 'No se pudo guardar la evaluación.';
+    } catch (error: unknown) {
+      this.errorEvaluacion =
+        error instanceof ApiRequestError
+          ? error.message
+          : 'No se pudo guardar la evaluación.';
     } finally {
       this.guardandoEvaluacion = false;
       this.cdr.detectChanges();
     }
   }
 
-  private asignarValoresNumericos(payload: any, f: FormEvaluacion) {
+  private asignarValoresNumericos(
+    payload: Record<string, unknown>,
+    f: FormEvaluacion,
+  ) {
     const parse = (v: string) => Number(v.replace(',', '.'));
     const set = (key: string, v: string, minVal?: number) => {
       const num = parse(v);
-      if (!Number.isNaN(num) && (minVal === undefined || num > minVal)) payload[key] = num;
+      if (!Number.isNaN(num) && (minVal === undefined || num > minVal))
+        payload[key] = num;
     };
-    
+
     set('frecCardiaca', f.frecCardiaca);
     set('frecRespiratoria', f.frecRespiratoria);
     set('temperatura', f.temperatura);
@@ -366,24 +455,35 @@ export class TriajeComponent implements OnInit {
     set('idTipoPrioridad', f.idTipoPrioridad);
   }
 
-  private construirPayloadEvaluacion(idTriaje: number, f: FormEvaluacion, motivo: string, presionArterial: string): RegistroTriajePayload {
-    const payload: RegistroTriajePayload = { idTriaje, motivo, presionArterial };
-    
-    this.asignarValoresNumericos(payload, f);
+  private construirPayloadEvaluacion(
+    idTriaje: number,
+    f: FormEvaluacion,
+    motivo: string,
+    presionArterial: string,
+  ): RegistroTriajePayload {
+    const payload: RegistroTriajePayload = {
+      idTriaje,
+      motivo,
+      presionArterial,
+    };
+
+    this.asignarValoresNumericos(
+      payload as unknown as Record<string, unknown>,
+      f,
+    );
 
     if (payload.peso && payload.talla) {
-      const imc = payload.peso / Math.pow(payload.talla / 100, 2);
+      const imc = payload.peso / (payload.talla / 100) ** 2;
       payload.imc = Math.round(imc * 100) / 100;
     }
-    
+
     if (f.tiempoEvolucionCantidadUnidad) {
       payload.tiempoEvolucionCantidadUnidad = f.tiempoEvolucionCantidadUnidad;
     }
-    
+
     return payload;
   }
 
-  // --- Ayudantes de render ---
   campo(item: IFilaBackend, claves: string[]): string {
     return campo(item, claves);
   }
@@ -393,50 +493,129 @@ export class TriajeComponent implements OnInit {
   }
 
   documento(item: IFilaBackend): string {
-    return campo(item, ['NroDocumento', 'nroDocumento', 'Documento', 'documento']);
+    return campo(item, [
+      'NroDocumento',
+      'nroDocumento',
+      'Documento',
+      'documento',
+    ]);
   }
 
   tipoDocumento(item: IFilaBackend): string {
-    return campo(item, ['TipoDocumento', 'tipoDocumento', 'DescripcionTipoDocumento', 'DescripcionDoc']);
+    return campo(item, [
+      'TipoDocumento',
+      'tipoDocumento',
+      'DescripcionTipoDocumento',
+      'DescripcionDoc',
+    ]);
   }
 
   nombrePaciente(item: IFilaBackend): string {
-    const completo = campo(item, ['NombreCompleto', 'nombreCompleto', 'Paciente', 'paciente', 'Nombre', 'nombre']);
+    const completo = campo(item, [
+      'NombreCompleto',
+      'nombreCompleto',
+      'Paciente',
+      'paciente',
+      'Nombre',
+      'nombre',
+    ]);
     if (completo) return completo;
     const partes = [
       campo(item, ['ApellidoPaterno', 'apellidoPaterno', 'Paterno', 'paterno']),
       campo(item, ['ApellidoMaterno', 'apellidoMaterno', 'Materno', 'materno']),
-      campo(item, ['PrimerNombre', 'primerNombre', 'PrimerNmobre', 'Nombres', 'nombres']),
-      campo(item, ['SegundoNombre', 'segundoNombre'])
+      campo(item, [
+        'PrimerNombre',
+        'primerNombre',
+        'PrimerNmobre',
+        'Nombres',
+        'nombres',
+      ]),
+      campo(item, ['SegundoNombre', 'segundoNombre']),
     ].filter(Boolean);
     return partes.join(' ') || '—';
   }
 
   sexo(item: IFilaBackend): string {
-    return campo(item, ['Sexo', 'sexo', 'TipoSexo', 'tipoSexo', 'IdTipoSexo', 'idTipoSexo', 'SexTypeID', 'sexTypeId', 'Genero', 'genero', 'IdGenero', 'idGenero', 'Sex', 'sex', 'SEXO', 'GENERO'])?.toString() || '';
+    return (
+      campo(item, [
+        'Sexo',
+        'sexo',
+        'TipoSexo',
+        'tipoSexo',
+        'IdTipoSexo',
+        'idTipoSexo',
+        'SexTypeID',
+        'sexTypeId',
+        'Genero',
+        'genero',
+        'IdGenero',
+        'idGenero',
+        'Sex',
+        'sex',
+        'SEXO',
+        'GENERO',
+      ])?.toString() || ''
+    );
   }
 
   hora(item: IFilaBackend): string {
-    let raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'fecha_registro', 'FechaIngreso', 'fechaIngreso', 'Fecha', 'fecha', 'HoraRegistro']);
+    let raw = campo(item, [
+      'FechaTriaje',
+      'fechaTriaje',
+      'FechaRegistro',
+      'fechaRegistro',
+      'fecha_registro',
+      'FechaIngreso',
+      'fechaIngreso',
+      'Fecha',
+      'fecha',
+      'HoraRegistro',
+    ]);
     if (!raw) return '—';
     if (raw.endsWith('Z')) raw = raw.slice(0, -1);
     const d = new Date(raw);
     if (Number.isNaN(d.getTime())) return raw;
-    return d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleTimeString('es-PE', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
 
   prioridad(item: IFilaBackend): string {
-    return campo(item, ['Prioridad', 'prioridad', 'TipoPrioridad', 'tipoPrioridad', 'DescripcionPrioridad']);
+    return campo(item, [
+      'Prioridad',
+      'prioridad',
+      'TipoPrioridad',
+      'tipoPrioridad',
+      'DescripcionPrioridad',
+    ]);
   }
 
   estadoTriaje(item: IFilaBackend): string {
-    const estado = campo(item, ['Estado', 'estado', 'IdEstado', 'idEstado', 'NombreEstado']);
+    const estado = campo(item, [
+      'Estado',
+      'estado',
+      'IdEstado',
+      'idEstado',
+      'NombreEstado',
+    ]);
     const vitals = campo(item, ['PresionArterial', 'presionArterial', 'PA']);
-    return (estado || vitals) ? 'triado' : 'sin-triaje';
+    return estado || vitals ? 'triado' : 'sin-triaje';
   }
 
   tiempoEspera(item: IFilaBackend): string {
-    let raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'fecha_registro', 'FechaIngreso', 'fechaIngreso', 'Fecha', 'fecha', 'HoraRegistro']);
+    let raw = campo(item, [
+      'FechaTriaje',
+      'fechaTriaje',
+      'FechaRegistro',
+      'fechaRegistro',
+      'fecha_registro',
+      'FechaIngreso',
+      'fechaIngreso',
+      'Fecha',
+      'fecha',
+      'HoraRegistro',
+    ]);
     if (!raw) return '—';
     if (raw.endsWith('Z')) raw = raw.slice(0, -1);
     const d = new Date(raw);
@@ -445,11 +624,22 @@ export class TriajeComponent implements OnInit {
   }
 
   fechaRegistro(item: IFilaBackend): string {
-    let raw = campo(item, ['FechaTriaje', 'fechaTriaje', 'FechaRegistro', 'fechaRegistro', 'fecha_registro', 'FechaIngreso', 'fechaIngreso']);
+    let raw = campo(item, [
+      'FechaTriaje',
+      'fechaTriaje',
+      'FechaRegistro',
+      'fechaRegistro',
+      'fecha_registro',
+      'FechaIngreso',
+      'fechaIngreso',
+    ]);
     if (!raw) return '—';
     if (raw.endsWith('Z')) raw = raw.slice(0, -1);
     const d = new Date(raw);
     if (Number.isNaN(d.getTime())) return raw;
-    return d.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
+    return d.toLocaleString('es-PE', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    });
   }
 }

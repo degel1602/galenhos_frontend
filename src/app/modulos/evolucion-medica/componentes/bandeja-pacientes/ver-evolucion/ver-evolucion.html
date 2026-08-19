@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-6">
 
-  <!-- CABECERA -->
+  
   <div class="flex flex-col gap-1">
     <div class="flex flex-wrap gap-x-6 gap-y-1 text-[12.5px] text-slate-600">
       <span><b class="text-slate-800">N.º evolución:</b> {{ cabecera.numeroEvolucion || '—' }}</span>
@@ -14,7 +14,7 @@
     </div>
   </div>
 
-  <!-- MOTIVO -->
+  
   @if (motivos.length > 0 || motivoDetalle) {
     <section>
       <h4 class="text-[11px] uppercase tracking-widest text-amber-600 font-bold mb-2 pb-1.5 border-b border-slate-200">Motivo</h4>
@@ -29,7 +29,7 @@
     </section>
   }
 
-  <!-- SUBJETIVO -->
+  
   @if (sintomas.length > 0 || subjetivoMarcados.length > 0 || subjetivo.evolucionSintomas || subjetivo.escalaDolor != null) {
     <section>
       <h4 class="text-[11px] uppercase tracking-widest text-amber-600 font-bold mb-2 pb-1.5 border-b border-slate-200">Subjetivo (S)</h4>
@@ -52,7 +52,7 @@
     </section>
   }
 
-  <!-- OBJETIVO -->
+  
   @if (signosVitales.length > 0 || examenFisico.length > 0) {
     <section>
       <h4 class="text-[11px] uppercase tracking-widest text-amber-600 font-bold mb-2 pb-1.5 border-b border-slate-200">Objetivo (O)</h4>
@@ -83,7 +83,7 @@
     </section>
   }
 
-  <!-- EVALUACIÓN -->
+  
   @if (evaluacion.estadoClinico || evaluacion.pronostico || diagnosticos.length > 0) {
     <section>
       <h4 class="text-[11px] uppercase tracking-widest text-amber-600 font-bold mb-2 pb-1.5 border-b border-slate-200">Evaluación (A)</h4>
@@ -115,7 +115,7 @@
     </section>
   }
 
-  <!-- PLAN -->
+  
   @if (farmacologico.length > 0 || procedimientosIndicados.length > 0 || solicitudExamenes.length > 0 || interconsultasSolicitadas.length > 0 || indicacionesGenerales.length > 0) {
     <section>
       <h4 class="text-[11px] uppercase tracking-widest text-amber-600 font-bold mb-2 pb-1.5 border-b border-slate-200">Plan (P)</h4>
@@ -172,7 +172,7 @@
     </section>
   }
 
-  <!-- EVOLUCIÓN LIBRE -->
+  
   @if (evolucionLibre) {
     <section>
       <h4 class="text-[11px] uppercase tracking-widest text-amber-600 font-bold mb-2 pb-1.5 border-b border-slate-200">Evolución libre</h4>
@@ -180,7 +180,7 @@
     </section>
   }
 
-  <!-- ÓRDENES MÉDICAS -->
+  
   @if (ordenesTexto) {
     <section>
       <h4 class="text-[11px] uppercase tracking-widest text-amber-600 font-bold mb-2 pb-1.5 border-b border-slate-200">Órdenes médicas</h4>
@@ -188,20 +188,20 @@
     </section>
   }
 
-  <!-- ADJUNTOS -->
+  
   @if (adjuntos.length > 0) {
     <section>
       <h4 class="text-[11px] uppercase tracking-widest text-amber-600 font-bold mb-2 pb-1.5 border-b border-slate-200">Adjuntos ({{ adjuntos.length }})</h4>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
         @for (adjunto of adjuntos; track adjunto.nombre) {
           @if (adjunto.tipo?.startsWith('image/')) {
-            <a [href]="adjunto.dataB64" [download]="adjunto.nombre" target="_blank" class="flex flex-col gap-1.5 group cursor-pointer">
+            <a href="{{adjunto.dataB64}}" [href]="adjunto.dataB64" [download]="adjunto.nombre" target="_blank" class="flex flex-col gap-1.5 group cursor-pointer">
               <img [src]="adjunto.dataB64" alt="{{ adjunto.nombre }}" class="h-24 w-full object-cover rounded-lg border border-slate-200 group-hover:opacity-80 transition-opacity">
               <span class="text-[11px] text-slate-500 truncate break-all">{{ adjunto.nombre }}</span>
             </a>
           } @else {
-            <a [href]="adjunto.dataB64" [download]="adjunto.nombre" target="_blank" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 cursor-pointer hover:bg-slate-100 transition-colors">
-              <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <a href="{{adjunto.dataB64}}" [href]="adjunto.dataB64" [download]="adjunto.nombre" target="_blank" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 cursor-pointer hover:bg-slate-100 transition-colors">
+              <svg aria-hidden="true" class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14 2 14 8 20 8"></polyline>
               </svg>
@@ -213,7 +213,7 @@
     </section>
   }
 
-  <!-- FIRMA -->
+  
   @if (firmaDigital) {
     <section>
       <h4 class="text-[11px] uppercase tracking-widest text-amber-600 font-bold mb-2 pb-1.5 border-b border-slate-200">Firma del médico</h4>

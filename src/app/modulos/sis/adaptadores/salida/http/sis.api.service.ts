@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiClientService } from '../../../../../compartido/api-client/api-client.service';
-import { IFilaBackend } from '../../../../../compartido/tipos/api-tipos';
+import type { IFilaBackend } from '../../../../../compartido/tipos/api-tipos';
 
 export interface SisAfiliado {
   idError: string;
@@ -36,8 +36,6 @@ export interface SisAfiliado {
   msgConfidencial: string;
 }
 
-// Cuerpo de POST /api/v1/sis/filiaciones: replica los campos del SP
-// webSisFiliacionesGestionar; los campos opcionales se omiten.
 export interface SisAfiliacionPayload {
   idSiasis?: number;
   codigo?: string;
@@ -73,53 +71,81 @@ export interface SisAfiliacionPayload {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SisApiService {
   private apiClient = inject(ApiClientService);
 
   consultarAfiliado(nrodoc: string, tipoDocumento = 1): Promise<SisAfiliado> {
-    return this.apiClient.request<SisAfiliado>(`/api/v1/sis/afiliado/${encodeURIComponent(nrodoc)}?strTipoDocumento=${tipoDocumento}`);
+    return this.apiClient.request<SisAfiliado>(
+      `/api/v1/sis/afiliado/${encodeURIComponent(nrodoc)}?strTipoDocumento=${tipoDocumento}`,
+    );
   }
 
-  gestionarAfiliacion(payload: SisAfiliacionPayload): Promise<{ estado: string }> {
-    return this.apiClient.request<{ estado: string }>('/api/v1/sis/filiaciones', {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
+  gestionarAfiliacion(
+    payload: SisAfiliacionPayload,
+  ): Promise<{ estado: string }> {
+    return this.apiClient.request<{ estado: string }>(
+      '/api/v1/sis/filiaciones',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+    );
   }
 
   forzarGuardadoFua(idCuentaAtencion: number): Promise<{ estado: string }> {
     return this.apiClient.request<{ estado: string }>('/api/v1/sis/fua', {
       method: 'POST',
-      body: JSON.stringify({ idCuentaAtencion })
+      body: JSON.stringify({ idCuentaAtencion }),
     });
   }
 
-  agregarFua(idCuentaAtencion: number, idEmpleado: number, nombrePc?: string): Promise<{ respuesta: string }> {
-    return this.apiClient.request<{ respuesta: string }>('/api/v1/sis/fua/agregar', {
-      method: 'POST',
-      body: JSON.stringify({ idCuentaAtencion, idEmpleado, ...(nombrePc ? { nombrePc } : {}) })
-    });
+  agregarFua(
+    idCuentaAtencion: number,
+    idEmpleado: number,
+    nombrePc?: string,
+  ): Promise<{ respuesta: string }> {
+    return this.apiClient.request<{ respuesta: string }>(
+      '/api/v1/sis/fua/agregar',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          idCuentaAtencion,
+          idEmpleado,
+          ...(nombrePc ? { nombrePc } : {}),
+        }),
+      },
+    );
   }
 
   fuaImprimir(idCuentaAtencion: number): Promise<IFilaBackend> {
-    return this.apiClient.request<IFilaBackend>(`/api/v1/sis/fua/imprimir?idCuentaAtencion=${idCuentaAtencion}`);
+    return this.apiClient.request<IFilaBackend>(
+      `/api/v1/sis/fua/imprimir?idCuentaAtencion=${idCuentaAtencion}`,
+    );
   }
 
   listarDiagnosticos(idAtencion: number): Promise<IFilaBackend[]> {
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/diagnosticos?idAtencion=${idAtencion}`);
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/sis/diagnosticos?idAtencion=${idAtencion}`,
+    );
   }
 
   listarMedicamentos(idCuentaAtencion: number): Promise<IFilaBackend[]> {
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/medicamentos?idCuentaAtencion=${idCuentaAtencion}`);
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/sis/medicamentos?idCuentaAtencion=${idCuentaAtencion}`,
+    );
   }
 
   listarProcedimientos(idCuentaAtencion: number): Promise<IFilaBackend[]> {
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/procedimientos?idCuentaAtencion=${idCuentaAtencion}`);
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/sis/procedimientos?idCuentaAtencion=${idCuentaAtencion}`,
+    );
   }
 
   listarConsumo(idCuentaAtencion: number): Promise<IFilaBackend[]> {
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/consumo?idCuentaAtencion=${idCuentaAtencion}`);
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/sis/consumo?idCuentaAtencion=${idCuentaAtencion}`,
+    );
   }
 }

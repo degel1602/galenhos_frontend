@@ -1,6 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { ApiClientService, ApiRequestError } from '../../../../../compartido/api-client/api-client.service';
-import { IReniecResultado, IFilaBackend } from '../../../../../compartido/tipos/api-tipos';
+import {
+  ApiClientService,
+  ApiRequestError,
+} from '../../../../../compartido/api-client/api-client.service';
+import type {
+  IFilaBackend,
+  IReniecResultado,
+} from '../../../../../compartido/tipos/api-tipos';
 import { AuthService } from '../../../../auth/aplicacion/auth.service';
 
 export interface RegistroTriajePayload {
@@ -104,7 +110,7 @@ export interface TriajeConsultaParams {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TriajeApiService {
   private apiClient = inject(ApiClientService);
@@ -113,56 +119,92 @@ export class TriajeApiService {
   private static readonly RENIEC_TIMEOUT_MS = 30000;
 
   consultarReniec(nroDocumento: string): Promise<IReniecResultado> {
-    const promesa = this.apiClient.request<IReniecResultado>(`/api/v1/reniec/${encodeURIComponent(nroDocumento)}?operacion=completo`);
+    const promesa = this.apiClient.request<IReniecResultado>(
+      `/api/v1/reniec/${encodeURIComponent(nroDocumento)}?operacion=completo`,
+    );
     return Promise.race([
       promesa,
-      new Promise<never>((_, reject) => setTimeout(
-        () => reject(new ApiRequestError('RENIEC_TIMEOUT', 'RENIEC tardó demasiado en responder. Intente nuevamente o complete los datos manualmente.', 0)),
-        TriajeApiService.RENIEC_TIMEOUT_MS
-      ))
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () =>
+            reject(
+              new ApiRequestError(
+                'RENIEC_TIMEOUT',
+                'RENIEC tardó demasiado en responder. Intente nuevamente o complete los datos manualmente.',
+                0,
+              ),
+            ),
+          TriajeApiService.RENIEC_TIMEOUT_MS,
+        ),
+      ),
     ]);
   }
 
   registrar(payload: RegistroTriajePayload): Promise<RespuestaSp> {
     return this.apiClient.request<RespuestaSp>('/api/v1/triaje', {
       method: 'POST',
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
   }
 
-  listar(fini: string, ffin: string, derivadoAServicio = '-100', idEstado = '-100'): Promise<IFilaBackend[]> {
-    const query = new URLSearchParams({ fini, ffin, derivadoAServicio, idEstado });
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/triaje?${query.toString()}`);
+  listar(
+    fini: string,
+    ffin: string,
+    derivadoAServicio = '-100',
+    idEstado = '-100',
+  ): Promise<IFilaBackend[]> {
+    const query = new URLSearchParams({
+      fini,
+      ffin,
+      derivadoAServicio,
+      idEstado,
+    });
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/triaje?${query.toString()}`,
+    );
   }
 
-  listarPendientesAdmision(params: PendientesAdmisionParams): Promise<IFilaBackend[]> {
+  listarPendientesAdmision(
+    params: PendientesAdmisionParams,
+  ): Promise<IFilaBackend[]> {
     const query = new URLSearchParams();
     query.append('fecha', params.fecha);
     if (params.filtro) query.append('filtro', params.filtro);
     if (params.nroCta) query.append('nroCta', String(params.nroCta));
-    if (params.idDepartamento) query.append('idDepartamento', String(params.idDepartamento));
-    if (params.idEspecialidad) query.append('idEspecialidad', String(params.idEspecialidad));
-    if (params.idServicio) query.append('idServicio', String(params.idServicio));
-    if (params.idTipoServicio) query.append('idTipoServicio', String(params.idTipoServicio));
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/triaje/pendientes-admision?${query.toString()}`);
+    if (params.idDepartamento)
+      query.append('idDepartamento', String(params.idDepartamento));
+    if (params.idEspecialidad)
+      query.append('idEspecialidad', String(params.idEspecialidad));
+    if (params.idServicio)
+      query.append('idServicio', String(params.idServicio));
+    if (params.idTipoServicio)
+      query.append('idTipoServicio', String(params.idTipoServicio));
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/triaje/pendientes-admision?${query.toString()}`,
+    );
   }
 
   crearAdmision(payload: CrearAdmisionPayload): Promise<RespuestaSp> {
     return this.apiClient.request<RespuestaSp>('/api/v1/triaje/admision', {
       method: 'POST',
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
   }
 
   obtenerReporte(params: ReporteTriajeParams): Promise<IFilaBackend[]> {
     const query = new URLSearchParams();
     if (params.id) query.append('id', String(params.id));
-    if (params.idPaciente) query.append('idPaciente', String(params.idPaciente));
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/triaje/reporte?${query.toString()}`);
+    if (params.idPaciente)
+      query.append('idPaciente', String(params.idPaciente));
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/triaje/reporte?${query.toString()}`,
+    );
   }
 
   obtenerFichaAdmision(idCuentaAtencion: number): Promise<IFilaBackend> {
-    return this.apiClient.request<IFilaBackend>(`/api/v1/triaje/ficha-admision?idCuentaAtencion=${idCuentaAtencion}`);
+    return this.apiClient.request<IFilaBackend>(
+      `/api/v1/triaje/ficha-admision?idCuentaAtencion=${idCuentaAtencion}`,
+    );
   }
 
   obtenerDatosInstitucion(): Promise<IFilaBackend> {
@@ -174,59 +216,88 @@ export class TriajeApiService {
       const idEmpleado = this.authService.getIdEmpleado();
       await this.apiClient.request<unknown>('/api/v1/sis/fua/agregar', {
         method: 'POST',
-        body: JSON.stringify({ idCuentaAtencion, idEmpleado: idEmpleado > 0 ? idEmpleado : 1, nombrePc: '' })
+        body: JSON.stringify({
+          idCuentaAtencion,
+          idEmpleado: idEmpleado > 0 ? idEmpleado : 1,
+          nombrePc: '',
+        }),
       });
-    } catch {
-      // El endpoint puede fallar silenciosamente; continuamos con la impresión.
-    }
+    } catch {}
   }
 
   imprimirFua(idCuentaAtencion: number): Promise<IFilaBackend> {
-    return this.apiClient.request<IFilaBackend>(`/api/v1/sis/fua/imprimir?idCuentaAtencion=${idCuentaAtencion}`);
+    return this.apiClient.request<IFilaBackend>(
+      `/api/v1/sis/fua/imprimir?idCuentaAtencion=${idCuentaAtencion}`,
+    );
   }
 
   diagnosticosFua(idCuentaAtencion: number): Promise<IFilaBackend[]> {
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/diagnosticos?idCuentaAtencion=${idCuentaAtencion}`);
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/sis/diagnosticos?idCuentaAtencion=${idCuentaAtencion}`,
+    );
   }
 
   medicamentosFua(idCuentaAtencion: number): Promise<IFilaBackend[]> {
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/medicamentos?idCuentaAtencion=${idCuentaAtencion}`);
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/sis/medicamentos?idCuentaAtencion=${idCuentaAtencion}`,
+    );
   }
 
   procedimientosFua(idCuentaAtencion: number): Promise<IFilaBackend[]> {
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/procedimientos?idCuentaAtencion=${idCuentaAtencion}`);
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/sis/procedimientos?idCuentaAtencion=${idCuentaAtencion}`,
+    );
   }
 
   consumoFua(idCuentaAtencion: number): Promise<IFilaBackend[]> {
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/sis/consumo?idCuentaAtencion=${idCuentaAtencion}`);
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/sis/consumo?idCuentaAtencion=${idCuentaAtencion}`,
+    );
   }
 
   medicosPorEspecialidad(idEspecialidad: number): Promise<IFilaBackend[]> {
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/triaje/medicos/${idEspecialidad}`);
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/triaje/medicos/${idEspecialidad}`,
+    );
   }
 
   listarTriajeConsulta(params: TriajeConsultaParams): Promise<IFilaBackend[]> {
     const query = new URLSearchParams({ fini: params.fini, ffin: params.ffin });
     if (params.filtro) query.append('filtro', params.filtro);
-    if (params.idServicio) query.append('idServicio', String(params.idServicio));
-    return this.apiClient.request<IFilaBackend[]>(`/api/v1/triaje/consulta?${query.toString()}`);
+    if (params.idServicio)
+      query.append('idServicio', String(params.idServicio));
+    return this.apiClient.request<IFilaBackend[]>(
+      `/api/v1/triaje/consulta?${query.toString()}`,
+    );
   }
 
-  registrarTriajeConsulta(payload: TriajeConsultaPayload): Promise<RespuestaSp> {
+  registrarTriajeConsulta(
+    payload: TriajeConsultaPayload,
+  ): Promise<RespuestaSp> {
     return this.apiClient.request<RespuestaSp>('/api/v1/triaje/consulta', {
       method: 'POST',
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
   }
 
-  obtenerTriajeConsultaPorAtencion(idAtencion: number): Promise<IFilaBackend | null> {
-    return this.apiClient.request<IFilaBackend | null>(`/api/v1/triaje/consulta/atencion/${idAtencion}`);
+  obtenerTriajeConsultaPorAtencion(
+    idAtencion: number,
+  ): Promise<IFilaBackend | null> {
+    return this.apiClient.request<IFilaBackend | null>(
+      `/api/v1/triaje/consulta/atencion/${idAtencion}`,
+    );
   }
 
-  actualizarEstadoTriajeConsulta(idTriaje: number, estado: string): Promise<{ ok: boolean }> {
-    return this.apiClient.request<{ ok: boolean }>(`/api/v1/triaje/consulta/${idTriaje}/estado`, {
-      method: 'PUT',
-      body: JSON.stringify({ estado })
-    });
+  actualizarEstadoTriajeConsulta(
+    idTriaje: number,
+    estado: string,
+  ): Promise<{ ok: boolean }> {
+    return this.apiClient.request<{ ok: boolean }>(
+      `/api/v1/triaje/consulta/${idTriaje}/estado`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ estado }),
+      },
+    );
   }
 }

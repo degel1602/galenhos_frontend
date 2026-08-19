@@ -1,14 +1,16 @@
 import { Component, Input } from '@angular/core';
 
-export type EtiquetaVariante = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'blue';
+export type EtiquetaVariante =
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'neutral'
+  | 'blue';
 
 @Component({
   selector: 'etiqueta',
-  template: `
-    <span class="inline-flex items-center gap-1.5 px-[11px] py-1 rounded-full text-xs font-semibold whitespace-nowrap" [class]="clases[variante] + ' ' + claseAdicional">
-      <ng-content></ng-content>
-    </span>
-  `
+  templateUrl: './etiqueta.html',
 })
 export class Etiqueta {
   @Input() variante: EtiquetaVariante = 'neutral';

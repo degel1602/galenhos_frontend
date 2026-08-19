@@ -1,7 +1,13 @@
-import { Component, ChangeDetectionStrategy, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  type OnDestroy,
+  type OnInit,
+} from '@angular/core';
+import { type FormGroup, ReactiveFormsModule } from '@angular/forms';
+import type { Subscription } from 'rxjs';
 
 import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
 
@@ -10,107 +16,21 @@ import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/e
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ErrorMensajeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div [formGroup]="form">
-      <h3 class="flex items-center gap-2 text-[13px] font-semibold text-teal-950 mb-5 pb-2 border-b border-slate-200">
-        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-        </svg>
-        Signos vitales
-      </h3>
-
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-5 gap-y-5">
-
-        <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
-          <label class="text-[10.5px] font-semibold text-slate-500">Presión arterial</label>
-          <div class="flex items-baseline">
-            <input type="text" formControlName="presionArterial" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="120/80">
-            <span class="text-[10.5px] text-slate-400 ml-1">mmHg</span>
-          </div>
-          <app-error-mensaje [control]="form.get('presionArterial')"></app-error-mensaje>
-        </div>
-
-        <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
-          <label class="text-[10.5px] font-semibold text-slate-500">Frec. cardíaca</label>
-          <div class="flex items-baseline">
-            <input type="number" formControlName="frecuenciaCardiaca" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="72">
-            <span class="text-[10.5px] text-slate-400 ml-1">lpm</span>
-          </div>
-          <app-error-mensaje [control]="form.get('frecuenciaCardiaca')"></app-error-mensaje>
-        </div>
-
-        <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
-          <label class="text-[10.5px] font-semibold text-slate-500">Frec. respiratoria</label>
-          <div class="flex items-baseline">
-            <input type="number" formControlName="frecuenciaRespiratoria" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="16">
-            <span class="text-[10.5px] text-slate-400 ml-1">rpm</span>
-          </div>
-          <app-error-mensaje [control]="form.get('frecuenciaRespiratoria')"></app-error-mensaje>
-        </div>
-
-        <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
-          <label class="text-[10.5px] font-semibold text-slate-500">Temperatura</label>
-          <div class="flex items-baseline">
-            <input type="number" step="0.1" formControlName="temperatura" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="36.5">
-            <span class="text-[10.5px] text-slate-400 ml-1">°C</span>
-          </div>
-          <app-error-mensaje [control]="form.get('temperatura')"></app-error-mensaje>
-        </div>
-
-        <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
-          <label class="text-[10.5px] font-semibold text-slate-500">Saturación O₂</label>
-          <div class="flex items-baseline">
-            <input type="number" formControlName="saturacionOxigeno" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="98">
-            <span class="text-[10.5px] text-slate-400 ml-1">%</span>
-          </div>
-          <app-error-mensaje [control]="form.get('saturacionOxigeno')"></app-error-mensaje>
-        </div>
-
-        <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
-          <label class="text-[10.5px] font-semibold text-slate-500">Peso</label>
-          <div class="flex items-baseline">
-            <input type="number" step="0.1" formControlName="peso" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="70">
-            <span class="text-[10.5px] text-slate-400 ml-1">kg</span>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
-          <label class="text-[10.5px] font-semibold text-slate-500">Talla</label>
-          <div class="flex items-baseline">
-            <input type="number" step="0.01" formControlName="talla" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="1.70">
-            <span class="text-[10.5px] text-slate-400 ml-1">m</span>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 cursor-not-allowed">
-          <label class="text-[10.5px] font-semibold text-slate-400">IMC</label>
-          <div class="flex items-baseline">
-            <input type="text" readonly formControlName="imc" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-slate-500 w-full focus:ring-0 cursor-not-allowed" placeholder="—">
-            <span class="text-[10.5px] text-slate-400 ml-1">kg/m²</span>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-1 border-b border-slate-200 pb-2 transition-colors focus-within:border-teal-600">
-          <label class="text-[10.5px] font-semibold text-slate-500">Glucemia</label>
-          <div class="flex items-baseline">
-            <input type="number" formControlName="glucemia" class="bg-transparent border-none p-0 m-0 font-mono text-[16px] font-medium text-teal-900 w-full focus:ring-0" placeholder="90">
-            <span class="text-[10.5px] text-slate-400 ml-1">mg/dL</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  `
+  templateUrl: './signos-vitales.html',
 })
 export class SignosVitalesComponent implements OnInit, OnDestroy {
-  @Input({required: true}) form!: FormGroup;
+  @Input({ required: true }) form!: FormGroup;
   private sub?: Subscription;
 
   ngOnInit() {
-    this.sub = this.form.valueChanges.subscribe(val => {
+    this.sub = this.form.valueChanges.subscribe((val) => {
       const p = val.peso;
       const t = val.talla;
       if (p && t && t > 0) {
-        this.form.patchValue({ imc: (p / (t * t)).toFixed(2) }, { emitEvent: false });
+        this.form.patchValue(
+          { imc: (p / (t * t)).toFixed(2) },
+          { emitEvent: false },
+        );
       } else {
         this.form.patchValue({ imc: '—' }, { emitEvent: false });
       }

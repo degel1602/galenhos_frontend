@@ -1,40 +1,20 @@
-import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  inject,
+  type OnDestroy,
+  type OnInit,
+} from '@angular/core';
 
 @Component({
   selector: 'app-typewriter-text',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div
-      role="text"
-      [attr.aria-label]="prefix + ' ' + currentText"
-      [ngStyle]="getContainerStyles()"
-      class="typewriter-container"
-    >
-      @if (prefix) {
-        <span [style.color]="prefixColor">{{ prefix }}</span>
-      }
-
-      <span aria-hidden="true" [style.color]="color" class="relative">
-        {{ displayed }}
-        <span
-          aria-hidden="true"
-          class="cursor-blink"
-          [style.opacity]="cursorOn ? 1 : 0"
-          [ngStyle]="getCursorStyles()"
-        ></span>
-      </span>
-
-      <span
-        aria-live="polite"
-        class="sr-only"
-      >
-        {{ prefix }} {{ displayed }}
-      </span>
-    </div>
-  `,
-  styles: [`
+  templateUrl: './typewriter-text.component.html',
+  styles: [
+    `
     .typewriter-container {
       width: 100%;
       height: 100%;
@@ -60,7 +40,8 @@ import { CommonModule } from '@angular/common';
       white-space: nowrap;
       border: 0;
     }
-  `]
+  `,
+  ],
 })
 export class TypewriterTextComponent implements OnInit, OnDestroy {
   @Input() prefix = '';
@@ -74,7 +55,7 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
   @Input() deletingSpeed = 32;
   @Input() typingSpeed = 55;
   @Input() holdDuration = 1800;
-  
+
   @Input() fontFamily = 'Inter, system-ui, sans-serif';
   @Input() fontWeight: string | number = 700;
   @Input() fontSize = '75px';
@@ -87,8 +68,8 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
   phase: 'typing' | 'holding' | 'deleting' = 'typing';
   cursorOn = true;
 
-  private timer: any;
-  private cursorInterval: any;
+  private timer: ReturnType<typeof setTimeout> | undefined;
+  private cursorInterval: ReturnType<typeof setInterval> | undefined;
 
   get currentText(): string {
     return this.texts[this.textIndex] || '';
@@ -98,7 +79,7 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
     return this.currentText.slice(0, this.charIndex);
   }
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.startCursorBlink();
@@ -123,10 +104,10 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
 
   getCursorStyles() {
     return {
-      width: this.cursorWidth + 'px',
-      height: this.cursorHeight + 'px',
+      width: `${this.cursorWidth}px`,
+      height: `${this.cursorHeight}px`,
       backgroundColor: this.cursorColor,
-      border: '1.5px solid ' + this.cursorBorderColor,
+      border: `1.5px solid ${this.cursorBorderColor}`,
     };
   }
 
@@ -135,24 +116,14 @@ export class TypewriterTextComponent implements OnInit, OnDestroy {
       if (this.phase === 'holding') {
         this.cursorOn = !this.cursorOn;
         this.cdr.markForCheck();
-      } else {
-        if (!this.cursorOn) {
-          this.cursorOn = true;
-          this.cdr.markForCheck();
-        }
+      } else if (!this.cursorOn) {
+        this.cursorOn = true;
+        this.cdr.markForCheck();
       }
     }, 530);
   }
 
   private scheduleNextTick() {
-    // Manejo de animaciones seguras para accesibilidad
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      this.charIndex = this.currentText.length;
-      this.phase = 'holding';
-      this.cdr.markForCheck();
-      return;
-    }
-
     if (this.phase === 'typing') {
       if (this.charIndex < this.currentText.length) {
         this.timer = setTimeout(() => {

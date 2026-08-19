@@ -23,7 +23,7 @@
               @if (getTemplate(col.campo)) {
                 <ng-container *ngTemplateOutlet="getTemplate(col.campo)!; context: { $implicit: item, index: $index }"></ng-container>
               } @else {
-                <span style="color: #54617f;">{{ item[col.campo] || '—' }}</span>
+                <span style="color: #54617f;">{{ $any(item)[col.campo] || '—' }}</span>
               }
             </td>
           }
