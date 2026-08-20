@@ -1,10 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectorRef,
-  Component,
-  inject,
-  type OnInit,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, inject, type OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MaestrosApiService } from '../../../../../../compartido/api/maestros.api.service';
 import { ApiRequestError } from '../../../../../../compartido/api-client/api-client.service';
@@ -13,10 +8,7 @@ import {
   type ColumnaTabla,
   TablaComponent,
 } from '../../../../../../compartido/componentes/tabla/tabla.component';
-import type {
-  ICatalogoNombre,
-  IFilaBackend,
-} from '../../../../../../compartido/tipos/api-tipos';
+import type { ICatalogoNombre, IFilaBackend } from '../../../../../../compartido/tipos/api-tipos';
 import { AuthService } from '../../../../../auth/aplicacion/auth.service';
 import {
   type RegistroTriajePayload,
@@ -24,6 +16,7 @@ import {
 } from '../../../salida/http/triaje.api.service';
 import { RegistroTriajeModal } from '../componentes/registro-triaje-modal/registro-triaje-modal';
 import { ReporteTriajeComponent } from '../componentes/reporte-triaje/reporte-triaje.component';
+import { FirmaMasivaModal } from '../componentes/firma-masiva/firma-masiva-modal';
 
 interface FormEvaluacion {
   motivo: string;
@@ -63,10 +56,7 @@ function formEvaluacionVacio(): FormEvaluacion {
   };
 }
 
-function campo(
-  item: IFilaBackend | null | undefined,
-  claves: string[],
-): string {
+function campo(item: IFilaBackend | null | undefined, claves: string[]): string {
   if (!item) return '';
   for (const k of claves) {
     const v = item[k];
@@ -107,6 +97,7 @@ const SI_NO = [
     CommonModule,
     RegistroTriajeModal,
     ReporteTriajeComponent,
+    FirmaMasivaModal,
     TablaComponent,
     ColumnaTemplateDirective,
   ],
@@ -140,6 +131,7 @@ export class TriajeComponent implements OnInit {
   reporteTriajeId: number | null = null;
 
   columnasTabla: ColumnaTabla[] = [
+    { campo: 'seleccionCustom', cabecera: '', alineacion: 'center', ancho: '44px' },
     { campo: 'idTriajeCustom', cabecera: 'N.º Triaje' },
     { campo: 'documentoCustom', cabecera: 'Documento' },
     { campo: 'pacienteCustom', cabecera: 'Paciente' },
@@ -150,6 +142,10 @@ export class TriajeComponent implements OnInit {
     { campo: 'estadoCustom', cabecera: 'Estado' },
     { campo: 'accionCustom', cabecera: 'Reporte', alineacion: 'right' },
   ];
+
+  modalFirma = false;
+  firmaIds: number[] = [];
+  seleccionFirma = new Set<number>();
 
   modalReporte = false;
   reporte: IFilaBackend[] = [];
@@ -183,12 +179,7 @@ export class TriajeComponent implements OnInit {
     this.triajesBuscados = true;
     try {
       const derivado = this.servicioFiltro || '-100';
-      const items = await this.triajeApi.listar(
-        this.fechaInicio,
-        this.fechaFin,
-        derivado,
-        '-100',
-      );
+      const items = await this.triajeApi.listar(this.fechaInicio, this.fechaFin, derivado, '-100');
       this.pacientes = Array.isArray(items) ? items : [];
     } catch (error: unknown) {
       this.error =
@@ -217,6 +208,51 @@ export class TriajeComponent implements OnInit {
       this.errorReporte = '';
       this.generarReporte();
     }
+  }
+
+  toggleSeleccionFirma(idTriaje: number) {
+    if (this.seleccionFirma.has(idTriaje)) {
+      this.seleccionFirma.delete(idTriaje);
+    } else {
+      this.seleccionFirma.add(idTriaje);
+    }
+    this.cdr.detectChanges();
+  }
+
+  seleccionarTodosVisibles() {
+    for (const p of this.pacientes) {
+      const id = this.idTriaje(p);
+      if (id) this.seleccionFirma.add(id);
+    }
+    this.cdr.detectChanges();
+  }
+
+  limpiarSeleccionFirma() {
+    this.seleccionFirma.clear();
+    this.cdr.detectChanges();
+  }
+
+  abrirFirmaMasiva() {
+    const ids = Array.from(this.seleccionFirma).sort((a, b) => a - b);
+    if (ids.length === 0) return;
+    this.firmaIds = ids;
+    this.modalFirma = true;
+    this.limpiarSeleccionFirma();
+  }
+
+  cerrarFirmaMasiva() {
+    this.modalFirma = false;
+    this.firmaIds = [];
+    this.limpiarSeleccionFirma();
+    this.cargarLista();
+  }
+
+  onFirmaMasivaCompletada(resumen: { firmados: number; fallidos: number }) {
+    this.mensajeExito =
+      resumen.fallidos > 0
+        ? `Se firmaron ${resumen.firmados} documento(s). ${resumen.fallidos} no se pudieron firmar.`
+        : `Se firmaron los ${resumen.firmados} documento(s) correctamente.`;
+    setTimeout(() => (this.mensajeExito = ''), 6000);
   }
 
   cerrarReporte() {
@@ -338,9 +374,7 @@ export class TriajeComponent implements OnInit {
   }
 
   abrirEvaluacion(paciente: IFilaBackend) {
-    const ev = (paciente.evaluacion ?? undefined) as
-      | Record<string, unknown>
-      | undefined;
+    const ev = (paciente.evaluacion ?? undefined) as Record<string, unknown> | undefined;
     const texto = (v: unknown): string => {
       if (v === null || v === undefined) return '';
       if (typeof v === 'string') return v;
@@ -362,9 +396,7 @@ export class TriajeComponent implements OnInit {
           escalaDolor: texto(ev.escalaDolor),
           escalaGlasgow: texto(ev.escalaGlasgow),
           tiempoEvolucionCantidad: texto(ev.tiempoEvolucionCantidad),
-          tiempoEvolucionCantidadUnidad: texto(
-            ev.tiempoEvolucionCantidadUnidad,
-          ),
+          tiempoEvolucionCantidadUnidad: texto(ev.tiempoEvolucionCantidadUnidad),
           idServicio: texto(ev.idServicio),
           idTipoPrioridad: texto(ev.idTipoPrioridad),
         }
@@ -378,9 +410,7 @@ export class TriajeComponent implements OnInit {
 
   async guardarEvaluacion() {
     const f = this.formEvaluacion;
-    const idTriaje = Number(
-      campo(this.pacienteEvaluar, ['IdTriaje', 'idTriaje', 'IDTriaje']),
-    );
+    const idTriaje = Number(campo(this.pacienteEvaluar, ['IdTriaje', 'idTriaje', 'IDTriaje']));
     if (!idTriaje) {
       this.errorEvaluacion = 'El registro no tiene un id de triaje válido.';
       return;
@@ -395,23 +425,16 @@ export class TriajeComponent implements OnInit {
       !f.temperatura.trim() ||
       !f.saturacion.trim()
     ) {
-      this.errorEvaluacion =
-        'Complete el motivo de consulta y todos los signos vitales.';
+      this.errorEvaluacion = 'Complete el motivo de consulta y todos los signos vitales.';
       return;
     }
     if (!/^\d{2,3}\/\d{2,3}$/.test(presionArterial)) {
-      this.errorEvaluacion =
-        'La presión arterial debe tener el formato 120/80.';
+      this.errorEvaluacion = 'La presión arterial debe tener el formato 120/80.';
       return;
     }
     this.guardandoEvaluacion = true;
     this.errorEvaluacion = '';
-    const payload = this.construirPayloadEvaluacion(
-      idTriaje,
-      f,
-      motivo,
-      presionArterial,
-    );
+    const payload = this.construirPayloadEvaluacion(idTriaje, f, motivo, presionArterial);
 
     try {
       await this.triajeApi.registrar(payload);
@@ -421,24 +444,18 @@ export class TriajeComponent implements OnInit {
       this.cargarLista();
     } catch (error: unknown) {
       this.errorEvaluacion =
-        error instanceof ApiRequestError
-          ? error.message
-          : 'No se pudo guardar la evaluación.';
+        error instanceof ApiRequestError ? error.message : 'No se pudo guardar la evaluación.';
     } finally {
       this.guardandoEvaluacion = false;
       this.cdr.detectChanges();
     }
   }
 
-  private asignarValoresNumericos(
-    payload: Record<string, unknown>,
-    f: FormEvaluacion,
-  ) {
+  private asignarValoresNumericos(payload: Record<string, unknown>, f: FormEvaluacion) {
     const parse = (v: string) => Number(v.replace(',', '.'));
     const set = (key: string, v: string, minVal?: number) => {
       const num = parse(v);
-      if (!Number.isNaN(num) && (minVal === undefined || num > minVal))
-        payload[key] = num;
+      if (!Number.isNaN(num) && (minVal === undefined || num > minVal)) payload[key] = num;
     };
 
     set('frecCardiaca', f.frecCardiaca);
@@ -467,10 +484,7 @@ export class TriajeComponent implements OnInit {
       presionArterial,
     };
 
-    this.asignarValoresNumericos(
-      payload as unknown as Record<string, unknown>,
-      f,
-    );
+    this.asignarValoresNumericos(payload as unknown as Record<string, unknown>, f);
 
     if (payload.peso && payload.talla) {
       const imc = payload.peso / (payload.talla / 100) ** 2;
@@ -493,12 +507,7 @@ export class TriajeComponent implements OnInit {
   }
 
   documento(item: IFilaBackend): string {
-    return campo(item, [
-      'NroDocumento',
-      'nroDocumento',
-      'Documento',
-      'documento',
-    ]);
+    return campo(item, ['NroDocumento', 'nroDocumento', 'Documento', 'documento']);
   }
 
   tipoDocumento(item: IFilaBackend): string {
@@ -523,13 +532,7 @@ export class TriajeComponent implements OnInit {
     const partes = [
       campo(item, ['ApellidoPaterno', 'apellidoPaterno', 'Paterno', 'paterno']),
       campo(item, ['ApellidoMaterno', 'apellidoMaterno', 'Materno', 'materno']),
-      campo(item, [
-        'PrimerNombre',
-        'primerNombre',
-        'PrimerNmobre',
-        'Nombres',
-        'nombres',
-      ]),
+      campo(item, ['PrimerNombre', 'primerNombre', 'PrimerNmobre', 'Nombres', 'nombres']),
       campo(item, ['SegundoNombre', 'segundoNombre']),
     ].filter(Boolean);
     return partes.join(' ') || '—';
@@ -592,13 +595,7 @@ export class TriajeComponent implements OnInit {
   }
 
   estadoTriaje(item: IFilaBackend): string {
-    const estado = campo(item, [
-      'Estado',
-      'estado',
-      'IdEstado',
-      'idEstado',
-      'NombreEstado',
-    ]);
+    const estado = campo(item, ['Estado', 'estado', 'IdEstado', 'idEstado', 'NombreEstado']);
     const vitals = campo(item, ['PresionArterial', 'presionArterial', 'PA']);
     return estado || vitals ? 'triado' : 'sin-triaje';
   }

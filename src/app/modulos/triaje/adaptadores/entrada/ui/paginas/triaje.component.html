@@ -1,125 +1,488 @@
-<div class="gp-in" style="display: flex; flex-direction: column; gap: 18px;">
-  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;">
-    <div>
-      
-    </div>
+<div class="gp-in" style="display: flex; flex-direction: column; gap: 18px">
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px">
+    <div></div>
     @if (authService.hasPermission('agregar')) {
-      <button type="button" (click)="abrirModalRegistro()" 
-              style="flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 11px 20px; background: #0d9488; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;">
-        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+      <button
+        type="button"
+        (click)="abrirModalRegistro()"
+        style="
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 11px 20px;
+          background: #0d9488;
+          color: #fff;
+          border: none;
+          border-radius: 11px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+        "
+      >
+        <svg
+          aria-hidden="true"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+        >
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
         Registrar Triaje
       </button>
     }
   </div>
 
-  <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
-    <div style="margin-bottom: 16px;">
-      <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #07153a;">Triajes registrados</h2>
+  <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px">
+    <div
+      style="
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      "
+    >
+      <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #07153a">
+        Triajes registrados
+      </h2>
+      @if (authService.hasPermission('imprimir')) {
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+          @if (seleccionFirma.size === 0) {
+            <button
+              type="button"
+              (click)="seleccionarTodosVisibles()"
+              style="
+                padding: 8px 14px;
+                background: #fff;
+                border: 1px solid #e0e6f1;
+                border-radius: 9px;
+                font-size: 13px;
+                font-weight: 600;
+                color: #54617f;
+                cursor: pointer;
+              "
+            >
+              Seleccionar todos
+            </button>
+          } @else {
+            <span style="font-size: 13px; font-weight: 600; color: #07153a"
+              >{{ seleccionFirma.size }} seleccionado(s)</span
+            >
+            <button
+              type="button"
+              (click)="limpiarSeleccionFirma()"
+              style="
+                padding: 8px 14px;
+                background: #fff;
+                border: 1px solid #e0e6f1;
+                border-radius: 9px;
+                font-size: 13px;
+                font-weight: 600;
+                color: #54617f;
+                cursor: pointer;
+              "
+            >
+              Limpiar
+            </button>
+            <button
+              type="button"
+              (click)="abrirFirmaMasiva()"
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 9px 16px;
+                background: #263c7a;
+                color: #fff;
+                border: none;
+                border-radius: 9px;
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                white-space: nowrap;
+              "
+            >
+              <svg
+                aria-hidden="true"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+              >
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+              Firmar por lote
+            </button>
+          }
+        </div>
+      }
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 16px;">
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 12px;
+        align-items: end;
+        margin-bottom: 16px;
+      "
+    >
       <div>
-        <label for="fecha-inicio" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Fecha inicio</label>
-        <input id="fecha-inicio" type="date" [(ngModel)]="fechaInicio"
-               style="width: 100%; padding: 9px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        <label
+          for="fecha-inicio"
+          style="
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #54617f;
+            margin-bottom: 6px;
+          "
+          >Fecha inicio</label
+        >
+        <input
+          id="fecha-inicio"
+          type="date"
+          [(ngModel)]="fechaInicio"
+          style="
+            width: 100%;
+            padding: 9px 14px;
+            border: 1px solid #d5dceb;
+            border-radius: 11px;
+            font-size: 14px;
+            background: #f8fafc;
+            color: #07153a;
+          "
+        />
       </div>
       <div>
-        <label for="fecha-fin" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Fecha fin</label>
-        <input id="fecha-fin" type="date" [(ngModel)]="fechaFin"
-               style="width: 100%; padding: 9px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;" />
+        <label
+          for="fecha-fin"
+          style="
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #54617f;
+            margin-bottom: 6px;
+          "
+          >Fecha fin</label
+        >
+        <input
+          id="fecha-fin"
+          type="date"
+          [(ngModel)]="fechaFin"
+          style="
+            width: 100%;
+            padding: 9px 14px;
+            border: 1px solid #d5dceb;
+            border-radius: 11px;
+            font-size: 14px;
+            background: #f8fafc;
+            color: #07153a;
+          "
+        />
       </div>
       <div>
-        <label for="servicio-derivado" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Servicio derivado</label>
-        <select id="servicio-derivado" [(ngModel)]="servicioFiltro"
-                style="width: 100%; padding: 9px 14px; border: 1px solid #d5dceb; border-radius: 11px; font-size: 14px; background: #f8fafc; color: #07153a;">
+        <label
+          for="servicio-derivado"
+          style="
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #54617f;
+            margin-bottom: 6px;
+          "
+          >Servicio derivado</label
+        >
+        <select
+          id="servicio-derivado"
+          [(ngModel)]="servicioFiltro"
+          style="
+            width: 100%;
+            padding: 9px 14px;
+            border: 1px solid #d5dceb;
+            border-radius: 11px;
+            font-size: 14px;
+            background: #f8fafc;
+            color: #07153a;
+          "
+        >
           <option value="">Todos</option>
           @for (s of serviciosFiltro; track s.id) {
             <option [value]="s.id">{{ s.nombre }}</option>
           }
         </select>
       </div>
-      <button type="button" (click)="cargarLista()" [disabled]="cargando"
-              style="display: flex; align-items: center; gap: 7px; height: 42px; padding: 0 20px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;"
-              [style.opacity]="cargando ? 0.7 : 1">
+      <button
+        type="button"
+        (click)="cargarLista()"
+        [disabled]="cargando"
+        style="
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          height: 42px;
+          padding: 0 20px;
+          background: #263c7a;
+          color: #fff;
+          border: none;
+          border-radius: 11px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+        "
+        [style.opacity]="cargando ? 0.7 : 1"
+      >
         @if (cargando) {
-          <svg aria-hidden="true" style="animation: spin 1s linear infinite;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+          <svg
+            aria-hidden="true"
+            style="animation: spin 1s linear infinite"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+          >
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+          </svg>
           <span>Buscando...</span>
         } @else {
-          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+          <svg
+            aria-hidden="true"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" />
+          </svg>
           <span>Buscar</span>
         }
       </button>
     </div>
 
     @if (error) {
-      <div style="margin-bottom: 12px; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+      <div
+        style="
+          margin-bottom: 12px;
+          background: #fee2e2;
+          border: 1px solid #fca5a5;
+          color: #b91c1c;
+          font-size: 13px;
+          font-weight: 500;
+          padding: 10px 13px;
+          border-radius: 11px;
+        "
+      >
         {{ error }}
       </div>
     }
 
     @if (mensajeExito) {
-      <div style="margin-bottom: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">
+      <div
+        style="
+          margin-bottom: 12px;
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          color: #166534;
+          font-size: 13px;
+          font-weight: 500;
+          padding: 10px 13px;
+          border-radius: 11px;
+        "
+      >
         {{ mensajeExito }}
       </div>
     }
 
-    <div style="overflow-x: auto;">
-      <app-tabla [columnas]="columnasTabla" [datos]="pacientes" [cargando]="cargando" mensajeCargando="Buscando..."
-                 [mostrarFiltroRequerido]="!triajesBuscados" mensajeFiltroRequerido="Realice una búsqueda para ver los triajes registrados."
-                 mensajeVacio="No se encontraron triajes para los filtros seleccionados.">
+    <div style="overflow-x: auto">
+      <app-tabla
+        [columnas]="columnasTabla"
+        [datos]="pacientes"
+        [cargando]="cargando"
+        mensajeCargando="Buscando..."
+        [mostrarFiltroRequerido]="!triajesBuscados"
+        mensajeFiltroRequerido="Realice una búsqueda para ver los triajes registrados."
+        mensajeVacio="No se encontraron triajes para los filtros seleccionados."
+      >
+        <ng-template appColumnaTemplate="seleccionCustom" let-p>
+          @if (idTriaje(p)) {
+            <input
+              type="checkbox"
+              [checked]="seleccionFirma.has(idTriaje(p))"
+              (change)="toggleSeleccionFirma(idTriaje(p))"
+              style="width: 16px; height: 16px; accent-color: #263c7a; cursor: pointer"
+            />
+          }
+        </ng-template>
 
         <ng-template appColumnaTemplate="idTriajeCustom" let-p>
-          <span style="font-weight: 600; color: #263c7a;">{{ idTriaje(p) || '—' }}</span>
+          <span style="font-weight: 600; color: #263c7a">{{ idTriaje(p) || '—' }}</span>
         </ng-template>
 
         <ng-template appColumnaTemplate="documentoCustom" let-p>
-          <span style="color: #54617f;">{{ documento(p) || '—' }}</span>
+          <span style="color: #54617f">{{ documento(p) || '—' }}</span>
         </ng-template>
 
         <ng-template appColumnaTemplate="pacienteCustom" let-p>
-          <span style="font-weight: 600; color: #07153a;">{{ nombrePaciente(p) }}</span>
+          <span style="font-weight: 600; color: #07153a">{{ nombrePaciente(p) }}</span>
         </ng-template>
 
         <ng-template appColumnaTemplate="sexoCustom" let-p>
-          @if (sexo(p) === '1' || sexo(p)?.toUpperCase() === 'MASCULINO' || sexo(p)?.toUpperCase() === 'VARÓN' || sexo(p)?.toUpperCase() === 'VARON' || sexo(p)?.toUpperCase() === 'M' || sexo(p)?.toUpperCase() === 'V') {
-            <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Varón" style="margin: 0 auto;"><circle cx="10" cy="14" r="5"></circle><path d="M13.5 10.5 21 3"></path><path d="M16 3h5v5"></path></svg>
-          } @else if (sexo(p) === '2' || sexo(p)?.toUpperCase() === 'FEMENINO' || sexo(p)?.toUpperCase() === 'MUJER' || sexo(p)?.toUpperCase() === 'F') {
-            <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Mujer" style="margin: 0 auto;"><circle cx="12" cy="10" r="5"></circle><path d="M12 15v7"></path><path d="M9 19h6"></path></svg>
+          @if (
+            sexo(p) === '1' ||
+            sexo(p)?.toUpperCase() === 'MASCULINO' ||
+            sexo(p)?.toUpperCase() === 'VARÓN' ||
+            sexo(p)?.toUpperCase() === 'VARON' ||
+            sexo(p)?.toUpperCase() === 'M' ||
+            sexo(p)?.toUpperCase() === 'V'
+          ) {
+            <svg
+              aria-hidden="true"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#2563eb"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              title="Varón"
+              style="margin: 0 auto"
+            >
+              <circle cx="10" cy="14" r="5"></circle>
+              <path d="M13.5 10.5 21 3"></path>
+              <path d="M16 3h5v5"></path>
+            </svg>
+          } @else if (
+            sexo(p) === '2' ||
+            sexo(p)?.toUpperCase() === 'FEMENINO' ||
+            sexo(p)?.toUpperCase() === 'MUJER' ||
+            sexo(p)?.toUpperCase() === 'F'
+          ) {
+            <svg
+              aria-hidden="true"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#ec4899"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              title="Mujer"
+              style="margin: 0 auto"
+            >
+              <circle cx="12" cy="10" r="5"></circle>
+              <path d="M12 15v7"></path>
+              <path d="M9 19h6"></path>
+            </svg>
           } @else {
-            <span style="color: #94a0bd; font-weight: bold; font-size: 16px;">—</span>
+            <span style="color: #94a0bd; font-weight: bold; font-size: 16px">—</span>
           }
         </ng-template>
 
         <ng-template appColumnaTemplate="fechaCustom" let-p>
-          <span style="color: #54617f;">{{ fechaRegistro(p) }}</span>
+          <span style="color: #54617f">{{ fechaRegistro(p) }}</span>
         </ng-template>
 
         <ng-template appColumnaTemplate="servicioCustom" let-p>
-          <span style="color: #54617f;">{{ campo(p, ['Servicio', 'servicio', 'NombreServicio']) || 'NO ASIGNADO' }}</span>
+          <span style="color: #54617f">{{
+            campo(p, ['Servicio', 'servicio', 'NombreServicio']) || 'NO ASIGNADO'
+          }}</span>
         </ng-template>
 
         <ng-template appColumnaTemplate="gravedadCustom" let-p>
-          <span style="color: #54617f;">{{ campo(p, ['TipoGravedad', 'tipoGravedad', 'Prioridad', 'prioridad']) || '—' }}</span>
+          <span style="color: #54617f">{{
+            campo(p, ['TipoGravedad', 'tipoGravedad', 'Prioridad', 'prioridad']) || '—'
+          }}</span>
         </ng-template>
 
         <ng-template appColumnaTemplate="estadoCustom" let-p>
           @if (estadoTriaje(p) === 'triado') {
-            <span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7;">Activo</span>
+            <span
+              style="
+                display: inline-flex;
+                align-items: center;
+                padding: 2px 10px;
+                border-radius: 999px;
+                font-size: 11px;
+                font-weight: 600;
+                background: #ecfdf5;
+                color: #047857;
+                border: 1px solid #6ee7b7;
+              "
+              >Activo</span
+            >
           } @else {
-            <span style="display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #f8fafc; color: #54617f; border: 1px solid #e0e6f1;">Otro</span>
+            <span
+              style="
+                display: inline-flex;
+                align-items: center;
+                padding: 2px 10px;
+                border-radius: 999px;
+                font-size: 11px;
+                font-weight: 600;
+                background: #f8fafc;
+                color: #54617f;
+                border: 1px solid #e0e6f1;
+              "
+              >Otro</span
+            >
           }
         </ng-template>
 
         <ng-template appColumnaTemplate="accionCustom" let-p>
           @if (idTriaje(p)) {
-            <button type="button" (click)="abrirReporte(idTriaje(p))"
-                    style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #263c7a; color: #fff; border: none; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;">
-              <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8M16 17H8M10 9H8" /></svg>
+            <button
+              type="button"
+              (click)="abrirReporte(idTriaje(p))"
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 7px 14px;
+                background: #263c7a;
+                color: #fff;
+                border: none;
+                border-radius: 9px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                white-space: nowrap;
+              "
+            >
+              <svg
+                aria-hidden="true"
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6" />
+                <path d="M16 13H8M16 17H8M10 9H8" />
+              </svg>
               Reporte
             </button>
           }
         </ng-template>
-
       </app-tabla>
     </div>
   </div>
@@ -127,12 +490,30 @@
   <app-registro-triaje-modal
     [abierto]="modalRegistro"
     (alCerrar)="cerrarModalRegistro()"
-    (triajeIniciado)="onPacienteRegistrado()">
+    (triajeIniciado)="onPacienteRegistrado()"
+  >
   </app-registro-triaje-modal>
 
   @if (reporteTriajeId) {
-    <app-reporte-triaje [idTriaje]="reporteTriajeId" (alCerrar)="cerrarReporte()"></app-reporte-triaje>
+    <app-reporte-triaje
+      [idTriaje]="reporteTriajeId"
+      (alCerrar)="cerrarReporte()"
+    ></app-reporte-triaje>
+  }
+
+  @if (modalFirma) {
+    <app-firma-masiva-modal
+      [ids]="firmaIds"
+      (alCerrar)="cerrarFirmaMasiva()"
+      (firmaCompletada)="onFirmaMasivaCompletada($event)"
+    ></app-firma-masiva-modal>
   }
 </div>
 
-<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+<style>
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>

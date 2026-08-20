@@ -1,22 +1,17 @@
+import { __decorate } from "tslib";
 import { Injectable, signal } from '@angular/core';
-import { __decorate } from 'tslib';
-
 let BienvenidaService = class BienvenidaService {
-  mostrarOverlay = signal(false);
-  activar() {
-    this.mostrarOverlay.set(true);
-  }
-  desactivar() {
-    this.mostrarOverlay.set(false);
-  }
+    mostrarOverlay = signal(false);
+    activar() {
+        this.mostrarOverlay.set(true);
+    }
+    desactivar() {
+        this.mostrarOverlay.set(false);
+    }
 };
-BienvenidaService = __decorate(
-  [
+BienvenidaService = __decorate([
     Injectable({
-      providedIn: 'root',
-    }),
-  ],
-  BienvenidaService,
-);
-
+        providedIn: 'root',
+    })
+], BienvenidaService);
 export { BienvenidaService };
