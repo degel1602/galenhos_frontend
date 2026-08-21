@@ -1,78 +1,95 @@
 <div class="space-y-8">
 
   
-  <div>
-    <h3 class="flex items-center gap-2 text-[13px] font-semibold text-teal-950 mb-5 pb-2 border-b border-slate-200">
-      <svg aria-hidden="true" class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-      </svg>
-      Nueva Interconsulta
+  <div class="border border-green-500 rounded-md p-4">
+    <h3 class="text-[13px] font-bold text-green-600 mb-5 uppercase tracking-wide">
+      SOLICITUD DE INTERCONSULTAS :
     </h3>
 
-    <form [formGroup]="interconsultaForm" (ngSubmit)="solicitar()" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-
-      <div class="flex flex-col">
-        <label for="ic-especialidad" class="text-[11.5px] font-semibold text-slate-500 mb-1">Especialidad Destino</label>
-        <select id="ic-especialidad" formControlName="idEspecialidad"
-          (change)="onEspecialidadChange($event)"
-          class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none"
-          [class.border-red-300]="interconsultaForm.get('idEspecialidad')?.invalid && interconsultaForm.get('idEspecialidad')?.touched">
-          <option value="">Seleccione una especialidad...</option>
-          @for (esp of especialidades(); track esp.idEspecialidad) {
-            <option [value]="esp.idEspecialidad">{{ esp.nombre }}</option>
-          }
-        </select>
-        <app-error-mensaje [control]="interconsultaForm.get('idEspecialidad')"></app-error-mensaje>
+    <form [formGroup]="interconsultaForm" (ngSubmit)="solicitar()" class="flex flex-col gap-5 mb-2">
+      <!-- Info Header -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="text-[12px] text-green-600 font-semibold">
+          Médico Solicitante : <span class="font-normal">{{ authService.username() || 'RAMIREZ CALDERON CARLOS' }}</span>
+        </div>
+        <div class="text-[12px] text-green-600 font-semibold md:text-center">
+          Fecha: <span class="font-normal">{{ fechaActual | date:'dd/MM/yyyy' }}</span>
+        </div>
       </div>
 
-      <div class="flex flex-col">
-        <label for="ic-medico" class="text-[11.5px] font-semibold text-slate-500 mb-1">Médico Destino <span class="font-normal text-slate-400">(Opcional)</span></label>
-        <select id="ic-medico" formControlName="idMedicoDestino"
-          class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-1 focus:ring-teal-600 focus:outline-none"
-          [disabled]="!interconsultaForm.get('idEspecialidad')?.value || medicosCargando()">
-          <option value="">Cualquiera disponible...</option>
-          @for (med of medicos(); track med.idMedico) {
-            <option [value]="med.idMedico">{{ med.medico }}</option>
-          }
-        </select>
-        @if (interconsultaForm.get('idEspecialidad')?.value && !medicosCargando() && medicos().length === 0) {
-          <p class="text-slate-400 text-[11px] mt-0.5">Sin médicos registrados para esta especialidad.</p>
-        }
+      <!-- Selects -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+        <!-- Prioridad -->
+        <div class="flex flex-col">
+          <label for="ic-prioridad" class="text-[12px] font-bold text-green-600 mb-1">Prioridad:</label>
+          <select id="ic-prioridad" formControlName="prioridad"
+            class="w-full border border-slate-300 rounded-sm p-1.5 text-[12px] text-slate-800 focus:ring-1 focus:ring-green-500 focus:outline-none"
+            [class.border-red-300]="interconsultaForm.get('prioridad')?.invalid && interconsultaForm.get('prioridad')?.touched">
+            <option value="">--SELECCIONAR--</option>
+            <option value="NORMAL">NORMAL</option>
+            <option value="URGENTE">URGENTE</option>
+          </select>
+        </div>
+
+        <!-- Especialidad -->
+        <div class="flex flex-col">
+          <label for="ic-especialidad" class="text-[12px] font-bold text-green-600 mb-1">Especialidad:</label>
+          <select id="ic-especialidad" formControlName="idEspecialidad"
+            (change)="onEspecialidadChange($event)"
+            class="w-full border border-slate-300 rounded-sm p-1.5 text-[12px] text-slate-800 focus:ring-1 focus:ring-green-500 focus:outline-none"
+            [class.border-red-300]="interconsultaForm.get('idEspecialidad')?.invalid && interconsultaForm.get('idEspecialidad')?.touched">
+            <option value="">--SELECCIONAR--</option>
+            @for (esp of especialidades(); track esp.idEspecialidad) {
+              <option [value]="esp.idEspecialidad">{{ esp.nombre }}</option>
+            }
+          </select>
+        </div>
       </div>
 
-      <div class="flex flex-col md:col-span-2">
-        <label for="ic-motivo" class="text-[11.5px] font-semibold text-slate-500 mb-1">Motivo de Interconsulta</label>
-        <textarea id="ic-motivo" formControlName="motivo" rows="3"
-          class="w-full border border-slate-200 rounded-md p-2 text-[13.3px] bg-slate-50 text-slate-800 focus:ring-2 focus:ring-teal-600 focus:border-transparent outline-none resize-y"
-          [class.border-red-300]="interconsultaForm.get('motivo')?.invalid && interconsultaForm.get('motivo')?.touched"
-          placeholder="Describa la razón clínica para solicitar la interconsulta (mín. 10 caracteres)...">
-        </textarea>
-        <app-error-mensaje [control]="interconsultaForm.get('motivo')"></app-error-mensaje>
+      <!-- Motivo Checkboxes -->
+      <div class="flex flex-col mt-2">
+        <label class="text-[12px] font-bold text-green-600 mb-2">Motivo:</label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label for="chk-opinion" class="flex items-center gap-2 cursor-pointer">
+            <input id="chk-opinion" type="checkbox" formControlName="chkOpinion" class="w-4 h-4 text-green-600 rounded border-slate-300 focus:ring-green-500">
+            <span class="text-[12px] text-green-600">Opinion diagnosticos y sugerencias</span>
+          </label>
+          <label for="chk-manejo" class="flex items-center gap-2 cursor-pointer">
+            <input id="chk-manejo" type="checkbox" formControlName="chkManejo" class="w-4 h-4 text-green-600 rounded border-slate-300 focus:ring-green-500">
+            <span class="text-[12px] text-green-600">Manejo conjutno del paciente</span>
+          </label>
+          <label for="chk-transferencia" class="flex items-center gap-2 cursor-pointer">
+            <input id="chk-transferencia" type="checkbox" formControlName="chkTransferencia" class="w-4 h-4 text-green-600 rounded border-slate-300 focus:ring-green-500">
+            <span class="text-[12px] text-green-600">Transferencia del paciente</span>
+          </label>
+        </div>
+        
+        <div class="flex items-center gap-2 mt-3">
+          <label for="chk-otro" class="flex items-center gap-2 cursor-pointer whitespace-nowrap">
+            <input id="chk-otro" type="checkbox" formControlName="chkOtro" class="w-4 h-4 text-green-600 rounded border-slate-300 focus:ring-green-500">
+            <span class="text-[12px] text-green-600 uppercase">Otro</span>
+          </label>
+          @if (interconsultaForm.get('chkOtro')?.value) {
+            <label for="txt-otro" class="sr-only">Especifique otro motivo</label>
+            <input id="txt-otro" type="text" formControlName="motivoOtro" placeholder="Especifique..." 
+              class="border border-slate-300 rounded-sm px-2 py-1 text-[12px] focus:ring-1 focus:ring-green-500 focus:outline-none w-full max-w-sm">
+          }
+        </div>
       </div>
 
       @if (errorMessage()) {
-        <div class="md:col-span-2 flex items-center gap-2 bg-red-50 text-red-700 text-[12.5px] rounded-lg px-3 py-2">
-          <svg aria-hidden="true" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
+        <div class="mt-2 flex items-center gap-2 bg-red-50 text-red-700 text-[12.5px] rounded-lg px-3 py-2">
           {{ errorMessage() }}
         </div>
       }
 
-      <div class="md:col-span-2 flex justify-end">
+      <!-- Submit button -->
+      <div class="flex justify-end mt-4">
         @if (authService.hasPermission('agregar') || authService.hasPermission('modificar')) {
-          <button
-            id="btn-solicitar-interconsulta"
-            type="submit"
-            [disabled]="interconsultaForm.invalid || isSubmitting()"
-            class="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-1.5 px-5 rounded-md shadow-sm transition-all text-[13px] flex items-center gap-2">
+          <button type="submit" [disabled]="interconsultaForm.invalid || isSubmitting()"
+            class="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-1.5 px-6 rounded-md shadow-sm transition-all text-[13px] flex items-center gap-2">
             @if (isSubmitting()) {
-              <svg aria-hidden="true" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Solicitando...
+              <span class="animate-spin text-lg leading-none">⟳</span> Solicitando...
             } @else {
               Solicitar Interconsulta
             }

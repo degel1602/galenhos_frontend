@@ -1,0 +1,45 @@
+<div class="bg-white border border-slate-200 rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] overflow-hidden flex flex-col">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse whitespace-nowrap">
+      <thead class="bg-slate-50 border-b border-slate-200">
+        <tr>
+          @for (col of columnas; track col.nombre) {
+            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider"
+                [ngClass]="{
+                  'text-left': !col.alineacion || col.alineacion === 'left',
+                  'text-center': col.alineacion === 'center',
+                  'text-right': col.alineacion === 'right'
+                }">
+              {{ col.nombre }}
+            </th>
+          }
+        </tr>
+      </thead>
+      
+      <tbody class="divide-y divide-slate-100">
+        @if (data.length > 0) {
+          @for (item of data; track item) {
+            <tr class="hover:bg-slate-50/70 transition-colors group">
+              <ng-container *ngTemplateOutlet="rowTemplate; context: { $implicit: item }"></ng-container>
+            </tr>
+          }
+        } @else {
+          <tr>
+            <td [attr.colspan]="columnas.length" class="px-6 py-10 text-center text-slate-400 text-sm">
+              No hay datos disponibles para mostrar.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (totalRegistros > 0) {
+    <div class="px-6 py-4 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 bg-white">
+      <span class="text-sm font-medium text-slate-600">
+        Mostrando {{ data.length }} de {{ totalRegistros }} registros
+      </span>
+      <ng-content select="[paginacion]"></ng-content>
+    </div>
+  }
+</div>

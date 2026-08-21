@@ -11,7 +11,6 @@ import {
   type ColumnaTabla,
   TablaComponent,
 } from '../../../../../compartido/componentes/tabla/tabla.component';
-import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
 import { AuthService } from '../../../../auth/aplicacion/auth.service';
 import { EvolucionService } from '../../../servicios/evolucion.service';
 import {
@@ -27,7 +26,6 @@ import {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    ErrorMensajeComponent,
     TablaComponent,
     ColumnaTemplateDirective,
   ],
@@ -36,14 +34,21 @@ import {
 export class InterconsultasComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly interconsultaService = inject(InterconsultaService);
-  private readonly evolucionService = inject(EvolucionService);
+  public readonly evolucionService = inject(EvolucionService);
   public readonly authService = inject(AuthService);
 
   public readonly interconsultaForm: FormGroup = this.fb.group({
+    prioridad: ['', Validators.required],
     idEspecialidad: ['', Validators.required],
     idMedicoDestino: [''],
-    motivo: ['', [Validators.required, Validators.minLength(10)]],
+    chkOpinion: [false],
+    chkManejo: [false],
+    chkTransferencia: [false],
+    chkOtro: [false],
+    motivoOtro: [''],
   });
+
+  public readonly fechaActual = new Date();
 
   public readonly interconsultas = signal<Interconsulta[]>([]);
   public readonly isLoading = signal<boolean>(false);
@@ -126,18 +131,26 @@ export class InterconsultasComponent implements OnInit {
 
     this.isSubmitting.set(true);
 
-    const formData = this.interconsultaForm.value as {
-      idEspecialidad: string;
-      idMedicoDestino: string;
-      motivo: string;
-    };
+    const formData = this.interconsultaForm.value;
+    
+    // Build the "motivo" string from checkboxes
+    const motivosSeleccionados: string[] = [];
+    if (formData.chkOpinion) motivosSeleccionados.push('Opinion diagnosticos y sugerencias');
+    if (formData.chkManejo) motivosSeleccionados.push('Manejo conjunto del paciente');
+    if (formData.chkTransferencia) motivosSeleccionados.push('Transferencia del paciente');
+    if (formData.chkOtro && formData.motivoOtro) motivosSeleccionados.push(formData.motivoOtro);
+    
+    const motivoFinal = motivosSeleccionados.join(', ');
+
     const request: Interconsulta = {
       idAtencionOrigen: idAtencion,
       idEspecialidad: Number(formData.idEspecialidad),
       idMedicoDestino: formData.idMedicoDestino
         ? Number(formData.idMedicoDestino)
         : 0,
-      motivo: formData.motivo,
+      motivo: motivoFinal,
+      // TODO: Mandar Prioridad al backend cuando se actualice el struct
+      // prioridad: formData.prioridad 
     };
 
     const exito = await this.interconsultaService.crear(request);
@@ -145,9 +158,14 @@ export class InterconsultasComponent implements OnInit {
 
     if (exito) {
       this.interconsultaForm.reset({
+        prioridad: '',
         idEspecialidad: '',
         idMedicoDestino: '',
-        motivo: '',
+        chkOpinion: false,
+        chkManejo: false,
+        chkTransferencia: false,
+        chkOtro: false,
+        motivoOtro: '',
       });
       this.medicos.set([]);
       await this.cargarHistorial();

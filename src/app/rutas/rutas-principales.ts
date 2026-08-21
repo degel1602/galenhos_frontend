@@ -7,9 +7,9 @@ import { authGuard, unauthGuard } from '../modulos/auth/aplicacion/auth.guard';
 import { CitasComponent } from '../modulos/citas/adaptadores/entrada/ui/paginas/citas.component';
 import { ConfiguracionComponent } from '../modulos/configuracion/adaptadores/entrada/ui/paginas/configuracion.component';
 import { DashboardComponent } from '../modulos/dashboard/adaptadores/entrada/ui/paginas/dashboard.component';
-import { PacientesListaComponent } from '../modulos/pacientes/adaptadores/entrada/ui/paginas/pacientes-lista.component';
-import { TriajeComponent } from '../modulos/triaje/adaptadores/entrada/ui/paginas/triaje.component';
-import { TriajeConsultaComponent } from '../modulos/triaje/adaptadores/entrada/ui/paginas/triaje-consulta.component';
+import { PacientesListaComponent } from '../modulos/pacientes/adaptadores/entrada/ui/paginas/pacientes-lista/pacientes-lista.component';
+import { TriajeComponent } from '../modulos/triaje/adaptadores/entrada/ui/paginas/triaje/triaje.component';
+import { TriajeConsultaComponent } from '../modulos/triaje/adaptadores/entrada/ui/paginas/triaje-consulta/triaje-consulta.component';
 
 export const rutasPrincipales: Routes = [
   {

@@ -12,13 +12,20 @@
       <div class="flex items-center gap-[14px]">
         <div class="relative">
           <!-- Trigger -->
-          <div (click)="toggleMenu()" (keydown.enter)="toggleMenu()" class="flex items-center gap-[9px] bg-[#f3f5fb] border border-[#e6eaf5] px-3.5 py-[7px] rounded-xl cursor-pointer hover:bg-[#e9ecf5] transition-colors">
-            <span class="w-2 h-2 rounded-full bg-[#059669]"></span>
-            <span class="text-[13px] font-semibold text-[#07153a]">{{ username || 'Operador' }}</span>
-            <svg aria-hidden="true" class="w-3.5 h-3.5 text-[#94a0bd] transition-transform" [class.rotate-180]="isMenuOpen()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </div>
+          <button type="button" (click)="toggleMenu()" class="group flex items-center gap-3 p-1.5 pr-4 rounded-full transition-all duration-200 cursor-pointer bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 hover:shadow-sm">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#07153a] to-[#263c7a] text-white flex items-center justify-center font-bold text-[14px] shadow-inner shrink-0 relative overflow-hidden">
+              <span class="relative z-10">{{ (username || 'O')[0] | uppercase }}</span>
+            </div>
+            <div class="flex flex-col items-start hidden sm:flex">
+              <span class="text-[13.5px] font-bold text-[#07153a] leading-tight">{{ username || 'Operador' }}</span>
+              <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mt-0.5">Médico Tratante</span>
+            </div>
+            <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center ml-1 group-hover:bg-slate-200 transition-colors">
+              <svg aria-hidden="true" class="w-3.5 h-3.5 text-slate-600 transition-transform duration-300" [class.rotate-180]="isMenuOpen()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </button>
           
           <!-- Dropdown Menu -->
           <div class="absolute right-0 top-[calc(100%+8px)] w-48 bg-white border border-[#e3e8f2] rounded-xl shadow-[0_10px_30px_rgba(7,21,58,0.08)] transition-all duration-200 origin-top-right z-50 overflow-hidden"

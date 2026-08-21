@@ -23,15 +23,14 @@ import {
   type SintomaSeleccionado,
   SintomaService,
 } from '../../servicios/sintoma.service';
+import { AntecedentesComponent } from './antecedentes/antecedentes';
 import { AdjuntosComponent } from './adjuntos/adjuntos';
 import { DiagnosticosComponent } from './diagnosticos/diagnosticos';
 import { ExamenFisicoComponent } from './examen-fisico/examen-fisico';
 import { FirmaDigitalComponent } from './firma-digital/firma-digital';
-import { InterconsultasComponent } from './interconsultas/interconsultas';
 import { MotivoComponent } from './motivo/motivo';
 import { OrdenesMedicasComponent } from './ordenes-medicas/ordenes-medicas';
 import { PlanTratamientoComponent } from './plan-tratamiento/plan-tratamiento';
-import { ProcedimientosCertificadosComponent } from './procedimientos-certificados/procedimientos-certificados';
 import { ResultadosComponent } from './resultados/resultados';
 import { SignosVitalesComponent } from './signos-vitales/signos-vitales';
 
@@ -48,11 +47,10 @@ import { SignosVitalesComponent } from './signos-vitales/signos-vitales';
     ResultadosComponent,
     PlanTratamientoComponent,
     OrdenesMedicasComponent,
-    ProcedimientosCertificadosComponent,
     AdjuntosComponent,
-    InterconsultasComponent,
     MotivoComponent,
     FirmaDigitalComponent,
+    AntecedentesComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './formulario-soap.html',
@@ -192,7 +190,6 @@ export class FormularioSoapComponent implements OnInit {
     p5: 'soap',
     p6: 'soap',
     p7: 'soap',
-    p8: 'doc',
     p9: 'doc',
     p10: 'doc',
     p11: 'doc',
@@ -208,7 +205,6 @@ export class FormularioSoapComponent implements OnInit {
     'p5',
     'p6',
     'p7',
-    'p8',
     'p9',
     'p10',
     'p11',

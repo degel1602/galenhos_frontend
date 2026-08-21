@@ -1,5 +1,6 @@
 export const FIRMA_PERU_PORT = '48596';
-export const FIRMA_PERU_LIB_URL = 'https://apps.firmaperu.gob.pe/web/clienteweb/firmaperu.min.js';
+export const FIRMA_PERU_LIB_URL =
+  'https://apps.firmaperu.gob.pe/web/clienteweb/firmaperu.min.js';
 export const JQUERY_URL = 'https://code.jquery.com/jquery-3.6.0.min.js';
 
 export interface FirmaPeruInicio {
@@ -70,7 +71,9 @@ async function apiRequest<Envelope>(
   const env = (await res.json().catch(() => null)) as Envelope | null;
   if (!res.ok || !env || !(env as { success?: boolean }).success) {
     const error = (env as { error?: { message?: string } } | null)?.error;
-    throw new Error(error?.message ?? `La petición a ${path} falló con estado ${res.status}.`);
+    throw new Error(
+      error?.message ?? `La petición a ${path} falló con estado ${res.status}.`,
+    );
   }
   return env;
 }
@@ -86,7 +89,8 @@ function cargarScript(src: string): Promise<void> {
     s.src = src;
     s.type = 'text/javascript';
     s.onload = () => resolve();
-    s.onerror = () => reject(new Error(`No se pudo cargar ${src}. Verifique su conexión.`));
+    s.onerror = () =>
+      reject(new Error(`No se pudo cargar ${src}. Verifique su conexión.`));
     document.body.appendChild(s);
   });
 }
@@ -106,7 +110,9 @@ async function asegurarJqFirmaPeru(): Promise<void> {
   if (typeof jq !== 'function') {
     throw new Error('jQuery no está disponible para el servicio Firma Perú.');
   }
-  (jq as unknown as { noConflict(removeAll: boolean): unknown }).noConflict(true);
+  (jq as unknown as { noConflict(removeAll: boolean): unknown }).noConflict(
+    true,
+  );
   windowFirmaPeru().jqFirmaPeru = jq;
 }
 
@@ -139,7 +145,10 @@ export async function cargarLibreriaFirmaPeru(): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     s.onload = () => {
       if (startSignatureGlobal()) resolve();
-      else reject(new Error('La librería firmaperu.min.js no expone startSignature.'));
+      else
+        reject(
+          new Error('La librería firmaperu.min.js no expone startSignature.'),
+        );
     };
     s.onerror = () =>
       reject(
@@ -179,7 +188,11 @@ function esperarFirmaConFirmador(
     w.signatureCancel = () => {
       if (finalizado) return;
       timerCancel = window.setTimeout(() => {
-        terminar(() => reject(new Error('El proceso de firma fue cancelado por el usuario.')))();
+        terminar(() =>
+          reject(
+            new Error('El proceso de firma fue cancelado por el usuario.'),
+          ),
+        )();
       }, 10000);
     };
 
@@ -233,7 +246,9 @@ async function esperarDocumentoFirmado(
       return new Blob([buf], { type: tipoContenido(buf) });
     }
     if (i > 0 && i % 20 === 0) {
-      console.log(`[FirmaPeru] poll uuid=${uuid} pendiente... intento ${i}/${maxIntentos}`);
+      console.log(
+        `[FirmaPeru] poll uuid=${uuid} pendiente... intento ${i}/${maxIntentos}`,
+      );
     }
     await new Promise((r) => setTimeout(r, intervalo));
   }
@@ -280,8 +295,10 @@ export async function iniciarFirmaLote(
   if (opts.motivo) form.append('signatureReason', opts.motivo);
   if (opts.rol) form.append('role', opts.rol);
   if (opts.logoPngBase64) form.append('imageEstampado', opts.logoPngBase64);
-  if (typeof opts.positionX === 'number') form.append('positionx', String(opts.positionX));
-  if (typeof opts.positionY === 'number') form.append('positiony', String(opts.positionY));
+  if (typeof opts.positionX === 'number')
+    form.append('positionx', String(opts.positionX));
+  if (typeof opts.positionY === 'number')
+    form.append('positiony', String(opts.positionY));
 
   const env = await apiRequest<{
     success: boolean;
@@ -295,7 +312,8 @@ export async function iniciarFirmaLote(
 
   const data = env.data;
   const start = startSignatureGlobal();
-  if (!start) throw new Error('La librería firmaperu.min.js no está disponible.');
+  if (!start)
+    throw new Error('La librería firmaperu.min.js no está disponible.');
 
   return esperarFirmaConFirmador(
     start,
