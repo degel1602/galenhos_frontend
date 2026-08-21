@@ -48,11 +48,13 @@ export class BandejaPacientesComponent {
   >(null);
 
   columnasEvoluciones: ColumnaTabla[] = [
-    { campo: 'numeroCustom', cabecera: 'N.º' },
-    { campo: 'fechaCustom', cabecera: 'Fecha de firma' },
-    { campo: 'medicoCustom', cabecera: 'Médico' },
-    { campo: 'estadoCustom', cabecera: 'Estado' },
-    { campo: 'accionesCustom', cabecera: 'Acciones' },
+    { campo: 'numeroCustom', cabecera: 'N.º', alineacion: 'center', ancho: '80px' },
+    { campo: 'fechaCustom', cabecera: 'Fecha de firma', alineacion: 'center', ancho: '140px' },
+    { campo: 'medicoCustom', cabecera: 'Médico', alineacion: 'left' },
+    { campo: 'documentoCustom', cabecera: 'Documento', alineacion: 'left' },
+    { campo: 'archivoCustom', cabecera: 'Archivo', alineacion: 'left' },
+    { campo: 'estadoCustom', cabecera: 'Estado', alineacion: 'center', ancho: '120px' },
+    { campo: 'accionesCustom', cabecera: 'Acciones', alineacion: 'center', ancho: '140px' },
   ];
 
   constructor() {

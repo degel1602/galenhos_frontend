@@ -2,7 +2,7 @@
   <thead>
     <tr style="text-align: left; color: #7a86a1; font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em;">
       @for (col of columnas; track col.campo) {
-        <th [style.text-align]="col.alineacion || 'left'" [style.width]="col.ancho || 'auto'" style="padding: 0 10px 10px;">
+        <th [style.text-align]="col.alineacion || 'left'" [style.width]="col.ancho || 'auto'" style="padding: 16px 12px 12px;">
           {{ col.cabecera }}
         </th>
       }
@@ -19,7 +19,7 @@
       @for (item of datos; track $index) {
         <tr style="border-top: 1px solid #eef1f6;">
           @for (col of columnas; track col.campo) {
-            <td [style.text-align]="col.alineacion || 'left'" style="padding: 12px 10px; vertical-align: top;">
+            <td [style.text-align]="col.alineacion || 'left'" style="padding: 12px 10px; vertical-align: middle;">
               @if (getTemplate(col.campo)) {
                 <ng-container *ngTemplateOutlet="getTemplate(col.campo)!; context: { $implicit: item, index: $index }"></ng-container>
               } @else {

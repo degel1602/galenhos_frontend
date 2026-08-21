@@ -1,169 +1,331 @@
-<div class="flex flex-col min-h-[calc(100vh-98px)] md:min-h-[calc(100vh-114px)] lg:min-h-[calc(100vh-130px)] -mt-4 md:-mt-6 lg:-mt-8 -mx-4 md:-mx-6 lg:-mx-8">
-      <!-- Barra de búsqueda (franja blanca pegada al header) -->
-      <div class="bg-white border-b border-slate-200 px-4 md:px-6 lg:px-8 py-3">
-        <buscador-rango-fechas
-          placeholder="Buscar paciente o N.º HC..."
-          [cargando]="evolucionService.isLoading()"
-          [filtroInicial]="evolucionService.patientSearch()"
-          [fechaDesdeInicial]="evolucionService.fechaDesde()"
-          [fechaHastaInicial]="evolucionService.fechaHasta()"
-          (buscar)="onBuscar($event)"
-          (limpiarFiltros)="onLimpiar()"
-        ></buscador-rango-fechas>
+<div class="flex flex-col min-h-[calc(100vh-98px)] md:min-h-[calc(100vh-114px)] lg:min-h-[calc(100vh-130px)] -mt-4 md:-mt-6 lg:-mt-8 -mx-4 md:-mx-6 lg:-mx-8 bg-[#f1f5f9]">
+
+  <!-- Barra de búsqueda superior -->
+  <div class="bg-white border-b border-slate-200 px-4 md:px-6 lg:px-8 py-3 shadow-sm">
+    <buscador-rango-fechas
+      placeholder="Buscar paciente por nombre o N.º HC..."
+      [cargando]="evolucionService.isLoading()"
+      [filtroInicial]="evolucionService.patientSearch()"
+      [fechaDesdeInicial]="evolucionService.fechaDesde()"
+      [fechaHastaInicial]="evolucionService.fechaHasta()"
+      (buscar)="onBuscar($event)"
+      (limpiarFiltros)="onLimpiar()"
+    />
+  </div>
+
+  <!-- Layout principal: sidebar + contenido -->
+  <div class="grid grid-cols-1 md:grid-cols-[300px_1fr] flex-1 min-h-0">
+
+    <!-- Rail lateral de pacientes -->
+    <aside class="bg-white border-r border-slate-200 flex flex-col overflow-hidden">
+      <!-- Encabezado del rail -->
+      <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+        <span class="text-[11px] font-bold uppercase tracking-widest text-[#54617f]">
+          Pacientes activos
+        </span>
+        @if (evolucionService.totalItems() > 0) {
+          <span class="text-[11px] font-semibold bg-[#07153a] text-white rounded-full px-2 py-0.5">
+            {{ evolucionService.totalItems() }}
+          </span>
+        }
       </div>
 
-<div class="grid grid-cols-1 md:grid-cols-[300px_1fr] flex-1">
-        <!-- Rail Lateral (sin caja) -->
-        <aside class="p-3 md:px-6 lg:px-8">
-          <div class="text-[10.5px] uppercase tracking-widest text-slate-500 px-1 pb-1.5">
-            Pacientes activos
-          </div>
-          <div class="flex flex-col gap-0.5">
-            @for (paciente of evolucionService.filteredPacientes(); track paciente.idRegAtencion) {
-              <div
-                class="px-3 py-2 rounded-lg cursor-pointer transition-colors duration-150 ease-in-out hover:bg-slate-100 w-full"
-                [class.bg-teal-50]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
-                (click)="evolucionService.selectPatient(paciente)"
-                (keydown.enter)="evolucionService.selectPatient(paciente)"
+      <!-- Lista de pacientes -->
+      <div class="flex-1 overflow-y-auto py-2 px-2">
+        @for (paciente of evolucionService.filteredPacientes(); track paciente.idRegAtencion) {
+          <button
+            type="button"
+            class="w-full text-left px-3 py-2.5 rounded-xl mb-1 transition-all duration-150 border cursor-pointer group"
+            [class.bg-[#07153a]]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
+            [class.border-[#07153a]]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
+            [class.bg-white]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
+            [class.border-slate-100]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
+            [class.hover:border-slate-300]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
+            [class.hover:bg-slate-50]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
+            (click)="evolucionService.selectPatient(paciente)"
+          >
+            <!-- Nombre del paciente -->
+            <div
+              class="font-semibold text-[13px] leading-snug mb-1 truncate"
+              [class.text-white]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
+              [class.text-[#07153a]]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
+            >
+              {{ paciente.nombre }}
+            </div>
+            <!-- Fila de datos secundarios -->
+            <div class="flex items-center justify-between gap-2">
+              <span
+                class="font-mono text-[10.5px]"
+                [class.text-blue-200]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
+                [class.text-[#54617f]]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
               >
-                <div class="font-semibold text-[13px] text-slate-900 break-words leading-snug">{{ paciente.nombre }}</div>
-                <div class="font-mono text-[10.8px] text-slate-500 mt-0.5 flex justify-between gap-2 leading-none">
-                  <span class="break-words"><b>HC:</b> {{ paciente.historia }}</span>
-                  <span class="shrink-0">{{ evolucionService.normalizarEdad(paciente.edad) }}</span>
-                </div>
-                <div class="text-[10.5px] text-slate-400 mt-0.5 flex justify-between gap-2 leading-none">
-                  <span class="break-words">{{ paciente.ubicacion }}</span>
-                  <span class="shrink-0">Cama: {{ paciente.cama }}</span>
-                </div>
-              </div>
-            } @empty {
-              <div class="text-center text-sm text-slate-500 py-4">No se encontraron pacientes.</div>
-            }
+                HC: {{ paciente.historia }}
+              </span>
+              <span
+                class="text-[10.5px]"
+                [class.text-blue-200]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
+                [class.text-slate-400]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
+              >
+                {{ evolucionService.normalizarEdad(paciente.edad) }}
+              </span>
+            </div>
+            <!-- Cama y ubicación -->
+            <div class="flex items-center gap-2 mt-1">
+              <span
+                class="inline-flex items-center gap-1 text-[10.5px] font-semibold px-1.5 py-0.5 rounded"
+                [class.bg-blue-700]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
+                [class.text-blue-100]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
+                [class.bg-slate-100]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
+                [class.text-[#54617f]]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
+              >
+                <svg aria-hidden="true" class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Cama {{ paciente.cama }}
+              </span>
+              <span
+                class="text-[10.5px] truncate"
+                [class.text-blue-200]="evolucionService.activePatient()?.idRegAtencion === paciente.idRegAtencion"
+                [class.text-slate-400]="evolucionService.activePatient()?.idRegAtencion !== paciente.idRegAtencion"
+              >
+                {{ paciente.ubicacion }}
+              </span>
+            </div>
+          </button>
+        } @empty {
+          <div class="text-center py-12 px-4">
+            <svg aria-hidden="true" class="w-10 h-10 text-slate-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <p class="text-[12.5px] text-slate-400 font-medium">No se encontraron pacientes</p>
+            <p class="text-[11px] text-slate-300 mt-1">Ajuste los filtros de búsqueda</p>
           </div>
-          <app-paginacion
-            [page]="evolucionService.page()"
-            [totalPages]="evolucionService.totalPages()"
-            [totalItems]="evolucionService.totalItems()"
-            (pageChange)="evolucionService.irAPagina($event)"
-          />
-        </aside>
+        }
+      </div>
 
-      <!-- Main Area -->
-      <main class="p-6 md:p-8 pb-16">
-        @if (evolucionService.activePatient(); as paciente) {
-          <!-- Banner del paciente con datos reales -->
-          <div class="mb-5 pb-4 border-b border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <!-- Paginación -->
+      <div class="border-t border-slate-100 px-3 py-2 shrink-0">
+        <app-paginacion
+          [page]="evolucionService.page()"
+          [totalPages]="evolucionService.totalPages()"
+          [totalItems]="evolucionService.totalItems()"
+          (pageChange)="evolucionService.irAPagina($event)"
+        />
+      </div>
+    </aside>
+
+    <!-- Área principal -->
+    <main class="flex flex-col overflow-y-auto">
+
+      @if (evolucionService.activePatient(); as paciente) {
+
+        <!-- Ficha clínica del paciente -->
+        <div class="bg-[#07153a] px-6 py-5 shadow-md">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <div class="font-serif font-semibold text-2xl text-teal-900">{{ paciente.nombre }}</div>
-              <div class="flex gap-4 flex-wrap text-[12.5px] text-slate-500 mt-1">
-                <span><b>HC:</b> {{ paciente.historia }}</span>
-                <span><b>Edad:</b> {{ evolucionService.normalizarEdad(paciente.edad) }}</span>
-                <span><b>Sexo:</b> {{ paciente.sexo }}</span>
-                <span><b>Ubicación:</b> {{ paciente.ubicacion }}</span>
-                <span><b>Cama:</b> {{ paciente.cama }}</span>
+              <p class="text-blue-300 text-[11px] font-bold uppercase tracking-widest mb-1">Paciente activo</p>
+              <h2 class="text-white font-bold text-xl leading-tight">{{ paciente.nombre }}</h2>
+              <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+                <span class="text-blue-200 text-[12px]"><span class="font-bold text-white">HC:</span> {{ paciente.historia }}</span>
+                <span class="text-blue-200 text-[12px]"><span class="font-bold text-white">Edad:</span> {{ evolucionService.normalizarEdad(paciente.edad) }}</span>
+                <span class="text-blue-200 text-[12px]"><span class="font-bold text-white">Sexo:</span> {{ paciente.sexo }}</span>
+                <span class="text-blue-200 text-[12px]"><span class="font-bold text-white">Servicio:</span> {{ paciente.ubicacion }}</span>
+                <span class="inline-flex items-center gap-1 bg-[#263c7a] text-blue-100 text-[12px] font-semibold px-2 py-0.5 rounded-md">
+                  <svg aria-hidden="true" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                  Cama {{ paciente.cama }}
+                </span>
               </div>
             </div>
-            <button type="button" 
+            <button
+              type="button"
               (click)="evolucionService.setViewMode('form')"
-              class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+              class="shrink-0 flex items-center gap-2 bg-[#0f766e] hover:bg-[#0d6460] text-white font-semibold py-2.5 px-5 rounded-xl text-sm transition-colors shadow-md"
             >
-              + Nueva Evolución
+              <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Nueva Evolución
             </button>
           </div>
+        </div>
 
-          <!-- Bandeja de evoluciones del paciente -->
-          <div>
-            <div class="px-1 py-3 flex items-center justify-between">
-              <h3 class="text-[13px] font-semibold text-slate-700">Bandeja de evoluciones</h3>
-              <span class="text-[11.5px] text-slate-500">Paciente: {{ paciente.nombre }}</span>
+        <!-- Tabla de evoluciones -->
+        <div class="flex-1 p-6">
+
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-[15px] font-bold text-[#07153a]">Historial de evoluciones</h3>
+              <p class="text-[12px] text-[#54617f] mt-0.5">Registro clínico firmado del paciente</p>
+            </div>
+          </div>
+
+          @if (evolucionesCargando()) {
+            <div class="flex flex-col items-center justify-center py-20 gap-3">
+              <svg aria-hidden="true" class="animate-spin h-8 w-8 text-[#0f766e]" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <span class="text-[13px] text-[#54617f] font-medium">Cargando evoluciones...</span>
             </div>
 
-            @if (evolucionesCargando()) {
-              <div class="flex justify-center items-center py-14 gap-3 text-slate-500">
-                <svg aria-hidden="true" class="animate-spin h-5 w-5 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          } @else if (evolucionesPaciente().length === 0) {
+            <div class="flex flex-col items-center justify-center py-20 text-center">
+              <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+                <svg aria-hidden="true" class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <span class="text-[13px]">Cargando evoluciones...</span>
               </div>
-            } @else if (evolucionesPaciente().length === 0) {
-              <div class="text-center py-14 text-slate-400">
-                <svg aria-hidden="true" class="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"></path>
-                </svg>
-                <p>Este paciente aún no tiene evoluciones registradas en el sistema.</p>
-                <p class="text-[12.5px] mt-1">Use "Nueva Evolución" para crear la primera nota.</p>
-              </div>
-            } @else {
-              <div class="overflow-x-auto">
-                <app-tabla [columnas]="columnasEvoluciones" [datos]="evolucionesPaciente()" [cargando]="false"
-                           mensajeVacio="Este paciente aún no tiene evoluciones registradas en el sistema.">
+              <p class="text-[14px] font-semibold text-[#07153a] mb-1">Sin evoluciones registradas</p>
+              <p class="text-[12.5px] text-[#54617f] max-w-xs">Este paciente aún no tiene notas de evolución. Use "Nueva Evolución" para registrar la primera.</p>
+            </div>
 
+          } @else {
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <app-tabla
+                  [columnas]="columnasEvoluciones"
+                  [datos]="evolucionesPaciente()"
+                  [cargando]="false"
+                  mensajeVacio="Este paciente aún no tiene evoluciones registradas."
+                >
                   <ng-template appColumnaTemplate="numeroCustom" let-evolucion let-i="index">
-                    <span class="font-mono text-[11.5px] text-slate-500">{{ i + 1 }}</span>
+                    <span class="font-mono text-[11.5px] font-bold text-[#263c7a] bg-blue-50 px-2 py-0.5 rounded-md">
+                      #{{ i + 1 }}
+                    </span>
                   </ng-template>
 
                   <ng-template appColumnaTemplate="fechaCustom" let-evolucion>
-                    <span class="font-mono text-[11.5px] text-slate-600">{{ evolucion.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}</span>
+                    <div class="flex flex-col gap-0.5">
+                      <span class="font-mono text-[11.5px] font-semibold text-[#07153a]">
+                        {{ evolucion.fechaRegistro | date:'dd/MM/yyyy' }}
+                      </span>
+                      <span class="font-mono text-[10.5px] text-[#54617f]">
+                        {{ evolucion.fechaRegistro | date:'HH:mm' }}
+                      </span>
+                    </div>
                   </ng-template>
 
                   <ng-template appColumnaTemplate="medicoCustom" let-evolucion>
-                    <span class="font-medium text-slate-800">{{ obtenerMedico(evolucion) }}</span>
+                    <div class="flex items-center gap-2">
+                      <div class="w-6 h-6 rounded-full bg-[#07153a] flex items-center justify-center text-white text-[9px] font-bold shrink-0">
+                        {{ obtenerMedico(evolucion).charAt(0) }}
+                      </div>
+                      <span class="font-medium text-[13px] text-[#07153a] truncate max-w-[160px]">{{ obtenerMedico(evolucion) }}</span>
+                    </div>
+                  </ng-template>
+
+                  <ng-template appColumnaTemplate="documentoCustom" let-evolucion>
+                    <div class="flex items-center gap-1.5 text-[12.5px] text-[#54617f]">
+                      <svg aria-hidden="true" class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                      </svg>
+                      <span class="truncate max-w-[140px] font-medium">{{ evolucion.nombreDocumento || '—' }}</span>
+                    </div>
+                  </ng-template>
+
+                  <ng-template appColumnaTemplate="archivoCustom" let-evolucion>
+                    <div class="flex items-center gap-1.5 text-[12.5px] text-[#54617f]">
+                      <svg aria-hidden="true" class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                      </svg>
+                      <span class="truncate max-w-[140px]">{{ evolucion.nombreArchivo || '—' }}</span>
+                    </div>
                   </ng-template>
 
                   <ng-template appColumnaTemplate="estadoCustom" let-evolucion>
-                    <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-green-100 text-green-700 border border-green-200">Firmada</span>
+                    @if (evolucion.estado === 1) {
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <svg aria-hidden="true" class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
+                        Firmada
+                      </span>
+                    } @else if (evolucion.estado === 0) {
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-semibold bg-red-50 text-red-700 border border-red-200">
+                        <svg aria-hidden="true" class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
+                        Anulada
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                        <svg aria-hidden="true" class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
+                        Pendiente
+                      </span>
+                    }
                   </ng-template>
 
                   <ng-template appColumnaTemplate="accionesCustom" let-evolucion>
                     <button
                       type="button"
                       (click)="verEvolucion(evolucion)"
-                      class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-teal-600 hover:text-teal-800 hover:underline transition-colors cursor-pointer">
-                      <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
+                      class="inline-flex items-center gap-1.5 text-[11.5px] font-semibold px-3 py-1.5 rounded-lg bg-[#07153a] text-white hover:bg-[#263c7a] transition-colors cursor-pointer"
+                    >
+                      <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
-                      Ver
+                      Ver detalle
                     </button>
                   </ng-template>
-
                 </app-tabla>
-              </div>
-            }
-          </div>
-
-          @if (evolucionDetalle(); as detalle) {
-            <div class="fixed inset-0 bg-[#07153a]/45 flex items-center justify-center p-6 z-[110]" (click)="cerrarDetalle()" (keydown.enter)="cerrarDetalle()">
-              <div (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" class="w-full max-w-3xl max-h-[85vh] overflow-hidden bg-white rounded-2xl shadow-[0_20px_60px_rgba(7,21,58,0.3)] flex flex-col">
-                <div class="flex items-start justify-between px-6 py-4 border-b border-slate-200 shrink-0">
-                  <div class="min-w-0">
-                    <div class="text-base font-bold text-[#07153a]">Evolución N.º {{ detalle.idFirma }}</div>
-                    <div class="text-[12.5px] text-[#7a86a1] mt-0.5">Firmada el {{ detalle.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}</div>
-                  </div>
-                  <button type="button" (click)="cerrarDetalle()" class="w-8 h-8 rounded-lg border border-slate-200 bg-white cursor-pointer flex items-center justify-center text-slate-500 shrink-0 transition-colors hover:bg-slate-50 ml-3" aria-label="Cerrar">
-                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                  </button>
-                </div>
-                <div class="p-6 overflow-y-auto min-w-0">
-                  <app-ver-evolucion [detalle]="detalle"></app-ver-evolucion>
-                </div>
               </div>
             </div>
           }
-        } @else {
-          <div class="text-center py-20 text-slate-400">
-            <svg aria-hidden="true" class="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-              <rect x="8" y="2" width="8" height="4" rx="1"></rect>
-              <path d="M9 12h6"></path>
-              <path d="M9 16h6"></path>
-            </svg>
-            <p>Seleccione un paciente de la lista para ver su historial o iniciar una evolución.</p>
+        </div>
+
+        <!-- Modal de detalle de evolución -->
+        @if (evolucionDetalle(); as detalle) {
+          <div
+            class="fixed inset-0 bg-[#07153a]/60 flex items-center justify-center p-4 z-[110] backdrop-blur-sm"
+            (click)="cerrarDetalle()"
+            (keydown.escape)="cerrarDetalle()"
+          >
+            <div
+              class="w-full max-w-3xl max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl flex flex-col"
+              (click)="$event.stopPropagation()"
+              (keydown.enter)="$event.stopPropagation()"
+              tabindex="0"
+            >
+              <!-- Header del modal -->
+              <div class="flex items-start justify-between px-6 py-4 border-b border-slate-200 bg-[#07153a] rounded-t-2xl shrink-0">
+                <div class="min-w-0">
+                  <div class="text-white font-bold text-base">Evolución N.º {{ detalle.idFirma }}</div>
+                  <div class="text-blue-300 text-[12.5px] mt-0.5">
+                    Firmada el {{ detalle.fechaRegistro | date:'dd/MM/yyyy' }} a las {{ detalle.fechaRegistro | date:'HH:mm' }}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="cerrarDetalle()"
+                  class="w-8 h-8 rounded-lg border border-white/20 bg-white/10 cursor-pointer flex items-center justify-center text-white shrink-0 transition-colors hover:bg-white/20 ml-3"
+                  aria-label="Cerrar"
+                >
+                  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+              <!-- Cuerpo del modal -->
+              <div class="p-6 overflow-y-auto min-w-0 bg-[#e2e8f0]">
+                <app-ver-evolucion [detalle]="detalle" />
+              </div>
+            </div>
           </div>
         }
-      </main>
-      </div>
-    </div>
+
+      } @else {
+        <!-- Estado vacío: ningún paciente seleccionado -->
+        <div class="flex flex-col items-center justify-center flex-1 py-20 text-center px-6">
+          <div class="w-20 h-20 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center mb-6">
+            <svg aria-hidden="true" class="w-10 h-10 text-[#54617f]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2M9 12h6M9 16h6M9 8h6" />
+            </svg>
+          </div>
+          <h3 class="text-[16px] font-bold text-[#07153a] mb-2">Seleccione un paciente</h3>
+          <p class="text-[13px] text-[#54617f] max-w-sm leading-relaxed">
+            Elija un paciente de la lista de la izquierda para ver su historial de evoluciones o registrar una nueva nota clínica.
+          </p>
+        </div>
+      }
+
+    </main>
+  </div>
+</div>

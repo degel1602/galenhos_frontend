@@ -1,5 +1,4 @@
-import type { jsPDF } from 'jspdf';
-import type { TextOptionsLight } from 'jspdf';
+import type { jsPDF, TextOptionsLight } from 'jspdf';
 
 export interface TriajeReporteData {
   idTriaje?: number;
@@ -38,7 +37,9 @@ export interface DatosInstitucion {
   logoHospi?: string | null;
 }
 
-export function decodificarBase64Reporte(valor: string | null | undefined): string {
+export function decodificarBase64Reporte(
+  valor: string | null | undefined,
+): string {
   if (!valor) return '';
   try {
     if (/^[A-Za-z0-9+/]+={0,2}$/.test(valor)) return atob(valor);
@@ -70,7 +71,9 @@ export async function construirPdfTriaje(
   const c = cabecera;
   const v = (x: string | number | null | undefined) =>
     x === null || x === undefined || x === '' ? '—' : String(x);
-  const direccion = c.Direccion ? c.Direccion + (c.Distrito ? ', ' + c.Distrito : '') : '—';
+  const direccion = c.Direccion
+    ? c.Direccion + (c.Distrito ? ', ' + c.Distrito : '')
+    : '—';
   const motivo = c.sintoma_principal ?? '—';
 
   const { jsPDF } = await import('jspdf');
@@ -113,7 +116,12 @@ export async function construirPdfTriaje(
           celda.align === 'center'
             ? { align: 'center', maxWidth: ancho - 2 }
             : { align: 'left', maxWidth: ancho - 3 };
-        doc.text(texto, celda.align === 'center' ? x + ancho / 2 : x + 1.5, y + h / 2 + 0.8, opts);
+        doc.text(
+          texto,
+          celda.align === 'center' ? x + ancho / 2 : x + 1.5,
+          y + h / 2 + 0.8,
+          opts,
+        );
       }
       x += ancho;
     }
@@ -127,7 +135,14 @@ export async function construirPdfTriaje(
 
   if (institucion?.logoMinsa) {
     try {
-      doc.addImage(`data:image/png;base64,${institucion.logoMinsa}`, 'PNG', ml, y, 28, 28);
+      doc.addImage(
+        `data:image/png;base64,${institucion.logoMinsa}`,
+        'PNG',
+        ml,
+        y,
+        28,
+        28,
+      );
     } catch {
       /* logo inválido */
     }
@@ -145,7 +160,9 @@ export async function construirPdfTriaje(
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.text(`RUC: ${v(institucion?.rucEess)}`, pageW / 2, y, { align: 'center' });
+  doc.text(`RUC: ${v(institucion?.rucEess)}`, pageW / 2, y, {
+    align: 'center',
+  });
   y += 4;
   doc.text(`DIRECCIÓN: ${v(institucion?.direccion)}`, pageW / 2, y, {
     align: 'center',
@@ -161,9 +178,19 @@ export async function construirPdfTriaje(
       { span: 1, text: 'N° DOCUMENTO', kind: 'label' },
       { span: 3, text: v(c.NroDocumento), kind: 'value' },
       { span: 1, text: 'N° DE TRIAJE', kind: 'label' },
-      { span: 1, text: v(c.idTriaje ?? idTriaje), kind: 'value', align: 'center' },
+      {
+        span: 1,
+        text: v(c.idTriaje ?? idTriaje),
+        kind: 'value',
+        align: 'center',
+      },
       { span: 1, text: 'FUEN. FIN', kind: 'label' },
-      { span: 1, text: v(c.fuentefinanciamiento), kind: 'value', align: 'center' },
+      {
+        span: 1,
+        text: v(c.fuentefinanciamiento),
+        kind: 'value',
+        align: 'center',
+      },
     ],
     8,
   );
@@ -214,13 +241,38 @@ export async function construirPdfTriaje(
   );
   dibujarFila(
     [
-      { span: 1, text: v(decodificarBase64Reporte(c.temperatura)), kind: 'value', align: 'center' },
+      {
+        span: 1,
+        text: v(decodificarBase64Reporte(c.temperatura)),
+        kind: 'value',
+        align: 'center',
+      },
       { span: 1, text: v(c.presion_arterial), kind: 'value', align: 'center' },
-      { span: 1, text: v(c.frecuencia_respiratoria), kind: 'value', align: 'center' },
-      { span: 1, text: v(c.frecuencia_cardiaca), kind: 'value', align: 'center' },
-      { span: 1, text: v(decodificarBase64Reporte(c.peso)), kind: 'value', align: 'center' },
+      {
+        span: 1,
+        text: v(c.frecuencia_respiratoria),
+        kind: 'value',
+        align: 'center',
+      },
+      {
+        span: 1,
+        text: v(c.frecuencia_cardiaca),
+        kind: 'value',
+        align: 'center',
+      },
+      {
+        span: 1,
+        text: v(decodificarBase64Reporte(c.peso)),
+        kind: 'value',
+        align: 'center',
+      },
       { span: 1, text: v(c.talla), kind: 'value', align: 'center' },
-      { span: 1, text: v(decodificarBase64Reporte(c.IMC)), kind: 'value', align: 'center' },
+      {
+        span: 1,
+        text: v(decodificarBase64Reporte(c.IMC)),
+        kind: 'value',
+        align: 'center',
+      },
       {
         span: 1,
         text: `${v(c.escala_glasgow)} / ${v(c.escala_dolor)}`,
