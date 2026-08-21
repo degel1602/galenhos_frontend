@@ -18,6 +18,9 @@ import type {
   ICatalogoNombre,
   IFilaBackend,
 } from '../../../../../../compartido/tipos/api-tipos';
+import { BotonesFiltroComponent } from '../../../../../../compartido/ui/botones-filtro/botones-filtro';
+import { FiltrosGlobal } from '../../../../../../compartido/ui/filtros-global/filtros-global';
+import { SelectGlobalComponent } from '../../../../../../compartido/ui/select-global/select-global';
 import { ErrorMensajeComponent } from '../../../../../../compartido/ui/validacion/error-mensaje.component';
 import { VentanaModal } from '../../../../../../compartido/ui/ventana-modal/ventana-modal';
 import { AuthService } from '../../../../../auth/aplicacion/auth.service';
@@ -95,6 +98,9 @@ function campoNum(
     ErrorMensajeComponent,
     TablaComponent,
     ColumnaTemplateDirective,
+    FiltrosGlobal,
+    SelectGlobalComponent,
+    BotonesFiltroComponent,
   ],
   templateUrl: './admisiones.component.html',
 })

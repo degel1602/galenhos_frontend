@@ -1,5 +1,5 @@
 import type { jsPDF } from 'jspdf';
-import { iniciarFirmaLote, type FirmaPeruBatido } from './firma-peru.util';
+import { type FirmaPeruBatido, iniciarFirmaLote } from './firma-peru.util';
 import {
   construirPdfTriaje,
   type DatosInstitucion,
@@ -23,7 +23,11 @@ export interface ConexionApi {
   token: string | null;
 }
 
-export type SelectarProgreso = (actual: number, total: number, idTriaje: number) => boolean;
+export type SelectarProgreso = (
+  actual: number,
+  total: number,
+  idTriaje: number,
+) => boolean;
 
 function authHeaders(
   conexion: ConexionApi,
@@ -52,9 +56,12 @@ async function obtenerReporte(
   conexion: ConexionApi,
   idTriaje: number,
 ): Promise<TriajeReporteData | null> {
-  const res = await fetch(`${conexion.baseUrl}/api/v1/triaje/reporte?id=${idTriaje}`, {
-    headers: authHeaders(conexion),
-  });
+  const res = await fetch(
+    `${conexion.baseUrl}/api/v1/triaje/reporte?id=${idTriaje}`,
+    {
+      headers: authHeaders(conexion),
+    },
+  );
   const env = (await res.json().catch(() => null)) as {
     success?: boolean;
     data?: TriajeReporteData[];
@@ -62,7 +69,9 @@ async function obtenerReporte(
   } | null;
   const data = env?.data ?? [];
   if (!res.ok || !env?.success || !Array.isArray(data) || data.length === 0) {
-    throw new Error(env?.error?.message ?? 'No se encontró el reporte del triaje.');
+    throw new Error(
+      env?.error?.message ?? 'No se encontró el reporte del triaje.',
+    );
   }
   return data[0];
 }
@@ -82,7 +91,9 @@ export async function generarPdfsTriajes(
   for (let i = 0; i < ids.length; i++) {
     const idTriaje = ids[i];
     if (!onProgreso(i + 1, ids.length, idTriaje)) break;
-    console.log(`[FirmaPeru] masiva generando pdf triaje=${idTriaje} (${i + 1}/${ids.length})`);
+    console.log(
+      `[FirmaPeru] masiva generando pdf triaje=${idTriaje} (${i + 1}/${ids.length})`,
+    );
     try {
       const reporte = await obtenerReporte(conexion, idTriaje);
       if (!reporte) throw new Error('No se encontró el reporte del triaje.');
@@ -99,7 +110,10 @@ export async function generarPdfsTriajes(
       generados.push({
         idTriaje,
         doc: null,
-        error: e instanceof Error ? e.message : 'No se pudo generar el PDF del triaje.',
+        error:
+          e instanceof Error
+            ? e.message
+            : 'No se pudo generar el PDF del triaje.',
       });
     }
   }
@@ -157,9 +171,12 @@ export async function firmarTriajesMasivamente(
     for (const g of conDoc) resultados.push({ idTriaje: g.idTriaje, ok: true });
   } catch (e) {
     const msg =
-      e instanceof Error ? e.message : 'Ocurrió un error durante la firma por lote de los triajes.';
+      e instanceof Error
+        ? e.message
+        : 'Ocurrió un error durante la firma por lote de los triajes.';
     console.log(`[FirmaPeru] masiva lote error=${msg}`);
-    for (const g of conDoc) resultados.push({ idTriaje: g.idTriaje, ok: false, error: msg });
+    for (const g of conDoc)
+      resultados.push({ idTriaje: g.idTriaje, ok: false, error: msg });
   }
   return resultados;
 }

@@ -1,4 +1,4 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet, UpperCasePipe } from '@angular/common';
 import {
   Component,
   ElementRef,
@@ -14,7 +14,7 @@ import { HeaderActionsService } from '../../servicios/header-actions.service';
   selector: 'barra-superior',
   standalone: true,
   templateUrl: './barra-superior.html',
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, UpperCasePipe],
 })
 export class BarraSuperior {
   headerActions = inject(HeaderActionsService);

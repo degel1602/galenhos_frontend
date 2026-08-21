@@ -1,51 +1,51 @@
 <div class="gp-in" style="display: flex; flex-direction: column; gap: 18px;">
 
 
-  <div style="background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 18px 20px;">
-    <div style="display: grid; grid-template-columns: 150px 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+  <app-filtros-global>
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-[150px_1fr_1fr_1fr_1fr_auto] gap-4 items-end">
       <div>
-        <label for="fecha" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Fecha</label>
-        <input id="fecha" type="date" [(ngModel)]="fecha" style="width: 100%; padding: 9px 12px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;" />
+        <label for="fecha" class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Fecha</label>
+        <input id="fecha" type="date" [(ngModel)]="fecha" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
       </div>
       <div>
-        <label for="paciente" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Paciente</label>
-        <input id="paciente" [(ngModel)]="filtro" (keydown.enter)="handleBuscar()" placeholder="Buscar por nombre o documento..."
-               style="width: 100%; padding: 10px 14px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;" />
+        <label for="paciente" class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Paciente</label>
+        <input id="paciente" [(ngModel)]="filtro" (keydown.enter)="handleBuscar()" placeholder="Buscar por nombre..."
+               class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-colors" />
       </div>
       <div>
-        <label for="departamento" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Departamento</label>
-        <select id="departamento" [(ngModel)]="idDepartamento" style="width: 100%; padding: 10px 12px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;">
+        <label for="departamento" class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Departamento</label>
+        <app-select-global id="departamento" [(ngModel)]="idDepartamento">
           <option value="0">Todos</option>
           @for (d of departamentos; track d.id) {
             <option [value]="d.id">{{ d.nombre }}</option>
           }
-        </select>
+        </app-select-global>
       </div>
       <div>
-        <label for="selEsp" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Especialidad</label>
-        <select id="selEsp" [(ngModel)]="idEspecialidad" style="width: 100%; padding: 10px 12px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;">
+        <label for="selEsp" class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Especialidad</label>
+        <app-select-global id="selEsp" [(ngModel)]="idEspecialidad">
           <option value="0">Todas</option>
           @for (e of especialidades; track e.id) {
             <option [value]="e.id">{{ e.nombre }}</option>
           }
-        </select>
+        </app-select-global>
       </div>
       <div>
-        <label for="selServ" style="display: block; font-size: 12px; font-weight: 600; color: #54617f; margin-bottom: 6px;">Consultorio</label>
-        <select id="selServ" [(ngModel)]="idServicio" style="width: 100%; padding: 10px 12px; border: 1px solid #e0e6f1; border-radius: 11px; font-size: 13.5px; background: #f8fafc; color: #07153a;">
+        <label for="selServ" class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Consultorio</label>
+        <app-select-global id="selServ" [(ngModel)]="idServicio">
           <option value="0">Todos</option>
           @for (s of servicios; track s.id) {
             <option [value]="s.id">{{ s.nombre }}</option>
           }
-        </select>
+        </app-select-global>
       </div>
-      <button type="button" (click)="handleBuscar()" [disabled]="cargando"
-              style="display: flex; align-items: center; gap: 7px; height: 42px; padding: 0 20px; background: #263c7a; color: #fff; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;">
-        <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
-        Buscar
-      </button>
+      <app-botones-filtro 
+        [cargando]="cargando" 
+        [mostrarLimpiar]="false"
+        (buscar)="handleBuscar()" 
+      />
     </div>
-  </div>
+  </app-filtros-global>
 
   @if (error) {
     <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 13px; font-weight: 500; padding: 10px 13px; border-radius: 11px;">

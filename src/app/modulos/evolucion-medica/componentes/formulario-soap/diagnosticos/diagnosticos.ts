@@ -4,6 +4,7 @@ import {
   Component,
   Input,
   inject,
+  signal,
 } from '@angular/core';
 import {
   type FormArray,
@@ -13,6 +14,9 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { AuthService } from '../../../../auth/aplicacion/auth.service';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { EvolucionService, type DiagnosticoBusqueda } from '../../../servicios/evolucion.service';
 
 export interface DxForm {
   cie10: FormControl<string | null>;
@@ -46,13 +50,39 @@ export class DiagnosticosComponent {
   @Input({ required: true }) formArray!: FormArray<FormGroup<DxForm>>;
   private readonly fb = inject(FormBuilder);
   public readonly authService = inject(AuthService);
+  private readonly evolucionService = inject(EvolucionService);
+
+  public readonly activeSearchIndex = signal<number | null>(null);
+  public readonly searchResults = signal<DiagnosticoBusqueda[]>([]);
+  public readonly isSearching = signal(false);
+
+  private readonly searchSubject = new Subject<{ texto: string; index: number }>();
+
+  constructor() {
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged((prev, curr) => prev.texto === curr.texto)
+      )
+      .subscribe(async ({ texto, index }) => {
+        if (!texto || texto.length < 2) {
+          this.searchResults.set([]);
+          this.isSearching.set(false);
+          return;
+        }
+
+        this.isSearching.set(true);
+        const paciente = this.evolucionService.activePatient();
+        const idAtencion = paciente?.idRegAtencion || 0;
+        const idPaciente = paciente?.idPaciente || 0;
+        const resultados = await this.evolucionService.buscarDiagnosticos(texto, idAtencion, idPaciente);
+        this.searchResults.set(resultados);
+        this.isSearching.set(false);
+      });
+  }
 
   columnasDiagnosticos: ColumnaTabla[] = [
-    { campo: 'cie10Custom', cabecera: 'CIE-10', ancho: '100px' },
-    { campo: 'descripcionCustom', cabecera: 'Descripción' },
-    { campo: 'tipoCustom', cabecera: 'Tipo' },
-    { campo: 'condicionCustom', cabecera: 'Condición' },
-    { campo: 'estadoCustom', cabecera: 'Estado' },
+    { campo: 'detallesCustom', cabecera: 'Detalles del Diagnóstico', ancho: 'auto' },
     {
       campo: 'accionesCustom',
       cabecera: '',
@@ -75,5 +105,33 @@ export class DiagnosticosComponent {
 
   removerDx(index: number) {
     this.formArray.removeAt(index);
+  }
+
+  onBuscar(evento: Event, index: number) {
+    const texto = (evento.target as HTMLInputElement).value;
+    this.activeSearchIndex.set(index);
+    this.searchSubject.next({ texto, index });
+  }
+
+  showWarning = signal<boolean>(false);
+
+  seleccionarDx(dx: DiagnosticoBusqueda, index: number) {
+    if (dx.yaRegistrado > 0) {
+      this.showWarning.set(true);
+      setTimeout(() => this.showWarning.set(false), 4000);
+    }
+    const fg = this.formArray.at(index);
+    fg.patchValue({
+      cie10: dx.codigoCIE10,
+      descripcion: dx.descripcion,
+    });
+    this.activeSearchIndex.set(null);
+    this.searchResults.set([]);
+  }
+
+  cerrarBusqueda() {
+    setTimeout(() => {
+      this.activeSearchIndex.set(null);
+    }, 200);
   }
 }

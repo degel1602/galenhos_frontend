@@ -4,9 +4,9 @@ import {
   Component,
   EventEmitter,
   Input,
-  Output,
   inject,
   type OnInit,
+  Output,
 } from '@angular/core';
 import { MaestrosApiService } from '../../../../../../../compartido/api/maestros.api.service';
 import { ApiClientService } from '../../../../../../../compartido/api-client/api-client.service';
@@ -18,7 +18,12 @@ import {
   type ResultadoFirmaMasiva,
 } from './firma-triaje-masivo.util';
 
-type FaseFirmaMasiva = 'generando' | 'firmando' | 'resultados' | 'error' | 'cancelado';
+type FaseFirmaMasiva =
+  | 'generando'
+  | 'firmando'
+  | 'resultados'
+  | 'error'
+  | 'cancelado';
 
 export interface ResumenFirmaMasiva {
   firmados: number;
@@ -149,7 +154,8 @@ export class FirmaMasivaModal implements OnInit {
         setTimeout(() => this.alCerrar.emit(), 1500);
       }
     } catch (e) {
-      this.errorGlobal = e instanceof Error ? e.message : 'Ocurrió un error inesperado.';
+      this.errorGlobal =
+        e instanceof Error ? e.message : 'Ocurrió un error inesperado.';
       this.fase = 'error';
       this.cdr.detectChanges();
     }

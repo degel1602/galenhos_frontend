@@ -18,6 +18,7 @@ import {
 } from '../../../../../compartido/componentes/tabla/tabla.component';
 import { ErrorMensajeComponent } from '../../../../../compartido/ui/validacion/error-mensaje.component';
 import { AuthService } from '../../../../auth/aplicacion/auth.service';
+import { InterconsultasComponent } from '../interconsultas/interconsultas';
 
 @Component({
   selector: 'app-plan-tratamiento',
@@ -28,6 +29,7 @@ import { AuthService } from '../../../../auth/aplicacion/auth.service';
     ErrorMensajeComponent,
     TablaComponent,
     ColumnaTemplateDirective,
+    InterconsultasComponent,
   ],
   templateUrl: './plan-tratamiento.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

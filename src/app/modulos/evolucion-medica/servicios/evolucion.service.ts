@@ -26,9 +26,26 @@ export interface EvolucionFirma {
   idRegAtencion: number;
   idFirma: number;
   nombreDocumento: string;
+  nombreArchivo: string;
+  rutaBase: string;
   dataB64: string;
   idEmpleadoRegistra: number;
   fechaRegistro: string;
+  estado: number;
+}
+
+export interface DiagnosticoBusqueda {
+  idDiagnostico: number;
+  intrahospitalario: number;
+  descripcion: string;
+  codigoCIE10: string;
+  esActivo: number;
+  descripcionLarga: string;
+  edadMaxDias: number;
+  edadMinDias: number;
+  idTipoSexo: number;
+  cancer: number;
+  yaRegistrado: number;
 }
 
 @Injectable({
@@ -144,6 +161,31 @@ export class EvolucionService {
       return data ?? [];
     } catch (error) {
       console.error('Error listando evoluciones del paciente:', error);
+      return [];
+    }
+  }
+
+  async decodificarB64(cadenaB64: string): Promise<string> {
+    return atob(cadenaB64);
+  }
+
+  async buscarDiagnosticos(
+    filtro: string,
+    idAtencion: number,
+    idPaciente: number,
+  ): Promise<DiagnosticoBusqueda[]> {
+    const params = new URLSearchParams();
+    params.set('filtro', filtro);
+    params.set('idAtencion', idAtencion.toString());
+    params.set('idPaciente', idPaciente.toString());
+
+    try {
+      return await this.api.request<DiagnosticoBusqueda[]>(
+        `/api/v1/diagnosticos/search?${params.toString()}`,
+        { method: 'GET' },
+        true,
+      );
+    } catch {
       return [];
     }
   }
